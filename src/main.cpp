@@ -59,6 +59,11 @@ float filterAngles[MAX_FILTER_COUNT];
 // Filter names array - dynamic storage
 char filterNames[MAX_FILTER_COUNT][MAX_FILTER_NAME_LENGTH + 1];
 
+// ============================================
+// FUNCTION DECLARATIONS
+// ============================================
+int getStepsPerFilter();
+
 // Default filter names (fallback)
 const char* defaultFilterNames[MAX_FILTER_COUNT] = {
     FILTER_NAME_1,
