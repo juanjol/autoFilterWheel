@@ -47,6 +47,12 @@ unsigned long movementStartTime = 0;
 // Serial command buffer
 String commandBuffer = "";
 
+// Revolution calibration variables
+bool revCalibrationMode = false;
+uint16_t revCalibrationSteps = 0;
+uint16_t calibratedStepsPerRevolution = STEPS_PER_REVOLUTION;
+long revCalibrationStartPosition = 0;
+
 // Filter position angles (calculated dynamically)
 float filterAngles[MAX_FILTER_COUNT];
 
@@ -272,9 +278,37 @@ void loadFilterCount() {
 
 }
 
+// Save revolution calibration to EEPROM
+void saveRevolutionCalibration() {
+    EEPROM.write(EEPROM_REV_CAL_FLAG, 0xBB); // Magic byte for rev calibration
+    EEPROM.put(EEPROM_STEPS_PER_REV, calibratedStepsPerRevolution);
+    EEPROM.commit();
+    if (DEBUG_MODE) {
+        Serial.print("Revolution calibration saved: ");
+        Serial.println(calibratedStepsPerRevolution);
+    }
+}
+
+// Load revolution calibration from EEPROM
+void loadRevolutionCalibration() {
+    if (EEPROM.read(EEPROM_REV_CAL_FLAG) == 0xBB) {
+        EEPROM.get(EEPROM_STEPS_PER_REV, calibratedStepsPerRevolution);
+        if (DEBUG_MODE) {
+            Serial.print("Loaded revolution calibration: ");
+            Serial.println(calibratedStepsPerRevolution);
+        }
+    } else {
+        calibratedStepsPerRevolution = STEPS_PER_REVOLUTION; // Use default
+        if (DEBUG_MODE) {
+            Serial.print("Using default steps per revolution: ");
+            Serial.println(calibratedStepsPerRevolution);
+        }
+    }
+}
+
 // Calculate steps per filter dynamically
 int getStepsPerFilter() {
-    return STEPS_PER_REVOLUTION / numFilters;
+    return calibratedStepsPerRevolution / numFilters;
 }
 
 // ============================================
@@ -924,6 +958,99 @@ void processCommand(String cmd) {
         disableMotor();
         Serial.println("MOTOR_DISABLED");
     }
+    // Start Revolution Calibration
+    else if (cmd == CMD_START_REV_CAL || cmd == "REVCAL") {
+        if (!revCalibrationMode) {
+            revCalibrationMode = true;
+            revCalibrationSteps = STEPS_PER_REVOLUTION;
+            revCalibrationStartPosition = stepper.currentPosition();
+            enableMotor();
+            isMoving = true;
+            movementStartTime = millis();
+            stepper.move(revCalibrationSteps);
+            Serial.print("REV_CAL_STARTED:");
+            Serial.println(revCalibrationSteps);
+            if (DEBUG_MODE) {
+                Serial.println("Revolution calibration started - making full revolution");
+            }
+        } else {
+            Serial.println("ERROR:REV_CAL_ALREADY_ACTIVE");
+        }
+    }
+    // Revolution Calibration Adjust Plus
+    else if (cmd.startsWith(CMD_REV_CAL_ADJUST_PLUS) || cmd.startsWith("RCP")) {
+        if (revCalibrationMode && !isMoving) {
+            String stepsStr = cmd.substring(3);
+            int adjustSteps = stepsStr.toInt();
+            if (adjustSteps >= 1 && adjustSteps <= 100) {
+                revCalibrationSteps += adjustSteps;
+                enableMotor();
+                isMoving = true;
+                movementStartTime = millis();
+                stepper.move(adjustSteps);
+                Serial.print("RCP");
+                Serial.print(adjustSteps);
+                Serial.print(" TOTAL:");
+                Serial.println(revCalibrationSteps);
+                if (DEBUG_MODE) {
+                    Serial.print("Added ");
+                    Serial.print(adjustSteps);
+                    Serial.print(" steps. Total: ");
+                    Serial.println(revCalibrationSteps);
+                }
+            } else {
+                Serial.println("ERROR:INVALID_ADJUST_STEPS (1-100)");
+            }
+        } else {
+            Serial.println("ERROR:NO_ACTIVE_REV_CAL_OR_MOVING");
+        }
+    }
+    // Revolution Calibration Adjust Minus
+    else if (cmd.startsWith(CMD_REV_CAL_ADJUST_MINUS) || cmd.startsWith("RCM")) {
+        if (revCalibrationMode && !isMoving) {
+            String stepsStr = cmd.substring(3);
+            int adjustSteps = stepsStr.toInt();
+            if (adjustSteps >= 1 && adjustSteps <= 100) {
+                revCalibrationSteps -= adjustSteps;
+                enableMotor();
+                isMoving = true;
+                movementStartTime = millis();
+                stepper.move(-adjustSteps);
+                Serial.print("RCM");
+                Serial.print(adjustSteps);
+                Serial.print(" TOTAL:");
+                Serial.println(revCalibrationSteps);
+                if (DEBUG_MODE) {
+                    Serial.print("Subtracted ");
+                    Serial.print(adjustSteps);
+                    Serial.print(" steps. Total: ");
+                    Serial.println(revCalibrationSteps);
+                }
+            } else {
+                Serial.println("ERROR:INVALID_ADJUST_STEPS (1-100)");
+            }
+        } else {
+            Serial.println("ERROR:NO_ACTIVE_REV_CAL_OR_MOVING");
+        }
+    }
+    // Finish Revolution Calibration
+    else if (cmd == CMD_FINISH_REV_CAL || cmd == "RCFIN") {
+        if (revCalibrationMode && !isMoving) {
+            calibratedStepsPerRevolution = revCalibrationSteps;
+            saveRevolutionCalibration();
+            revCalibrationMode = false;
+            Serial.print("REV_CAL_COMPLETE:");
+            Serial.println(calibratedStepsPerRevolution);
+            if (DEBUG_MODE) {
+                Serial.print("Revolution calibration complete. Steps per revolution: ");
+                Serial.println(calibratedStepsPerRevolution);
+                Serial.print("New steps per filter: ");
+                Serial.println(getStepsPerFilter());
+            }
+        } else {
+            Serial.println("ERROR:NO_ACTIVE_REV_CAL_OR_MOVING");
+        }
+    }
     else {
         Serial.println("ERROR:UNKNOWN_COMMAND");
     }
@@ -1097,6 +1224,9 @@ void setup() {
 
     // Load filter count from EEPROM (must be loaded before position and names)
     loadFilterCount();
+
+    // Load revolution calibration from EEPROM
+    loadRevolutionCalibration();
 
     // Load saved position from EEPROM
     loadCurrentPosition();

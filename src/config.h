@@ -128,6 +128,12 @@
 #define CMD_MOTOR_ENABLE "ME"       // Enable motor power
 #define CMD_MOTOR_DISABLE "MD"      // Disable motor power
 
+// Revolution calibration commands
+#define CMD_START_REV_CAL "REVCAL"  // Start full revolution calibration
+#define CMD_REV_CAL_ADJUST_PLUS "RCP"  // Add steps during revolution calibration (RCP10)
+#define CMD_REV_CAL_ADJUST_MINUS "RCM" // Subtract steps during revolution calibration (RCM5)
+#define CMD_FINISH_REV_CAL "RCFIN"  // Finish revolution calibration and save result
+
 // ============================================
 // SYSTEM CONFIGURATION
 // ============================================
@@ -141,6 +147,8 @@
 #define EEPROM_POSITIONS_ADDR 0x10 // Starting address for filter positions
 #define EEPROM_FILTER_COUNT 0x0D     // Address for dynamic filter count
 #define EEPROM_FILTER_NAMES_ADDR 0x20 // Starting address for filter names (16 chars each)
+#define EEPROM_REV_CAL_FLAG 0x100     // Revolution calibration flag (0xBB when calibrated)
+#define EEPROM_STEPS_PER_REV 0x104    // Calibrated steps per revolution (uint16_t)
 #define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
 #define MIN_FILTER_COUNT 3           // Minimum number of filters
 #define MAX_FILTER_COUNT 8           // Maximum number of filters (hardware/EEPROM limit)
