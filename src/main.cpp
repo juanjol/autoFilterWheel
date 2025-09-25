@@ -20,8 +20,9 @@ AccelStepper stepper(AccelStepper::FULL4WIRE, MOTOR_PIN1, MOTOR_PIN3, MOTOR_PIN2
 // GLOBAL VARIABLES
 // ============================================
 
-// Current filter position (1 to NUM_FILTERS)
-uint8_t currentPosition = 1;
+// Dynamic filter count and position tracking
+uint8_t numFilters = NUM_FILTERS;    // Dynamic filter count (loaded from EEPROM)
+uint8_t currentPosition = 1;         // Current filter position (1 to numFilters)
 uint8_t targetPosition = 1;
 
 // AS5600 encoder variables
@@ -46,21 +47,27 @@ unsigned long movementStartTime = 0;
 // Serial command buffer
 String commandBuffer = "";
 
-// Filter position angles (calculated from NUM_FILTERS)
-float filterAngles[NUM_FILTERS];
+// Filter position angles (calculated dynamically)
+float filterAngles[MAX_FILTER_COUNT];
 
-// Filter names array
-const char* filterNames[NUM_FILTERS] = {
+// Filter names array - dynamic storage
+char filterNames[MAX_FILTER_COUNT][MAX_FILTER_NAME_LENGTH + 1];
+
+// Default filter names (fallback)
+const char* defaultFilterNames[MAX_FILTER_COUNT] = {
     FILTER_NAME_1,
     FILTER_NAME_2,
     FILTER_NAME_3,
     FILTER_NAME_4,
-    FILTER_NAME_5
+    FILTER_NAME_5,
+    "Filter 6",  // Additional defaults for expanded filter counts
+    "Filter 7",
+    "Filter 8"
 };
 
 // Get filter name for a position
 const char* getFilterName(uint8_t position) {
-    if (position >= 1 && position <= NUM_FILTERS) {
+    if (position >= 1 && position <= numFilters) {
         return filterNames[position - 1];
     }
     return "?";
@@ -74,10 +81,14 @@ void initAS5600() {
     Wire.beginTransmission(AS5600_ADDRESS);
     if (Wire.endTransmission() == 0) {
         encoderAvailable = true;
-        Serial.println("AS5600 detected");
+        if (DEBUG_MODE) {
+            Serial.println("AS5600 detected");
+        }
     } else {
         encoderAvailable = false;
-        Serial.println("AS5600 not found - running in stepper-only mode");
+        if (DEBUG_MODE) {
+            Serial.println("AS5600 not found - running in stepper-only mode");
+        }
     }
 }
 
@@ -110,7 +121,7 @@ uint8_t angleToPosition(float angle) {
     uint8_t closestPosition = 1;
     float minDifference = 360.0;
 
-    for (uint8_t i = 0; i < NUM_FILTERS; i++) {
+    for (uint8_t i = 0; i < numFilters; i++) {
         float diff = abs(angle - filterAngles[i]);
         // Handle wrap-around at 360 degrees
         if (diff > 180.0) diff = 360.0 - diff;
@@ -141,9 +152,13 @@ void loadCalibration() {
         // Load calibration data
         EEPROM.get(EEPROM_OFFSET_ADDR, angleOffset);
         isCalibrated = true;
-        Serial.println("Calibration loaded from EEPROM");
+        if (DEBUG_MODE) {
+            Serial.println("Calibration loaded from EEPROM");
+        }
     } else {
-        Serial.println("No calibration found");
+        if (DEBUG_MODE) {
+            Serial.println("No calibration found");
+        }
     }
 }
 
@@ -151,7 +166,9 @@ void saveCalibration() {
     EEPROM.write(EEPROM_CALIB_FLAG, 0xAA);
     EEPROM.put(EEPROM_OFFSET_ADDR, angleOffset);
     EEPROM.commit();
-    Serial.println("Calibration saved to EEPROM");
+    if (DEBUG_MODE) {
+        Serial.println("Calibration saved to EEPROM");
+    }
 }
 
 void saveCurrentPosition() {
@@ -165,9 +182,9 @@ void saveCurrentPosition() {
 
 void loadCurrentPosition() {
     uint8_t savedPosition = EEPROM.read(EEPROM_CURRENT_POS);
-    if (savedPosition >= 1 && savedPosition <= NUM_FILTERS) {
+    if (savedPosition >= 1 && savedPosition <= numFilters) {
         currentPosition = savedPosition;
-        stepper.setCurrentPosition((currentPosition - 1) * STEPS_PER_FILTER);
+        stepper.setCurrentPosition((currentPosition - 1) * getStepsPerFilter());
         if (DEBUG_MODE) {
             Serial.print("Restored position from EEPROM: ");
             Serial.println(currentPosition);
@@ -180,6 +197,84 @@ void loadCurrentPosition() {
             Serial.println("No valid saved position, defaulting to position 1");
         }
     }
+}
+
+void saveFilterNames() {
+    EEPROM.write(EEPROM_FILTER_NAMES_FLAG, 0xBB); // Magic byte for filter names
+    for (int i = 0; i < numFilters; i++) {
+        int addr = EEPROM_FILTER_NAMES_ADDR + (i * 16);
+        for (int j = 0; j < 16; j++) {
+            if (j < strlen(filterNames[i])) {
+                EEPROM.write(addr + j, filterNames[i][j]);
+            } else {
+                EEPROM.write(addr + j, 0); // Null terminator and padding
+            }
+        }
+    }
+    EEPROM.commit();
+    if (DEBUG_MODE) {
+        Serial.println("Filter names saved to EEPROM");
+    }
+}
+
+void loadFilterNames() {
+    uint8_t namesFlag = EEPROM.read(EEPROM_FILTER_NAMES_FLAG);
+    if (namesFlag == 0xBB) {
+        // Load custom filter names from EEPROM
+        for (int i = 0; i < numFilters; i++) {
+            int addr = EEPROM_FILTER_NAMES_ADDR + (i * 16);
+            for (int j = 0; j < MAX_FILTER_NAME_LENGTH; j++) {
+                filterNames[i][j] = EEPROM.read(addr + j);
+                if (filterNames[i][j] == 0) break; // Stop at null terminator
+            }
+            filterNames[i][MAX_FILTER_NAME_LENGTH] = 0; // Ensure null termination
+        }
+        if (DEBUG_MODE) {
+            Serial.println("Custom filter names loaded from EEPROM");
+        }
+    } else {
+        // Use default filter names
+        for (int i = 0; i < numFilters; i++) {
+            strncpy(filterNames[i], defaultFilterNames[i], MAX_FILTER_NAME_LENGTH);
+            filterNames[i][MAX_FILTER_NAME_LENGTH] = 0; // Ensure null termination
+        }
+        if (DEBUG_MODE) {
+            Serial.println("Using default filter names");
+        }
+    }
+}
+
+void saveFilterCount() {
+    EEPROM.write(EEPROM_FILTER_COUNT, numFilters);
+    EEPROM.commit();
+    if (DEBUG_MODE) {
+        Serial.print("Filter count saved: ");
+        Serial.println(numFilters);
+    }
+}
+
+void loadFilterCount() {
+    uint8_t savedCount = EEPROM.read(EEPROM_FILTER_COUNT);
+    if (savedCount >= MIN_FILTER_COUNT && savedCount <= MAX_FILTER_COUNT) {
+        numFilters = savedCount;
+        if (DEBUG_MODE) {
+            Serial.print("Loaded filter count from EEPROM: ");
+            Serial.println(numFilters);
+        }
+    } else {
+        // Use default count
+        numFilters = NUM_FILTERS;
+        if (DEBUG_MODE) {
+            Serial.print("Using default filter count: ");
+            Serial.println(numFilters);
+        }
+    }
+
+}
+
+// Calculate steps per filter dynamically
+int getStepsPerFilter() {
+    return STEPS_PER_REVOLUTION / numFilters;
 }
 
 // ============================================
@@ -401,7 +496,7 @@ long getCurrentStepPosition() {
 }
 
 void moveToPosition(uint8_t position) {
-    if (position < 1 || position > NUM_FILTERS) {
+    if (position < 1 || position > numFilters) {
         errorCode = ERROR_INVALID_POSITION;
         return;
     }
@@ -415,8 +510,8 @@ void moveToPosition(uint8_t position) {
     errorCode = ERROR_NONE;
 
     // Calculate steps needed
-    int currentSteps = (currentPosition - 1) * STEPS_PER_FILTER;
-    int targetSteps = (position - 1) * STEPS_PER_FILTER;
+    int currentSteps = (currentPosition - 1) * getStepsPerFilter();
+    int targetSteps = (position - 1) * getStepsPerFilter();
     int stepsToMove = targetSteps - currentSteps;
 
     if (MOTOR_DIRECTION_MODE == 0) {
@@ -425,8 +520,8 @@ void moveToPosition(uint8_t position) {
             // Need to go forward through zero
             // For example: from position 4 to position 2 = forward through 5, 1, to 2
             // That's 2 steps forward (4->5->1) + 1 more step (1->2) = 3 total filter positions
-            int positionsToMove = (NUM_FILTERS - currentPosition) + targetPosition;
-            stepsToMove = positionsToMove * STEPS_PER_FILTER;
+            int positionsToMove = (numFilters - currentPosition) + targetPosition;
+            stepsToMove = positionsToMove * getStepsPerFilter();
         } else if (targetPosition == currentPosition) {
             // Already at target
             isMoving = false;
@@ -434,7 +529,7 @@ void moveToPosition(uint8_t position) {
         } else {
             // Normal forward movement
             int positionsToMove = targetPosition - currentPosition;
-            stepsToMove = positionsToMove * STEPS_PER_FILTER;
+            stepsToMove = positionsToMove * getStepsPerFilter();
         }
 
         // Apply direction reversal if configured
@@ -474,7 +569,7 @@ void moveToPosition(uint8_t position) {
         Serial.print(") - ");
         Serial.print(stepsToMove);
         Serial.print(" steps = ");
-        Serial.print((float)stepsToMove / STEPS_PER_FILTER, 2);
+        Serial.print((float)stepsToMove / getStepsPerFilter(), 2);
         Serial.print(" positions");
         if (MOTOR_DIRECTION_MODE == 0) {
             Serial.print(", UNIDIRECTIONAL");
@@ -489,7 +584,7 @@ void moveToPosition(uint8_t position) {
         // Additional debug for unidirectional mode
         if (MOTOR_DIRECTION_MODE == 0 && targetPosition < currentPosition) {
             Serial.print("  Path: ");
-            for (int i = currentPosition + 1; i <= NUM_FILTERS; i++) {
+            for (int i = currentPosition + 1; i <= numFilters; i++) {
                 Serial.print(getFilterName(i));
                 Serial.print(" ");
             }
@@ -510,7 +605,9 @@ void checkMovement() {
         stepper.stop();
         isMoving = false;
         errorCode = ERROR_MOTOR_TIMEOUT;
-        Serial.println("Movement timeout!");
+        if (DEBUG_MODE) {
+            Serial.println("Movement timeout!");
+        }
         return;
     }
 
@@ -519,16 +616,16 @@ void checkMovement() {
         long currentStep = abs(stepper.currentPosition());
 
         // Calculate which filter position we're currently at based on absolute steps
-        uint8_t calculatedPosition = (currentStep / STEPS_PER_FILTER) + 1;
-        if (calculatedPosition > NUM_FILTERS) calculatedPosition = ((calculatedPosition - 1) % NUM_FILTERS) + 1;
+        uint8_t calculatedPosition = (currentStep / getStepsPerFilter()) + 1;
+        if (calculatedPosition > numFilters) calculatedPosition = ((calculatedPosition - 1) % numFilters) + 1;
 
         // Update position if we're clearly in a new filter zone
         if (calculatedPosition != currentPosition) {
             // Calculate how far we are into this position
-            long stepsFromPositionStart = currentStep % STEPS_PER_FILTER;
+            long stepsFromPositionStart = currentStep % getStepsPerFilter();
 
             // Only update if we're well within the position (not at edges)
-            if (stepsFromPositionStart > 30 || stepsFromPositionStart < (STEPS_PER_FILTER - 30)) {
+            if (stepsFromPositionStart > 30 || stepsFromPositionStart < (getStepsPerFilter() - 30)) {
                 currentPosition = calculatedPosition;
                 if (DEBUG_MODE) {
                     Serial.print("Now at filter #");
@@ -569,8 +666,10 @@ void checkMovement() {
         // Schedule motor to be disabled after delay
         scheduleMotorDisable();
 
-        Serial.print("Position reached: ");
-        Serial.println(currentPosition);
+        if (DEBUG_MODE) {
+            Serial.print("Position reached: ");
+            Serial.println(currentPosition);
+        }
     }
 }
 
@@ -579,7 +678,9 @@ void checkMovement() {
 // ============================================
 
 void calibrateHome() {
-    Serial.println("Starting calibration...");
+    if (DEBUG_MODE) {
+        Serial.println("Starting calibration...");
+    }
 
     // Set current physical position as position 1
     currentPosition = 1;
@@ -590,8 +691,10 @@ void calibrateHome() {
         float rawAngle = readAS5600Angle();
         angleOffset = -rawAngle; // This makes current angle = 0
         saveCalibration();
-        Serial.print("Calibration complete. Offset: ");
-        Serial.println(angleOffset);
+        if (DEBUG_MODE) {
+            Serial.print("Calibration complete. Offset: ");
+            Serial.println(angleOffset);
+        }
     }
 
     // Save calibrated position to EEPROM
@@ -625,7 +728,7 @@ void processCommand(String cmd) {
     // Move to Position
     else if (cmd.startsWith(CMD_MOVE_POSITION) || cmd.startsWith("MP")) {
         uint8_t pos = cmd.charAt(2) - '0';
-        if (pos >= 1 && pos <= NUM_FILTERS) {
+        if (pos >= 1 && pos <= numFilters) {
             moveToPosition(pos);
             Serial.print("M");
             Serial.println(pos);
@@ -636,9 +739,9 @@ void processCommand(String cmd) {
     // Set Position
     else if (cmd.startsWith(CMD_SET_POSITION) || cmd.startsWith("SP")) {
         uint8_t pos = cmd.charAt(2) - '0';
-        if (pos >= 1 && pos <= NUM_FILTERS) {
+        if (pos >= 1 && pos <= numFilters) {
             currentPosition = pos;
-            stepper.setCurrentPosition((pos - 1) * STEPS_PER_FILTER);
+            stepper.setCurrentPosition((pos - 1) * getStepsPerFilter());
             saveCurrentPosition(); // Save new position to EEPROM
             Serial.print("S");
             Serial.println(pos);
@@ -670,12 +773,45 @@ void processCommand(String cmd) {
     // Get Number of Filters
     else if (cmd == CMD_GET_FILTERS || cmd == "GF") {
         Serial.print("F");
-        Serial.println(NUM_FILTERS);
+        Serial.println(numFilters);
+    }
+    // Set Filter Count
+    else if (cmd.startsWith(CMD_SET_FILTER_COUNT) || cmd.startsWith("FC")) {
+        uint8_t newCount = cmd.charAt(2) - '0';
+        if (newCount >= MIN_FILTER_COUNT && newCount <= MAX_FILTER_COUNT) {
+            // Validate current position against new count
+            if (currentPosition > newCount) {
+                currentPosition = 1; // Reset to position 1 if current position is invalid
+                saveCurrentPosition();
+            }
+
+            numFilters = newCount;
+            saveFilterCount(); // Save to EEPROM immediately
+
+            // Reinitialize default names for new filter positions if needed
+            loadFilterNames(); // Reload names with new count
+
+            Serial.print("FC");
+            Serial.println(numFilters);
+
+            if (DEBUG_MODE) {
+                Serial.print("Filter count changed to: ");
+                Serial.println(numFilters);
+                Serial.print("Steps per filter: ");
+                Serial.println(getStepsPerFilter());
+            }
+        } else {
+            Serial.print("ERROR:INVALID_COUNT (range: ");
+            Serial.print(MIN_FILTER_COUNT);
+            Serial.print("-");
+            Serial.print(MAX_FILTER_COUNT);
+            Serial.println(")");
+        }
     }
     // Get Filter Name
     else if (cmd.startsWith(CMD_GET_FILTER_NAME) || cmd.startsWith("GN")) {
         uint8_t pos = cmd.charAt(2) - '0';
-        if (pos >= 1 && pos <= NUM_FILTERS) {
+        if (pos >= 1 && pos <= numFilters) {
             Serial.print("N");
             Serial.print(pos);
             Serial.print(":");
@@ -683,19 +819,49 @@ void processCommand(String cmd) {
         } else if (cmd.length() == 2) {
             // Return all filter names
             Serial.print("NAMES:");
-            for (int i = 1; i <= NUM_FILTERS; i++) {
+            for (int i = 1; i <= numFilters; i++) {
                 Serial.print(getFilterName(i));
-                if (i < NUM_FILTERS) Serial.print(",");
+                if (i < numFilters) Serial.print(",");
             }
             Serial.println();
         } else {
             Serial.println("ERROR:INVALID_FILTER");
         }
     }
+    // Set Filter Name
+    else if (cmd.startsWith(CMD_SET_FILTER_NAME) || cmd.startsWith("SN")) {
+        // Format: SN1:Luminance or SN2:Red Filter
+        if (cmd.length() > 3 && cmd.charAt(3) == ':') {
+            uint8_t pos = cmd.charAt(2) - '0';
+            if (pos >= 1 && pos <= numFilters) {
+                String newName = cmd.substring(4); // Get name after "SN1:"
+                if (newName.length() <= MAX_FILTER_NAME_LENGTH) {
+                    strncpy(filterNames[pos - 1], newName.c_str(), MAX_FILTER_NAME_LENGTH);
+                    filterNames[pos - 1][MAX_FILTER_NAME_LENGTH] = 0; // Ensure null termination
+                    saveFilterNames(); // Save to EEPROM immediately
+                    Serial.print("SN");
+                    Serial.print(pos);
+                    Serial.print(":");
+                    Serial.println(filterNames[pos - 1]);
+                } else {
+                    Serial.println("ERROR:NAME_TOO_LONG");
+                }
+            } else {
+                Serial.println("ERROR:INVALID_FILTER");
+            }
+        } else {
+            Serial.println("ERROR:INVALID_FORMAT");
+        }
+    }
     // Get Version
     else if (cmd == CMD_VERSION || cmd == "VER") {
         Serial.print("VERSION:");
         Serial.println(FIRMWARE_VERSION);
+    }
+    // Get Device ID
+    else if (cmd == CMD_DEVICE_ID || cmd == "ID") {
+        Serial.print("DEVICE_ID:");
+        Serial.println(DEVICE_ID);
     }
     // Emergency Stop
     else if (cmd == CMD_STOP || cmd == "STOP") {
@@ -778,7 +944,9 @@ void handleSerial() {
             // Prevent buffer overflow
             if (commandBuffer.length() > 50) {
                 commandBuffer = "";
-                Serial.println("ERROR:BUFFER_OVERFLOW");
+                if (DEBUG_MODE) {
+                    Serial.println("ERROR:BUFFER_OVERFLOW");
+                }
             }
         }
     }
@@ -798,7 +966,7 @@ void handleButtons() {
     if (digitalRead(BUTTON_NEXT) == LOW) {
         lastButtonPress = millis();
         uint8_t nextPos = currentPosition + 1;
-        if (nextPos > NUM_FILTERS) nextPos = 1;
+        if (nextPos > numFilters) nextPos = 1;
         moveToPosition(nextPos);
     }
 
@@ -809,13 +977,13 @@ void handleButtons() {
         if (MOTOR_DIRECTION_MODE == 1) {
             // BIDIRECTIONAL MODE - Allow backward movement
             uint8_t prevPos = currentPosition - 1;
-            if (prevPos < 1) prevPos = NUM_FILTERS;
+            if (prevPos < 1) prevPos = numFilters;
             moveToPosition(prevPos);
         } else {
             // UNIDIRECTIONAL MODE - Go forward to previous position
             // Example: from 2 to 1, or from 1 to 5
             uint8_t prevPos = currentPosition - 1;
-            if (prevPos < 1) prevPos = NUM_FILTERS;
+            if (prevPos < 1) prevPos = numFilters;
             moveToPosition(prevPos);  // Will automatically go forward through all positions
 
             if (DEBUG_MODE) {
@@ -832,30 +1000,35 @@ void handleButtons() {
 void setup() {
     // Initialize Serial
     Serial.begin(SERIAL_BAUD_RATE);
-    Serial.println("\n\n========================================");
-    Serial.println(DEVICE_NAME);
-    Serial.print("Version: ");
-    Serial.println(FIRMWARE_VERSION);
-    Serial.print("Filters: ");
-    Serial.println(NUM_FILTERS);
-    Serial.print("Direction Mode: ");
-    if (MOTOR_DIRECTION_MODE == 0) {
-        Serial.print("UNIDIRECTIONAL");
-        if (MOTOR_REVERSE_DIRECTION) {
-            Serial.print(" (REVERSED)");
+
+    if (DEBUG_MODE) {
+        Serial.println("\n\n========================================");
+        Serial.println(DEVICE_NAME);
+        Serial.print("Version: ");
+        Serial.println(FIRMWARE_VERSION);
+        Serial.print("Filters: ");
+        Serial.println(numFilters);
+        Serial.print("Direction Mode: ");
+        if (MOTOR_DIRECTION_MODE == 0) {
+            Serial.print("UNIDIRECTIONAL");
+            if (MOTOR_REVERSE_DIRECTION) {
+                Serial.print(" (REVERSED)");
+            }
+        } else {
+            Serial.print("BIDIRECTIONAL");
         }
-    } else {
-        Serial.print("BIDIRECTIONAL");
+        Serial.println();
+        Serial.println("========================================\n");
     }
-    Serial.println();
-    Serial.println("========================================\n");
 
     // Initialize I2C
     Wire.begin(I2C_SDA, I2C_SCL);
 
     // Initialize OLED Display
     if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)) {
-        Serial.println("SSD1306 allocation failed");
+        if (DEBUG_MODE) {
+            Serial.println("SSD1306 allocation failed");
+        }
     } else {
         // Set contrast to maximum for better visibility on small display
         display.ssd1306_command(SSD1306_SETCONTRAST);
@@ -876,8 +1049,8 @@ void setup() {
     initAS5600();
 
     // Calculate filter angles
-    for (uint8_t i = 0; i < NUM_FILTERS; i++) {
-        filterAngles[i] = (360.0 / NUM_FILTERS) * i;
+    for (uint8_t i = 0; i < numFilters; i++) {
+        filterAngles[i] = (360.0 / numFilters) * i;
     }
 
     // Initialize stepper motor
@@ -897,14 +1070,16 @@ void setup() {
     digitalWrite(MOTOR_PIN3, LOW);
     digitalWrite(MOTOR_PIN4, LOW);
 
-    Serial.print("Motor pins configured: ");
-    Serial.print(MOTOR_PIN1);
-    Serial.print(",");
-    Serial.print(MOTOR_PIN2);
-    Serial.print(",");
-    Serial.print(MOTOR_PIN3);
-    Serial.print(",");
-    Serial.println(MOTOR_PIN4);
+    if (DEBUG_MODE) {
+        Serial.print("Motor pins configured: ");
+        Serial.print(MOTOR_PIN1);
+        Serial.print(",");
+        Serial.print(MOTOR_PIN2);
+        Serial.print(",");
+        Serial.print(MOTOR_PIN3);
+        Serial.print(",");
+        Serial.println(MOTOR_PIN4);
+    }
 
     // Initialize pins
     pinMode(LED_PIN, OUTPUT);
@@ -920,8 +1095,14 @@ void setup() {
     // Load calibration from EEPROM
     loadCalibration();
 
+    // Load filter count from EEPROM (must be loaded before position and names)
+    loadFilterCount();
+
     // Load saved position from EEPROM
     loadCurrentPosition();
+
+    // Load filter names from EEPROM
+    loadFilterNames();
 
     // Initial position reading
     if (encoderAvailable) {
@@ -929,40 +1110,49 @@ void setup() {
         uint8_t detectedPosition = angleToPosition(currentAngle);
         if (detectedPosition > 0 && isCalibrated) {
             currentPosition = detectedPosition;
-            Serial.print("Detected position: ");
-            Serial.println(currentPosition);
+            if (DEBUG_MODE) {
+                Serial.print("Detected position: ");
+                Serial.println(currentPosition);
+            }
         }
     }
 
-    // Ready message
-    // Display filter configuration
-    Serial.println("\nFilter Configuration:");
-    for (int i = 1; i <= NUM_FILTERS; i++) {
-        Serial.print("  Position ");
-        Serial.print(i);
-        Serial.print(": ");
-        Serial.println(getFilterName(i));
-    }
+    if (DEBUG_MODE) {
+        // Ready message
+        // Display filter configuration
+        Serial.println("\nFilter Configuration:");
+        for (int i = 1; i <= numFilters; i++) {
+            Serial.print("  Position ");
+            Serial.print(i);
+            Serial.print(": ");
+            Serial.println(getFilterName(i));
+        }
 
-    Serial.println("\nSystem ready!");
-    Serial.println("Commands:");
-    Serial.println("  #GP - Get position");
-    Serial.println("  #MP[1-5] - Move to position");
-    Serial.println("  #SP[1-5] - Set current position");
-    Serial.println("  #GN - Get all filter names");
-    Serial.println("  #GN[1-5] - Get specific filter name");
-    Serial.println("  #CAL - Calibrate home");
-    Serial.println("  #STATUS - Get status");
-    Serial.println("  #STOP - Emergency stop");
-    Serial.println("Manual stepping:");
-    Serial.println("  #SF[X] - Step forward X steps (e.g. #SF100)");
-    Serial.println("  #SB[X] - Step backward X steps (e.g. #SB50)");
-    Serial.println("  #ST[X] - Step to absolute position (e.g. #ST1024)");
-    Serial.println("  #GST - Get current step position");
-    Serial.println("Motor power:");
-    Serial.println("  #ME - Enable motor power");
-    Serial.println("  #MD - Disable motor power (power saving)");
-    Serial.println();
+        Serial.println("\nSystem ready!");
+        Serial.println("Commands:");
+        Serial.println("  #GP - Get position");
+        Serial.println("  #MP[1-5] - Move to position");
+        Serial.println("  #SP[1-5] - Set current position");
+        Serial.println("  #GF - Get number of filters");
+        Serial.println("  #FC[3-8] - Set filter count (e.g. #FC4 for 4 filters)");
+        Serial.println("  #GN - Get all filter names");
+        Serial.println("  #GN[1-X] - Get specific filter name");
+        Serial.println("  #SN[1-X]:Name - Set filter name (e.g. #SN1:Luminance)");
+        Serial.println("  #CAL - Calibrate home");
+        Serial.println("  #STATUS - Get status");
+        Serial.println("  #ID - Get device identifier");
+        Serial.println("  #VER - Get firmware version");
+        Serial.println("  #STOP - Emergency stop");
+        Serial.println("Manual stepping:");
+        Serial.println("  #SF[X] - Step forward X steps (e.g. #SF100)");
+        Serial.println("  #SB[X] - Step backward X steps (e.g. #SB50)");
+        Serial.println("  #ST[X] - Step to absolute position (e.g. #ST1024)");
+        Serial.println("  #GST - Get current step position");
+        Serial.println("Motor power:");
+        Serial.println("  #ME - Enable motor power");
+        Serial.println("  #MD - Disable motor power (power saving)");
+        Serial.println();
+    }
 }
 
 // ============================================
