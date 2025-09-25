@@ -811,8 +811,9 @@ void processCommand(String cmd) {
     }
     // Set Filter Count
     else if (cmd.startsWith(CMD_SET_FILTER_COUNT) || cmd.startsWith("FC")) {
-        uint8_t newCount = cmd.charAt(2) - '0';
-        if (newCount >= MIN_FILTER_COUNT && newCount <= MAX_FILTER_COUNT) {
+        if (cmd.length() >= 3) {
+            uint8_t newCount = cmd.charAt(2) - '0';
+            if (newCount >= MIN_FILTER_COUNT && newCount <= MAX_FILTER_COUNT) {
             // Validate current position against new count
             if (currentPosition > newCount) {
                 currentPosition = 1; // Reset to position 1 if current position is invalid
@@ -840,6 +841,9 @@ void processCommand(String cmd) {
             Serial.print("-");
             Serial.print(MAX_FILTER_COUNT);
             Serial.println(")");
+            }
+        } else {
+            Serial.println("ERROR:INVALID_FORMAT (use FC3-FC8)");
         }
     }
     // Get Filter Name
