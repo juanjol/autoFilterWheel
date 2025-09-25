@@ -116,8 +116,11 @@
 #define CMD_CALIBRATE "CAL"         // Calibrate home position
 #define CMD_STATUS "STATUS"         // Get system status
 #define CMD_GET_FILTERS "GF"        // Get number of filters
+#define CMD_SET_FILTER_COUNT "FC"   // Set filter count (FC3, FC4, FC5, etc.)
 #define CMD_GET_FILTER_NAME "GN"    // Get filter name (GN1, GN2, etc.)
+#define CMD_SET_FILTER_NAME "SN"    // Set filter name (SN1:Luminance, SN2:Red, etc.)
 #define CMD_VERSION "VER"           // Get firmware version
+#define CMD_DEVICE_ID "ID"          // Get device identification
 #define CMD_STOP "STOP"            // Emergency stop
 #define CMD_STEP_FORWARD "SF"       // Step forward X steps (SF100)
 #define CMD_STEP_BACKWARD "SB"      // Step backward X steps (SB50)
@@ -134,7 +137,13 @@
 #define EEPROM_CALIB_FLAG 0x00     // Address for calibration flag
 #define EEPROM_OFFSET_ADDR 0x04    // Address for AS5600 offset
 #define EEPROM_CURRENT_POS 0x08    // Address for current position
+#define EEPROM_FILTER_NAMES_FLAG 0x0C // Filter names stored flag
 #define EEPROM_POSITIONS_ADDR 0x10 // Starting address for filter positions
+#define EEPROM_FILTER_COUNT 0x0D     // Address for dynamic filter count
+#define EEPROM_FILTER_NAMES_ADDR 0x20 // Starting address for filter names (16 chars each)
+#define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
+#define MIN_FILTER_COUNT 3           // Minimum number of filters
+#define MAX_FILTER_COUNT 8           // Maximum number of filters (hardware/EEPROM limit)
 
 // Safety and timeouts
 #define MOVEMENT_TIMEOUT 10000      // Maximum time for movement in ms
@@ -152,7 +161,7 @@
 #define MOTOR_HOLD_CURRENT false    // Set to true if you want to keep position with reduced current
 
 // Debug mode (set to 1 to enable debug output)
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 
 // ============================================
 // ERROR CODES
@@ -173,5 +182,6 @@
 #define FIRMWARE_VERSION "1.0.0"
 #define DEVICE_NAME "ESP32-C3 Filter Wheel"
 #define MANUFACTURER "DIY Astronomy"
+#define DEVICE_ID "ESP32FW-5POS-V1.0"     // Unique device identifier for ASCOM
 
 #endif // CONFIG_H

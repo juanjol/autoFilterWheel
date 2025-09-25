@@ -108,8 +108,18 @@ pio device monitor
 All settings are in `src/config.h`:
 
 ### Filter Names
+
+The system supports **dynamic filter names** that can be configured via software like NINA:
+
+**Runtime Configuration (Recommended)**:
+- Set names via serial: `#SN1:Luminance`, `#SN2:Red`, etc.
+- Names are stored in EEPROM and persist across reboots
+- Maximum 15 characters per filter name
+- Configurable from astronomy software without firmware changes
+
+**Compile-time Defaults** (Fallback):
 ```cpp
-#define FILTER_NAME_1 "Luminance"     // Customize for your filters
+#define FILTER_NAME_1 "Luminance"     // Default if no custom names set
 #define FILTER_NAME_2 "Red"
 #define FILTER_NAME_3 "Green"
 #define FILTER_NAME_4 "Blue"
@@ -139,12 +149,23 @@ All settings are in `src/config.h`:
 | `#MP[1-5]` | Move to position | `#MP2` | `M2` |
 | `#SP[1-5]` | Set current position | `#SP1` | `S1` |
 
+### Filter Configuration
+
+| Command | Description | Example | Response |
+|---------|-------------|---------|-----------|
+| `#GF` | Get number of filters | `#GF` | `F5` |
+| `#FC[3-8]` | Set filter count | `#FC6` | `FC6` |
+| `#GN` | Get all filter names | `#GN` | `NAMES:Luminance,Red,Green,Blue,H-Alpha` |
+| `#GN[1-X]` | Get specific filter name | `#GN2` | `N2:Red` |
+| `#SN[1-X]:Name` | Set filter name | `#SN1:Luminance` | `SN1:Luminance` |
+
 ### System Commands
 
 | Command | Description | Example | Response |
 |---------|-------------|---------|-----------|
 | `#CAL` | Calibrate home position | `#CAL` | `CALIBRATED` |
 | `#STATUS` | Get system status | `#STATUS` | `STATUS:POS=1,MOVING=NO...` |
+| `#ID` | Get device identifier | `#ID` | `DEVICE_ID:ESP32FW-5POS-V1.0` |
 | `#VER` | Get firmware version | `#VER` | `VERSION:1.0.0` |
 | `#STOP` | Emergency stop | `#STOP` | `STOPPED` |
 
