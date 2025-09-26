@@ -134,6 +134,12 @@
 #define CMD_REV_CAL_ADJUST_MINUS "RCM" // Subtract steps during revolution calibration (RCM5)
 #define CMD_FINISH_REV_CAL "RCFIN"  // Finish revolution calibration and save result
 
+// Backlash calibration commands
+#define CMD_START_BACKLASH_CAL "BLCAL"  // Start backlash calibration
+#define CMD_BACKLASH_STEP "BLS"         // Manual step during backlash calibration (BLS10)
+#define CMD_BACKLASH_MARK "BLM"         // Mark movement detected during backlash calibration
+#define CMD_FINISH_BACKLASH_CAL "BLFIN" // Finish backlash calibration and save result
+
 // ============================================
 // SYSTEM CONFIGURATION
 // ============================================
@@ -149,6 +155,8 @@
 #define EEPROM_FILTER_NAMES_ADDR 0x20 // Starting address for filter names (16 chars each)
 #define EEPROM_REV_CAL_FLAG 0x100     // Revolution calibration flag (0xBB when calibrated)
 #define EEPROM_STEPS_PER_REV 0x104    // Calibrated steps per revolution (uint16_t)
+#define EEPROM_BACKLASH_FLAG 0x108    // Backlash calibration flag (0xCC when calibrated)
+#define EEPROM_BACKLASH_STEPS 0x10C   // Calibrated backlash compensation steps (uint8_t)
 #define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
 #define MIN_FILTER_COUNT 3           // Minimum number of filters
 #define MAX_FILTER_COUNT 8           // Maximum number of filters (hardware/EEPROM limit)

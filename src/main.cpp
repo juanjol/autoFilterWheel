@@ -53,6 +53,14 @@ uint16_t revCalibrationSteps = 0;
 uint16_t calibratedStepsPerRevolution = STEPS_PER_REVOLUTION;
 long revCalibrationStartPosition = 0;
 
+// Backlash calibration variables
+bool backlashCalibrationMode = false;
+uint8_t calibratedBacklashSteps = BACKLASH_COMPENSATION;
+uint8_t backlashTestSteps = 0;
+uint8_t forwardBacklash = 0;
+long backlashTestStartPosition = 0;
+bool backlashDirectionForward = true;
+
 // Filter position angles (calculated dynamically)
 float filterAngles[MAX_FILTER_COUNT];
 
@@ -307,6 +315,34 @@ void loadRevolutionCalibration() {
         if (DEBUG_MODE) {
             Serial.print("Using default steps per revolution: ");
             Serial.println(calibratedStepsPerRevolution);
+        }
+    }
+}
+
+// Save backlash calibration to EEPROM
+void saveBacklashCalibration() {
+    EEPROM.write(EEPROM_BACKLASH_FLAG, 0xCC); // Magic byte for backlash calibration
+    EEPROM.write(EEPROM_BACKLASH_STEPS, calibratedBacklashSteps);
+    EEPROM.commit();
+    if (DEBUG_MODE) {
+        Serial.print("Backlash calibration saved: ");
+        Serial.println(calibratedBacklashSteps);
+    }
+}
+
+// Load backlash calibration from EEPROM
+void loadBacklashCalibration() {
+    if (EEPROM.read(EEPROM_BACKLASH_FLAG) == 0xCC) {
+        calibratedBacklashSteps = EEPROM.read(EEPROM_BACKLASH_STEPS);
+        if (DEBUG_MODE) {
+            Serial.print("Loaded backlash calibration: ");
+            Serial.println(calibratedBacklashSteps);
+        }
+    } else {
+        calibratedBacklashSteps = BACKLASH_COMPENSATION; // Use default
+        if (DEBUG_MODE) {
+            Serial.print("Using default backlash compensation: ");
+            Serial.println(calibratedBacklashSteps);
         }
     }
 }
@@ -589,7 +625,7 @@ void moveToPosition(uint8_t position) {
 
         // Add backlash compensation if moving backward
         if (stepsToMove < 0) {
-            stepsToMove -= BACKLASH_COMPENSATION;
+            stepsToMove -= calibratedBacklashSteps;
         }
     }
 
@@ -1060,6 +1096,112 @@ void processCommand(String cmd) {
             Serial.println("ERROR:NO_ACTIVE_REV_CAL_OR_MOVING");
         }
     }
+    // Start Backlash Calibration
+    else if (cmd == CMD_START_BACKLASH_CAL || cmd == "BLCAL") {
+        if (!backlashCalibrationMode && encoderAvailable) {
+            backlashCalibrationMode = true;
+            backlashTestSteps = 0;
+            backlashDirectionForward = true;
+            backlashTestStartPosition = stepper.currentPosition();
+            Serial.println("BACKLASH_CAL_STARTED");
+            if (DEBUG_MODE) {
+                Serial.println("Backlash calibration started.");
+                Serial.println("Use #BLS[X] to move in small steps until you detect movement with encoder");
+                Serial.println("Then use #BLM to mark when movement is detected");
+                Serial.println("Process will repeat for opposite direction");
+            }
+        } else if (!encoderAvailable) {
+            Serial.println("ERROR:ENCODER_REQUIRED_FOR_BACKLASH_CAL");
+        } else {
+            Serial.println("ERROR:BACKLASH_CAL_ALREADY_ACTIVE");
+        }
+    }
+    // Backlash Test Step
+    else if (cmd.startsWith(CMD_BACKLASH_STEP) || cmd.startsWith("BLS")) {
+        if (backlashCalibrationMode && !isMoving) {
+            String stepsStr = cmd.substring(3);
+            int testSteps = stepsStr.toInt();
+            if (testSteps >= 1 && testSteps <= 50) {
+                backlashTestSteps += testSteps;
+                enableMotor();
+                isMoving = true;
+                movementStartTime = millis();
+                int direction = backlashDirectionForward ? testSteps : -testSteps;
+                stepper.move(direction);
+                Serial.print("BLS");
+                Serial.print(testSteps);
+                Serial.print(" TOTAL:");
+                Serial.println(backlashTestSteps);
+                if (DEBUG_MODE) {
+                    Serial.print("Test step ");
+                    Serial.print(testSteps);
+                    Serial.print(" (");
+                    Serial.print(backlashDirectionForward ? "forward" : "backward");
+                    Serial.print("). Total test steps: ");
+                    Serial.println(backlashTestSteps);
+                    Serial.println("Check encoder - use #BLM when movement detected");
+                }
+            } else {
+                Serial.println("ERROR:INVALID_TEST_STEPS (1-50)");
+            }
+        } else {
+            Serial.println("ERROR:NO_ACTIVE_BACKLASH_CAL_OR_MOVING");
+        }
+    }
+    // Backlash Mark Movement Detected
+    else if (cmd == CMD_BACKLASH_MARK || cmd == "BLM") {
+        if (backlashCalibrationMode && !isMoving) {
+            if (backlashDirectionForward) {
+                // First direction complete, start opposite direction
+                forwardBacklash = backlashTestSteps;
+                backlashDirectionForward = false;
+                backlashTestSteps = 0;
+                Serial.print("BLM_FORWARD:");
+                Serial.println(forwardBacklash);
+                if (DEBUG_MODE) {
+                    Serial.print("Forward backlash measured: ");
+                    Serial.print(forwardBacklash);
+                    Serial.println(" steps");
+                    Serial.println("Now test backward direction with #BLS commands");
+                }
+            } else {
+                // Both directions complete
+                uint8_t backwardBacklash = backlashTestSteps;
+                calibratedBacklashSteps = max(forwardBacklash, backwardBacklash);
+                Serial.print("BLM_BACKWARD:");
+                Serial.println(backwardBacklash);
+                Serial.print("BLM_COMPLETE:");
+                Serial.println(calibratedBacklashSteps);
+                if (DEBUG_MODE) {
+                    Serial.print("Backward backlash measured: ");
+                    Serial.print(backwardBacklash);
+                    Serial.println(" steps");
+                    Serial.print("Using maximum backlash: ");
+                    Serial.print(calibratedBacklashSteps);
+                    Serial.println(" steps");
+                    Serial.println("Use #BLFIN to save calibration");
+                }
+            }
+        } else {
+            Serial.println("ERROR:NO_ACTIVE_BACKLASH_CAL_OR_MOVING");
+        }
+    }
+    // Finish Backlash Calibration
+    else if (cmd == CMD_FINISH_BACKLASH_CAL || cmd == "BLFIN") {
+        if (backlashCalibrationMode && !isMoving && !backlashDirectionForward) {
+            saveBacklashCalibration();
+            backlashCalibrationMode = false;
+            Serial.print("BACKLASH_CAL_COMPLETE:");
+            Serial.println(calibratedBacklashSteps);
+            if (DEBUG_MODE) {
+                Serial.print("Backlash calibration saved: ");
+                Serial.print(calibratedBacklashSteps);
+                Serial.println(" steps");
+            }
+        } else {
+            Serial.println("ERROR:BACKLASH_CAL_NOT_READY");
+        }
+    }
     else {
         Serial.println("ERROR:UNKNOWN_COMMAND");
     }
@@ -1236,6 +1378,9 @@ void setup() {
 
     // Load revolution calibration from EEPROM
     loadRevolutionCalibration();
+
+    // Load backlash calibration from EEPROM
+    loadBacklashCalibration();
 
     // Load saved position from EEPROM
     loadCurrentPosition();
