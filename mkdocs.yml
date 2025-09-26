@@ -1,10 +1,10 @@
 site_name: ESP32-C3 Filter Wheel Controller
 site_description: Open-source astronomy filter wheel controller with ASCOM compatibility
 site_author: ESP32 Filter Wheel Project
-site_url: https://yourusername.github.io/auto-filter-wheel/
+site_url: https://juanjol.github.io/autoFilterWheel/
 
-repo_name: auto-filter-wheel
-repo_url: https://github.com/yourusername/auto-filter-wheel
+repo_name: autoFilterWheel
+repo_url: https://github.com/juanjol/autoFilterWheel
 edit_uri: edit/main/docs/
 
 theme:

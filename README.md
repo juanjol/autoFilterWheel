@@ -1,13 +1,13 @@
 # ESP32-C3 Filter Wheel Controller
 
-[![Documentation Status](https://img.shields.io/badge/docs-mkdocs-blue)](https://yourusername.github.io/auto-filter-wheel/)
-[![GitHub Release](https://img.shields.io/github/v/release/yourusername/auto-filter-wheel)](https://github.com/yourusername/auto-filter-wheel/releases)
+[![Documentation Status](https://img.shields.io/badge/docs-mkdocs-blue)](https://juanjol.github.io/autoFilterWheel/)
+[![GitHub Release](https://img.shields.io/github/v/release/juanjol/autoFilterWheel)](https://github.com/juanjol/autoFilterWheel/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/yourusername/auto-filter-wheel/docs.yml)](https://github.com/yourusername/auto-filter-wheel/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/juanjol/autoFilterWheel/docs.yml)](https://github.com/juanjol/autoFilterWheel/actions)
 
 A professional, open-source astronomy filter wheel controller built on the ESP32-C3 microcontroller. Features integrated OLED display, stepper motor control, magnetic encoder feedback, and full ASCOM compatibility for seamless integration with popular astronomy software.
 
-## **[Complete Documentation Available](https://yourusername.github.io/auto-filter-wheel/)**
+## **[Complete Documentation Available](https://juanjol.github.io/autoFilterWheel/)**
 
 This README provides a quick overview. **For comprehensive guides, tutorials, and references, visit our full documentation site.**
 

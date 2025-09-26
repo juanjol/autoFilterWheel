@@ -130,17 +130,17 @@ Active development with community contributions, regular updates, and responsive
 
 ## 🤝 Community & Support
 
-- **GitHub Repository**: [Source code and issues](https://github.com/yourusername/auto-filter-wheel)
+- **GitHub Repository**: [Source code and issues](https://github.com/juanjol/autoFilterWheel)
 - **Discord Community**: [Real-time chat and support](#)
 - **Forum**: [CloudyNights thread](#)
 - **Email**: [project@example.com](mailto:project@example.com)
 
 ## 📈 Project Status
 
-![GitHub Stars](https://img.shields.io/github/stars/yourusername/auto-filter-wheel?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/yourusername/auto-filter-wheel?style=social)
-![GitHub Issues](https://img.shields.io/github/issues/yourusername/auto-filter-wheel)
-![GitHub License](https://img.shields.io/github/license/yourusername/auto-filter-wheel)
+![GitHub Stars](https://img.shields.io/github/stars/juanjol/autoFilterWheel?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/juanjol/autoFilterWheel?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/juanjol/autoFilterWheel)
+![GitHub License](https://img.shields.io/github/license/juanjol/autoFilterWheel)
 
 - ✅ **Stable Release** - v1.0.0 available
 - 🔄 **Active Development** - Regular updates and improvements
