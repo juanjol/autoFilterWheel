@@ -140,6 +140,14 @@
 #define CMD_BACKLASH_MARK "BLM"         // Mark movement detected during backlash calibration
 #define CMD_FINISH_BACKLASH_CAL "BLFIN" // Finish backlash calibration and save result
 
+// Motor configuration commands
+#define CMD_SET_MOTOR_SPEED "MS"        // Set motor speed (MS1000)
+#define CMD_SET_MAX_SPEED "MXS"         // Set maximum speed (MXS2000)
+#define CMD_SET_ACCELERATION "MA"       // Set acceleration (MA1000)
+#define CMD_GET_MOTOR_CONFIG "GMC"      // Get motor configuration
+#define CMD_RESET_MOTOR_CONFIG "RMC"    // Reset motor config to defaults
+#define CMD_SET_DISABLE_DELAY "MDD"     // Set motor disable delay (MDD2000)
+
 // ============================================
 // SYSTEM CONFIGURATION
 // ============================================
@@ -157,6 +165,11 @@
 #define EEPROM_STEPS_PER_REV 0x104    // Calibrated steps per revolution (uint16_t)
 #define EEPROM_BACKLASH_FLAG 0x108    // Backlash calibration flag (0xCC when calibrated)
 #define EEPROM_BACKLASH_STEPS 0x10C   // Calibrated backlash compensation steps (uint8_t)
+#define EEPROM_MOTOR_CONFIG_FLAG 0x110  // Motor config flag (0xDD when saved)
+#define EEPROM_MOTOR_SPEED 0x114      // Motor speed (uint16_t)
+#define EEPROM_MAX_MOTOR_SPEED 0x118  // Maximum motor speed (uint16_t)
+#define EEPROM_MOTOR_ACCELERATION 0x11C // Motor acceleration (uint16_t)
+#define EEPROM_MOTOR_DISABLE_DELAY 0x120 // Motor disable delay (uint16_t)
 #define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
 #define MIN_FILTER_COUNT 3           // Minimum number of filters
 #define MAX_FILTER_COUNT 8           // Maximum number of filters (hardware/EEPROM limit)

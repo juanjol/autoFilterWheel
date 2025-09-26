@@ -64,6 +64,12 @@ bool backlashDirectionForward = true;
 // Motor direction tracking for backlash compensation
 int lastMotorDirection = 0; // 1 = forward, -1 = backward, 0 = unknown
 
+// Motor configuration variables (configurable via commands)
+uint16_t configuredMotorSpeed = MOTOR_SPEED;
+uint16_t configuredMaxMotorSpeed = MAX_MOTOR_SPEED;
+uint16_t configuredMotorAcceleration = MOTOR_ACCELERATION;
+uint16_t configuredMotorDisableDelay = MOTOR_DISABLE_DELAY;
+
 // Filter position angles (calculated dynamically)
 float filterAngles[MAX_FILTER_COUNT];
 
@@ -356,6 +362,51 @@ int getStepsPerFilter() {
     return calibratedStepsPerRevolution / numFilters;
 }
 
+// Save motor configuration to EEPROM
+void saveMotorConfiguration() {
+    EEPROM.write(EEPROM_MOTOR_CONFIG_FLAG, 0xDD); // Magic byte for motor config
+    EEPROM.put(EEPROM_MOTOR_SPEED, configuredMotorSpeed);
+    EEPROM.put(EEPROM_MAX_MOTOR_SPEED, configuredMaxMotorSpeed);
+    EEPROM.put(EEPROM_MOTOR_ACCELERATION, configuredMotorAcceleration);
+    EEPROM.put(EEPROM_MOTOR_DISABLE_DELAY, configuredMotorDisableDelay);
+    EEPROM.commit();
+    if (DEBUG_MODE) {
+        Serial.println("Motor configuration saved to EEPROM");
+    }
+}
+
+// Load motor configuration from EEPROM
+void loadMotorConfiguration() {
+    if (EEPROM.read(EEPROM_MOTOR_CONFIG_FLAG) == 0xDD) {
+        EEPROM.get(EEPROM_MOTOR_SPEED, configuredMotorSpeed);
+        EEPROM.get(EEPROM_MAX_MOTOR_SPEED, configuredMaxMotorSpeed);
+        EEPROM.get(EEPROM_MOTOR_ACCELERATION, configuredMotorAcceleration);
+        EEPROM.get(EEPROM_MOTOR_DISABLE_DELAY, configuredMotorDisableDelay);
+        if (DEBUG_MODE) {
+            Serial.println("Motor configuration loaded from EEPROM");
+        }
+    } else {
+        // Use default values
+        configuredMotorSpeed = MOTOR_SPEED;
+        configuredMaxMotorSpeed = MAX_MOTOR_SPEED;
+        configuredMotorAcceleration = MOTOR_ACCELERATION;
+        configuredMotorDisableDelay = MOTOR_DISABLE_DELAY;
+        if (DEBUG_MODE) {
+            Serial.println("Using default motor configuration");
+        }
+    }
+}
+
+// Apply current motor configuration to stepper
+void applyMotorConfiguration() {
+    stepper.setSpeed(configuredMotorSpeed);
+    stepper.setMaxSpeed(configuredMaxMotorSpeed);
+    stepper.setAcceleration(configuredMotorAcceleration);
+    if (DEBUG_MODE) {
+        Serial.println("Motor configuration applied to stepper");
+    }
+}
+
 // Apply backlash compensation when changing direction
 int applyBacklashCompensation(int steps) {
     if (steps == 0) return 0;
@@ -454,12 +505,12 @@ void disableMotor() {
 
 void scheduleMotorDisable() {
     if (AUTO_DISABLE_MOTOR && motorEnabled) {
-        motorDisableTime = millis() + MOTOR_DISABLE_DELAY;
+        motorDisableTime = millis() + configuredMotorDisableDelay;
         motorDisablePending = true;
 
         if (DEBUG_MODE) {
             Serial.print("Motor disable scheduled in ");
-            Serial.print(MOTOR_DISABLE_DELAY);
+            Serial.print(configuredMotorDisableDelay);
             Serial.println("ms");
         }
     }
@@ -1242,6 +1293,103 @@ void processCommand(String cmd) {
             Serial.println("ERROR:BACKLASH_CAL_NOT_READY");
         }
     }
+    // Set Motor Speed
+    else if (cmd.startsWith(CMD_SET_MOTOR_SPEED) || cmd.startsWith("MS")) {
+        String speedStr = cmd.substring(2);
+        uint16_t newSpeed = speedStr.toInt();
+        if (newSpeed >= 50 && newSpeed <= 3000) {
+            configuredMotorSpeed = newSpeed;
+            stepper.setSpeed(configuredMotorSpeed);
+            saveMotorConfiguration();
+            Serial.print("MS");
+            Serial.println(configuredMotorSpeed);
+            if (DEBUG_MODE) {
+                Serial.print("Motor speed set to: ");
+                Serial.println(configuredMotorSpeed);
+            }
+        } else {
+            Serial.println("ERROR:INVALID_SPEED (range: 50-3000)");
+        }
+    }
+    // Set Maximum Speed
+    else if (cmd.startsWith(CMD_SET_MAX_SPEED) || cmd.startsWith("MXS")) {
+        String speedStr = cmd.substring(3);
+        uint16_t newMaxSpeed = speedStr.toInt();
+        if (newMaxSpeed >= 100 && newMaxSpeed <= 5000) {
+            configuredMaxMotorSpeed = newMaxSpeed;
+            stepper.setMaxSpeed(configuredMaxMotorSpeed);
+            saveMotorConfiguration();
+            Serial.print("MXS");
+            Serial.println(configuredMaxMotorSpeed);
+            if (DEBUG_MODE) {
+                Serial.print("Maximum motor speed set to: ");
+                Serial.println(configuredMaxMotorSpeed);
+            }
+        } else {
+            Serial.println("ERROR:INVALID_MAX_SPEED (range: 100-5000)");
+        }
+    }
+    // Set Motor Acceleration
+    else if (cmd.startsWith(CMD_SET_ACCELERATION) || cmd.startsWith("MA")) {
+        String accelStr = cmd.substring(2);
+        uint16_t newAccel = accelStr.toInt();
+        if (newAccel >= 50 && newAccel <= 2000) {
+            configuredMotorAcceleration = newAccel;
+            stepper.setAcceleration(configuredMotorAcceleration);
+            saveMotorConfiguration();
+            Serial.print("MA");
+            Serial.println(configuredMotorAcceleration);
+            if (DEBUG_MODE) {
+                Serial.print("Motor acceleration set to: ");
+                Serial.println(configuredMotorAcceleration);
+            }
+        } else {
+            Serial.println("ERROR:INVALID_ACCELERATION (range: 50-2000)");
+        }
+    }
+    // Set Motor Disable Delay
+    else if (cmd.startsWith(CMD_SET_DISABLE_DELAY) || cmd.startsWith("MDD")) {
+        String delayStr = cmd.substring(3);
+        uint16_t newDelay = delayStr.toInt();
+        if (newDelay >= 500 && newDelay <= 10000) {
+            configuredMotorDisableDelay = newDelay;
+            saveMotorConfiguration();
+            Serial.print("MDD");
+            Serial.println(configuredMotorDisableDelay);
+            if (DEBUG_MODE) {
+                Serial.print("Motor disable delay set to: ");
+                Serial.print(configuredMotorDisableDelay);
+                Serial.println("ms");
+            }
+        } else {
+            Serial.println("ERROR:INVALID_DELAY (range: 500-10000ms)");
+        }
+    }
+    // Get Motor Configuration
+    else if (cmd == CMD_GET_MOTOR_CONFIG || cmd == "GMC") {
+        Serial.print("MOTOR_CONFIG:");
+        Serial.print("SPEED=");
+        Serial.print(configuredMotorSpeed);
+        Serial.print(",MAX_SPEED=");
+        Serial.print(configuredMaxMotorSpeed);
+        Serial.print(",ACCELERATION=");
+        Serial.print(configuredMotorAcceleration);
+        Serial.print(",DISABLE_DELAY=");
+        Serial.println(configuredMotorDisableDelay);
+    }
+    // Reset Motor Configuration
+    else if (cmd == CMD_RESET_MOTOR_CONFIG || cmd == "RMC") {
+        configuredMotorSpeed = MOTOR_SPEED;
+        configuredMaxMotorSpeed = MAX_MOTOR_SPEED;
+        configuredMotorAcceleration = MOTOR_ACCELERATION;
+        configuredMotorDisableDelay = MOTOR_DISABLE_DELAY;
+        applyMotorConfiguration();
+        saveMotorConfiguration();
+        Serial.println("MOTOR_CONFIG_RESET");
+        if (DEBUG_MODE) {
+            Serial.println("Motor configuration reset to defaults");
+        }
+    }
     else {
         Serial.println("ERROR:UNKNOWN_COMMAND");
     }
@@ -1371,10 +1519,8 @@ void setup() {
         filterAngles[i] = (360.0 / numFilters) * i;
     }
 
-    // Initialize stepper motor
-    stepper.setMaxSpeed(MAX_MOTOR_SPEED);
-    stepper.setAcceleration(MOTOR_ACCELERATION);
-    stepper.setSpeed(MOTOR_SPEED);
+    // Initialize stepper motor with configured parameters
+    applyMotorConfiguration();
 
     // Configure motor pins as outputs
     pinMode(MOTOR_PIN1, OUTPUT);
@@ -1421,6 +1567,9 @@ void setup() {
 
     // Load backlash calibration from EEPROM
     loadBacklashCalibration();
+
+    // Load motor configuration from EEPROM
+    loadMotorConfiguration();
 
     // Load saved position from EEPROM
     loadCurrentPosition();
