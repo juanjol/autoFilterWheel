@@ -1,0 +1,109 @@
+site_name: ESP32-C3 Filter Wheel Controller
+site_description: Open-source astronomy filter wheel controller with ASCOM compatibility
+site_author: ESP32 Filter Wheel Project
+site_url: https://yourusername.github.io/esp32-filter-wheel/
+
+repo_name: esp32-filter-wheel
+repo_url: https://github.com/yourusername/esp32-filter-wheel
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+
+plugins:
+  - search
+  - git-revision-date-localized
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Overview: getting-started/overview.md
+    - Hardware Requirements: getting-started/hardware.md
+    - Assembly Guide: getting-started/assembly.md
+    - Wiring Diagram: getting-started/wiring.md
+    - Firmware Installation: getting-started/firmware.md
+  - User Guide:
+    - First Setup: user-guide/setup.md
+    - Basic Operations: user-guide/basic-operations.md
+    - Filter Configuration: user-guide/filter-config.md
+    - Motor Tuning: user-guide/motor-tuning.md
+    - Calibration: user-guide/calibration.md
+  - Command Reference:
+    - Overview: commands/overview.md
+    - Basic Commands: commands/basic.md
+    - Configuration Commands: commands/configuration.md
+    - Calibration Commands: commands/calibration.md
+    - Advanced Commands: commands/advanced.md
+    - Error Codes: commands/errors.md
+  - ASCOM Integration:
+    - Driver Installation: ascom/installation.md
+    - Configuration: ascom/configuration.md
+    - Troubleshooting: ascom/troubleshooting.md
+  - Development:
+    - Building from Source: development/building.md
+    - Code Structure: development/code-structure.md
+    - Adding Features: development/features.md
+    - Contributing: development/contributing.md
+  - Reference:
+    - Technical Specifications: reference/specifications.md
+    - Pin Assignments: reference/pinout.md
+    - EEPROM Layout: reference/eeprom.md
+    - Protocol Specification: reference/protocol.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/yourusername/esp32-filter-wheel
+  version:
+    provider: mike

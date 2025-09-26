@@ -1,6 +1,15 @@
 # ESP32-C3 Filter Wheel Controller
 
-A professional astronomy filter wheel controller using ESP32-C3 with integrated OLED display. Controls up to 5 filter positions with precise stepper motor control, magnetic encoder feedback, and ASCOM compatibility for astronomy software integration.
+[![Documentation Status](https://img.shields.io/badge/docs-mkdocs-blue)](https://yourusername.github.io/esp32-filter-wheel/)
+[![GitHub Release](https://img.shields.io/github/v/release/yourusername/esp32-filter-wheel)](https://github.com/yourusername/esp32-filter-wheel/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/yourusername/esp32-filter-wheel/docs.yml)](https://github.com/yourusername/esp32-filter-wheel/actions)
+
+A professional, open-source astronomy filter wheel controller built on the ESP32-C3 microcontroller. Features integrated OLED display, stepper motor control, magnetic encoder feedback, and full ASCOM compatibility for seamless integration with popular astronomy software.
+
+## 📚 **[Complete Documentation Available](https://yourusername.github.io/esp32-filter-wheel/)**
+
+This README provides a quick overview. **For comprehensive guides, tutorials, and references, visit our full documentation site.**
 
 ## Features
 
