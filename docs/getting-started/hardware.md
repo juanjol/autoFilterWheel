@@ -309,4 +309,4 @@ These components are essential for basic functionality:
 
 ---
 
-**Next Step:** Once you have your components, proceed to the **[Assembly Guide →](assembly.md)**
+**Next Step:** Once you have your components, proceed to the **Assembly Guide** (documentation coming soon)

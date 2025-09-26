@@ -70,36 +70,9 @@ nav:
   - Getting Started:
     - Overview: getting-started/overview.md
     - Hardware Requirements: getting-started/hardware.md
-    - Assembly Guide: getting-started/assembly.md
-    - Wiring Diagram: getting-started/wiring.md
-    - Firmware Installation: getting-started/firmware.md
-  - User Guide:
-    - First Setup: user-guide/setup.md
-    - Basic Operations: user-guide/basic-operations.md
-    - Filter Configuration: user-guide/filter-config.md
-    - Motor Tuning: user-guide/motor-tuning.md
-    - Calibration: user-guide/calibration.md
   - Command Reference:
     - Overview: commands/overview.md
     - Basic Commands: commands/basic.md
-    - Configuration Commands: commands/configuration.md
-    - Calibration Commands: commands/calibration.md
-    - Advanced Commands: commands/advanced.md
-    - Error Codes: commands/errors.md
-  - ASCOM Integration:
-    - Driver Installation: ascom/installation.md
-    - Configuration: ascom/configuration.md
-    - Troubleshooting: ascom/troubleshooting.md
-  - Development:
-    - Building from Source: development/building.md
-    - Code Structure: development/code-structure.md
-    - Adding Features: development/features.md
-    - Contributing: development/contributing.md
-  - Reference:
-    - Technical Specifications: reference/specifications.md
-    - Pin Assignments: reference/pinout.md
-    - EEPROM Layout: reference/eeprom.md
-    - Protocol Specification: reference/protocol.md
 
 extra:
   social:

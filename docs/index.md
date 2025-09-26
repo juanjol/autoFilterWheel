@@ -1,6 +1,5 @@
 # ESP32-C3 Filter Wheel Controller
 
-![Filter Wheel Controller](images/hero-image.png){ align=right width="300" }
 
 A professional, open-source astronomy filter wheel controller built on the ESP32-C3 microcontroller. Features integrated OLED display, stepper motor control, magnetic encoder feedback, and full ASCOM compatibility for seamless integration with popular astronomy software.
 
