@@ -70,6 +70,10 @@ uint16_t configuredMaxMotorSpeed = MAX_MOTOR_SPEED;
 uint16_t configuredMotorAcceleration = MOTOR_ACCELERATION;
 uint16_t configuredMotorDisableDelay = MOTOR_DISABLE_DELAY;
 
+// Motor direction configuration variables (configurable via commands)
+uint8_t configuredDirectionMode = MOTOR_DIRECTION_MODE;
+bool configuredReverseDirection = MOTOR_REVERSE_DIRECTION;
+
 // Filter position angles (calculated dynamically)
 float filterAngles[MAX_FILTER_COUNT];
 
@@ -407,6 +411,35 @@ void applyMotorConfiguration() {
     }
 }
 
+// Save direction configuration to EEPROM
+void saveDirectionConfiguration() {
+    EEPROM.write(EEPROM_DIRECTION_FLAG, 0xEE); // Magic byte for direction config
+    EEPROM.write(EEPROM_DIRECTION_MODE, configuredDirectionMode);
+    EEPROM.write(EEPROM_REVERSE_MODE, configuredReverseDirection ? 1 : 0);
+    EEPROM.commit();
+    if (DEBUG_MODE) {
+        Serial.println("Direction configuration saved to EEPROM");
+    }
+}
+
+// Load direction configuration from EEPROM
+void loadDirectionConfiguration() {
+    if (EEPROM.read(EEPROM_DIRECTION_FLAG) == 0xEE) {
+        configuredDirectionMode = EEPROM.read(EEPROM_DIRECTION_MODE);
+        configuredReverseDirection = EEPROM.read(EEPROM_REVERSE_MODE) == 1;
+        if (DEBUG_MODE) {
+            Serial.println("Direction configuration loaded from EEPROM");
+        }
+    } else {
+        // Use default values
+        configuredDirectionMode = MOTOR_DIRECTION_MODE;
+        configuredReverseDirection = MOTOR_REVERSE_DIRECTION;
+        if (DEBUG_MODE) {
+            Serial.println("Using default direction configuration");
+        }
+    }
+}
+
 // Apply backlash compensation when changing direction
 int applyBacklashCompensation(int steps) {
     if (steps == 0) return 0;
@@ -675,7 +708,7 @@ void moveToPosition(uint8_t position) {
     int targetSteps = (position - 1) * getStepsPerFilter();
     int stepsToMove = targetSteps - currentSteps;
 
-    if (MOTOR_DIRECTION_MODE == 0) {
+    if (configuredDirectionMode == 0) {
         // UNIDIRECTIONAL MODE - Always move in one direction
         if (targetPosition < currentPosition) {
             // Need to go forward through zero
@@ -694,7 +727,7 @@ void moveToPosition(uint8_t position) {
         }
 
         // Apply direction reversal if configured
-        if (MOTOR_REVERSE_DIRECTION) {
+        if (configuredReverseDirection) {
             stepsToMove = -stepsToMove;
         }
 
@@ -737,9 +770,9 @@ void moveToPosition(uint8_t position) {
         Serial.print(" = ");
         Serial.print((float)stepsToMove / getStepsPerFilter(), 2);
         Serial.print(" positions");
-        if (MOTOR_DIRECTION_MODE == 0) {
+        if (configuredDirectionMode == 0) {
             Serial.print(", UNIDIRECTIONAL");
-            if (MOTOR_REVERSE_DIRECTION) {
+            if (configuredReverseDirection) {
                 Serial.print(" REVERSED");
             }
         } else {
@@ -748,7 +781,7 @@ void moveToPosition(uint8_t position) {
         Serial.println();
 
         // Additional debug for unidirectional mode
-        if (MOTOR_DIRECTION_MODE == 0 && targetPosition < currentPosition) {
+        if (configuredDirectionMode == 0 && targetPosition < currentPosition) {
             Serial.print("  Path: ");
             for (int i = currentPosition + 1; i <= numFilters; i++) {
                 Serial.print(getFilterName(i));
@@ -1390,6 +1423,48 @@ void processCommand(String cmd) {
             Serial.println("Motor configuration reset to defaults");
         }
     }
+    // Set Direction Mode
+    else if (cmd.startsWith(CMD_SET_DIRECTION_MODE) || cmd.startsWith("MDM")) {
+        String modeStr = cmd.substring(3);
+        uint8_t newMode = modeStr.toInt();
+        if (newMode <= 1) {
+            configuredDirectionMode = newMode;
+            saveDirectionConfiguration();
+            Serial.print("MDM");
+            Serial.println(configuredDirectionMode);
+            if (DEBUG_MODE) {
+                Serial.print("Direction mode set to: ");
+                Serial.println(configuredDirectionMode == 0 ? "UNIDIRECTIONAL" : "BIDIRECTIONAL");
+            }
+        } else {
+            Serial.println("ERROR:INVALID_DIRECTION_MODE (0=unidirectional, 1=bidirectional)");
+        }
+    }
+    // Set Reverse Mode
+    else if (cmd.startsWith(CMD_SET_REVERSE_MODE) || cmd.startsWith("MRV")) {
+        String reverseStr = cmd.substring(3);
+        uint8_t newReverse = reverseStr.toInt();
+        if (newReverse <= 1) {
+            configuredReverseDirection = (newReverse == 1);
+            saveDirectionConfiguration();
+            Serial.print("MRV");
+            Serial.println(configuredReverseDirection ? 1 : 0);
+            if (DEBUG_MODE) {
+                Serial.print("Reverse direction set to: ");
+                Serial.println(configuredReverseDirection ? "ENABLED" : "DISABLED");
+            }
+        } else {
+            Serial.println("ERROR:INVALID_REVERSE_MODE (0=normal, 1=reversed)");
+        }
+    }
+    // Get Direction Configuration
+    else if (cmd == CMD_GET_DIRECTION_CONFIG || cmd == "GDC") {
+        Serial.print("DIRECTION_CONFIG:");
+        Serial.print("MODE=");
+        Serial.print(configuredDirectionMode);
+        Serial.print(",REVERSE=");
+        Serial.println(configuredReverseDirection ? 1 : 0);
+    }
     else {
         Serial.println("ERROR:UNKNOWN_COMMAND");
     }
@@ -1440,7 +1515,7 @@ void handleButtons() {
     if (digitalRead(BUTTON_PREV) == LOW) {
         lastButtonPress = millis();
 
-        if (MOTOR_DIRECTION_MODE == 1) {
+        if (configuredDirectionMode == 1) {
             // BIDIRECTIONAL MODE - Allow backward movement
             uint8_t prevPos = currentPosition - 1;
             if (prevPos < 1) prevPos = numFilters;
@@ -1475,9 +1550,9 @@ void setup() {
         Serial.print("Filters: ");
         Serial.println(numFilters);
         Serial.print("Direction Mode: ");
-        if (MOTOR_DIRECTION_MODE == 0) {
+        if (configuredDirectionMode == 0) {
             Serial.print("UNIDIRECTIONAL");
-            if (MOTOR_REVERSE_DIRECTION) {
+            if (configuredReverseDirection) {
                 Serial.print(" (REVERSED)");
             }
         } else {
@@ -1570,6 +1645,9 @@ void setup() {
 
     // Load motor configuration from EEPROM
     loadMotorConfiguration();
+
+    // Load direction configuration from EEPROM
+    loadDirectionConfiguration();
 
     // Load saved position from EEPROM
     loadCurrentPosition();

@@ -148,6 +148,11 @@
 #define CMD_RESET_MOTOR_CONFIG "RMC"    // Reset motor config to defaults
 #define CMD_SET_DISABLE_DELAY "MDD"     // Set motor disable delay (MDD2000)
 
+// Motor direction commands
+#define CMD_SET_DIRECTION_MODE "MDM"    // Set direction mode (MDM0=unidirectional, MDM1=bidirectional)
+#define CMD_SET_REVERSE_MODE "MRV"      // Set reverse mode (MRV0=normal, MRV1=reversed)
+#define CMD_GET_DIRECTION_CONFIG "GDC"  // Get direction configuration
+
 // ============================================
 // SYSTEM CONFIGURATION
 // ============================================
@@ -170,6 +175,9 @@
 #define EEPROM_MAX_MOTOR_SPEED 0x118  // Maximum motor speed (uint16_t)
 #define EEPROM_MOTOR_ACCELERATION 0x11C // Motor acceleration (uint16_t)
 #define EEPROM_MOTOR_DISABLE_DELAY 0x120 // Motor disable delay (uint16_t)
+#define EEPROM_DIRECTION_FLAG 0x124     // Direction config flag (0xEE when saved)
+#define EEPROM_DIRECTION_MODE 0x128     // Direction mode (uint8_t: 0=unidirectional, 1=bidirectional)
+#define EEPROM_REVERSE_MODE 0x12C       // Reverse mode (uint8_t: 0=normal, 1=reversed)
 #define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
 #define MIN_FILTER_COUNT 3           // Minimum number of filters
 #define MAX_FILTER_COUNT 8           // Maximum number of filters (hardware/EEPROM limit)
