@@ -38,10 +38,10 @@ A professional, open-source astronomy filter wheel controller built on the ESP32
 ## 🚀 Quick Start
 
 1. **[Hardware Setup](getting-started/hardware.md)** - Gather required components
-2. **[Assembly Guide](getting-started/assembly.md)** - Build your filter wheel
-3. **[Wiring Diagram](getting-started/wiring.md)** - Connect all components
-4. **[Firmware Installation](getting-started/firmware.md)** - Flash the ESP32-C3
-5. **[First Setup](user-guide/setup.md)** - Configure your filter wheel
+2. **Assembly Guide** - Build your filter wheel (documentation coming soon)
+3. **Wiring Diagram** - Connect all components (documentation coming soon)
+4. **Firmware Installation** - Flash the ESP32-C3 (documentation coming soon)
+5. **First Setup** - Configure your filter wheel (documentation coming soon)
 
 ## 🎬 Demo Video
 
