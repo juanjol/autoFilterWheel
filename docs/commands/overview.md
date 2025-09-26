@@ -44,7 +44,7 @@ The controller supports over **50 commands** organized into logical categories:
 
 [View All Basic Commands →](basic.md){ .md-button }
 
-### ⚙️ [Configuration Commands](configuration.md)
+### ⚙️ Configuration Commands
 **System setup and parameter adjustment**
 
 | Category | Commands | Examples |
@@ -53,9 +53,7 @@ The controller supports over **50 commands** organized into logical categories:
 | **Motor Config** | `MS`, `MXS`, `MA`, `MDD` | `#MS1000`, `#MA800` |
 | **Direction** | `MDM`, `MRV`, `GDC` | `#MDM1`, `#MRV0` |
 
-[View All Configuration Commands →](configuration.md){ .md-button }
-
-### 🔧 [Calibration Commands](calibration.md)
+### 🔧 Calibration Commands
 **Precision calibration and tuning**
 
 | Type | Commands | Purpose |
@@ -64,9 +62,7 @@ The controller supports over **50 commands** organized into logical categories:
 | **Backlash** | `BLCAL`, `BLS`, `BLM`, `BLFIN` | Compensate mechanical play |
 | **Position** | `CAL` | Set home reference |
 
-[View All Calibration Commands →](calibration.md){ .md-button }
-
-### 🔬 [Advanced Commands](advanced.md)
+### 🔬 Advanced Commands
 **Manual control and diagnostics**
 
 | Function | Commands | Use Cases |
@@ -74,8 +70,6 @@ The controller supports over **50 commands** organized into logical categories:
 | **Manual Steps** | `SF`, `SB`, `ST`, `GST` | Fine positioning, testing |
 | **Motor Power** | `ME`, `MD` | Manual power control |
 | **System Info** | `ID`, `VER` | Device identification |
-
-[View All Advanced Commands →](advanced.md){ .md-button }
 
 ## 🔄 Common Workflows
 
@@ -165,7 +159,6 @@ The controller provides comprehensive error reporting:
 - `ERROR:INVALID_FORMAT` - Wrong parameter format
 - `ERROR:MOTOR_TIMEOUT` - Movement took too long
 
-[View Complete Error Reference →](errors.md){ .md-button }
 
 ## 🛡️ Safety Features
 
@@ -225,6 +218,3 @@ The commands are wrapped by the ASCOM driver for seamless integration with astro
 **Ready to explore specific commands?** Choose a category:
 
 - [**Basic Commands →**](basic.md) - Start here for essential operations
-- [**Configuration →**](configuration.md) - Customize your setup
-- [**Calibration →**](calibration.md) - Achieve maximum precision
-- [**Advanced →**](advanced.md) - Expert features and diagnostics

@@ -26,29 +26,29 @@ The complete build process involves these main phases:
 ### Phase 2: Hardware Assembly
 **Estimated time: 2-4 hours**
 
-4. **[Follow Assembly Guide](assembly.md)** - Step-by-step construction
-5. **[Complete Wiring](wiring.md)** - Connect all electronic components
+4. **Follow Assembly Guide** - Step-by-step construction (documentation coming soon)
+5. **Complete Wiring** - Connect all electronic components (documentation coming soon)
 6. **Test Basic Connectivity** - Verify power and communication
 
 ### Phase 3: Software Installation
 **Estimated time: 30 minutes**
 
-7. **[Install Firmware](firmware.md)** - Flash the ESP32-C3 controller
+7. **Install Firmware** - Flash the ESP32-C3 controller (documentation coming soon)
 8. **Verify Installation** - Test basic commands via serial interface
-9. **[Initial Setup](../user-guide/setup.md)** - Configure basic parameters
+9. **Initial Setup** - Configure basic parameters (documentation coming soon)
 
 ### Phase 4: Calibration & Tuning
 **Estimated time: 1-2 hours**
 
-10. **[Perform Calibrations](../user-guide/calibration.md)** - Revolution and backlash calibration
-11. **[Configure Filters](../user-guide/filter-config.md)** - Set names and positions
-12. **[Tune Motor Parameters](../user-guide/motor-tuning.md)** - Optimize performance
+10. **Perform Calibrations** - Revolution and backlash calibration (documentation coming soon)
+11. **Configure Filters** - Set names and positions (documentation coming soon)
+12. **Tune Motor Parameters** - Optimize performance (documentation coming soon)
 
 ### Phase 5: Software Integration
 **Estimated time: 30 minutes**
 
-13. **[Install ASCOM Driver](../ascom/installation.md)** - Windows driver setup
-14. **[Configure Astronomy Software](../ascom/configuration.md)** - NINA, PHD2, etc.
+13. **Install ASCOM Driver** - Windows driver setup (documentation coming soon)
+14. **Configure Astronomy Software** - NINA, PHD2, etc. (documentation coming soon)
 15. **Final Testing** - Verify complete system operation
 
 ## 💰 Cost Estimate
@@ -120,9 +120,9 @@ By the end of this guide, your filter wheel controller should:
 If you encounter issues during your build:
 
 ### **Documentation Resources**
-- **[Troubleshooting Guide](../ascom/troubleshooting.md)** - Common problems and solutions
+- **Troubleshooting Guide** - Common problems and solutions (documentation coming soon)
 - **[Command Reference](../commands/overview.md)** - Complete command documentation
-- **[Error Codes](../commands/errors.md)** - Diagnostic information
+- **Error Codes** - Diagnostic information (documentation coming soon)
 
 ### **Community Support**
 - **GitHub Issues** - Report bugs or ask technical questions

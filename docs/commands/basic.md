@@ -329,6 +329,6 @@ Returns the current firmware version.
 ---
 
 **Next Steps:**
-- [**Configuration Commands →**](configuration.md) - Customize your filter wheel settings
-- [**Calibration Commands →**](calibration.md) - Achieve maximum precision
-- [**Error Codes →**](errors.md) - Understand error messages
+- **Configuration Commands** - Customize your filter wheel settings
+- **Calibration Commands** - Achieve maximum precision
+- **Error Codes** - Understand error messages
