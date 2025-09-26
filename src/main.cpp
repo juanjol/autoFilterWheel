@@ -61,6 +61,9 @@ uint8_t forwardBacklash = 0;
 long backlashTestStartPosition = 0;
 bool backlashDirectionForward = true;
 
+// Motor direction tracking for backlash compensation
+int lastMotorDirection = 0; // 1 = forward, -1 = backward, 0 = unknown
+
 // Filter position angles (calculated dynamically)
 float filterAngles[MAX_FILTER_COUNT];
 
@@ -71,6 +74,7 @@ char filterNames[MAX_FILTER_COUNT][MAX_FILTER_NAME_LENGTH + 1];
 // FUNCTION DECLARATIONS
 // ============================================
 int getStepsPerFilter();
+int applyBacklashCompensation(int steps);
 
 // Default filter names (fallback)
 const char* defaultFilterNames[MAX_FILTER_COUNT] = {
@@ -352,6 +356,28 @@ int getStepsPerFilter() {
     return calibratedStepsPerRevolution / numFilters;
 }
 
+// Apply backlash compensation when changing direction
+int applyBacklashCompensation(int steps) {
+    if (steps == 0) return 0;
+
+    int currentDirection = (steps > 0) ? 1 : -1;
+    int compensatedSteps = steps;
+
+    // Apply backlash compensation if changing direction from forward to backward
+    if (lastMotorDirection == 1 && currentDirection == -1) {
+        compensatedSteps -= calibratedBacklashSteps;
+        if (DEBUG_MODE) {
+            Serial.print("Backlash compensation applied: -");
+            Serial.println(calibratedBacklashSteps);
+        }
+    }
+
+    // Update direction tracking
+    lastMotorDirection = currentDirection;
+
+    return compensatedSteps;
+}
+
 // ============================================
 // MOTOR POWER MANAGEMENT FUNCTIONS
 // ============================================
@@ -521,13 +547,22 @@ void moveSteps(int steps) {
     movementStartTime = millis();
     errorCode = ERROR_NONE;
 
+    // Apply backlash compensation
+    int compensatedSteps = applyBacklashCompensation(steps);
     // Move motor the specified steps
-    stepper.move(steps);
+    stepper.move(compensatedSteps);
 
     if (DEBUG_MODE) {
         Serial.print("Manual stepping: ");
         Serial.print(steps);
-        Serial.println(" steps");
+        if (compensatedSteps != steps) {
+            Serial.print(" steps (compensated: ");
+            Serial.print(compensatedSteps);
+            Serial.print(")");
+        } else {
+            Serial.print(" steps");
+        }
+        Serial.println();
     }
 }
 
@@ -623,14 +658,12 @@ void moveToPosition(uint8_t position) {
             }
         }
 
-        // Add backlash compensation if moving backward
-        if (stepsToMove < 0) {
-            stepsToMove -= calibratedBacklashSteps;
-        }
     }
 
+    // Apply backlash compensation
+    int compensatedSteps = applyBacklashCompensation(stepsToMove);
     // Move motor
-    stepper.move(stepsToMove);
+    stepper.move(compensatedSteps);
 
     if (DEBUG_MODE) {
         Serial.print("Moving from #");
@@ -643,7 +676,14 @@ void moveToPosition(uint8_t position) {
         Serial.print(getFilterName(position));
         Serial.print(") - ");
         Serial.print(stepsToMove);
-        Serial.print(" steps = ");
+        if (compensatedSteps != stepsToMove) {
+            Serial.print(" steps (compensated: ");
+            Serial.print(compensatedSteps);
+            Serial.print(")");
+        } else {
+            Serial.print(" steps");
+        }
+        Serial.print(" = ");
         Serial.print((float)stepsToMove / getStepsPerFilter(), 2);
         Serial.print(" positions");
         if (MOTOR_DIRECTION_MODE == 0) {
