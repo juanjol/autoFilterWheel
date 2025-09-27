@@ -71,4 +71,13 @@ public:
     virtual bool getReverseDirection() const { return isDirectionReversed(); }
     virtual void stepForward(long steps) { move(steps); }
     virtual void stepBackward(long steps) { move(-steps); }
+
+    // Step-based control methods
+    virtual void goToStep(long stepPosition) { moveTo(stepPosition); }
+    virtual long getCurrentStep() const { return getCurrentPosition(); }
+
+    // Revolution calibration methods
+    virtual void startRevolutionCalibration() { /* Default: no-op */ }
+    virtual void adjustRevolutionCalibration(int steps) { move(steps); }
+    virtual int finishRevolutionCalibration() { return 2048; /* Default steps per revolution */ }
 };

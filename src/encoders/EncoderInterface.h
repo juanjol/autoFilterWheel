@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Arduino.h>
+#include <stdint.h>
+
 /**
  * Abstract interface for position encoders
  * Provides common interface for different encoder types

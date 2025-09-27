@@ -1,0 +1,1904 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source astronomy filter wheel controller with ASCOM compatibility">
+      
+      
+        <meta name="author" content="ESP32 Filter Wheel Project">
+      
+      
+        <link rel="canonical" href="https://juanjol.github.io/autoFilterWheel/getting-started/assembly-tmc2209/">
+      
+      
+        <link rel="prev" href="../assembly-uln2003/">
+      
+      
+        <link rel="next" href="../../commands/overview/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
+    
+    
+      
+        <title>TMC2209 Assembly - ESP32-C3 Filter Wheel Controller</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.e53b48f4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tmc2209-nema17-assembly-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ESP32-C3 Filter Wheel Controller" class="md-header__button md-logo" aria-label="ESP32-C3 Filter Wheel Controller" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ESP32-C3 Filter Wheel Controller
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              TMC2209 Assembly
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/juanjol/autoFilterWheel" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoFilterWheel
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../overview/" class="md-tabs__link">
+          
+  
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../commands/overview/" class="md-tabs__link">
+          
+  
+  
+  Command Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ESP32-C3 Filter Wheel Controller" class="md-nav__button md-logo" aria-label="ESP32-C3 Filter Wheel Controller" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ESP32-C3 Filter Wheel Controller
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/juanjol/autoFilterWheel" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    autoFilterWheel
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting Started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../hardware/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Hardware Requirements
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration-options/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Configuration Options
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../assembly-uln2003/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ULN2003 Assembly
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    TMC2209 Assembly
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    TMC2209 Assembly
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wiring-diagram-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Wiring Diagram Reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-assembly" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step-by-Step Assembly
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-Step Assembly">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-prepare-the-esp32-c3-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Prepare the ESP32-C3 Board
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-prepare-the-tmc2209-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Prepare the TMC2209 Driver
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-control-signal-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Control Signal Connections
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-power-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: Power Connections
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Power Connections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logic-power-33v5v" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logic Power (3.3V/5V)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#motor-power-12-24v" class="md-nav__link">
+    <span class="md-ellipsis">
+      Motor Power (12-24V)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-motor-connection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Motor Connection
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 5: Motor Connection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-nema17-wiring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standard NEMA17 Wiring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-display-and-encoder-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6: Display and Encoder Connections
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-advanced-tmc2209-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 7: Advanced TMC2209 Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 7: Advanced TMC2209 Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-setting-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Current Setting Calculation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#microstepping-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microstepping Configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-8-software-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 8: Software Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-9-initial-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 9: Initial Testing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-10-tmc2209-feature-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 10: TMC2209 Feature Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 10: TMC2209 Feature Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#silent-operation-stealthchop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Silent Operation (StealthChop)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stall-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Stall Detection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coolstep-current-reduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      CoolStep (Current Reduction)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Tuning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#speed-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Speed Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precision-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Precision Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#power-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Power Optimization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-motor-movement" class="md-nav__link">
+    <span class="md-ellipsis">
+      No motor movement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#noisy-operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Noisy operation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overheating" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overheating
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uart-communication-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      UART communication failure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multiple-tmc2209-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multiple TMC2209 Drivers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#closed-loop-operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Closed-Loop Operation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-uln2003" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comparison with ULN2003
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Command Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Command Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Basic Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prerequisites
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wiring-diagram-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      Wiring Diagram Reference
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-by-step-assembly" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step-by-Step Assembly
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step-by-Step Assembly">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-prepare-the-esp32-c3-board" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Prepare the ESP32-C3 Board
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-prepare-the-tmc2209-driver" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Prepare the TMC2209 Driver
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-control-signal-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Control Signal Connections
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-power-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: Power Connections
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Power Connections">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#logic-power-33v5v" class="md-nav__link">
+    <span class="md-ellipsis">
+      Logic Power (3.3V/5V)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#motor-power-12-24v" class="md-nav__link">
+    <span class="md-ellipsis">
+      Motor Power (12-24V)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-motor-connection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Motor Connection
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 5: Motor Connection">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-nema17-wiring" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standard NEMA17 Wiring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-6-display-and-encoder-connections" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6: Display and Encoder Connections
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-7-advanced-tmc2209-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 7: Advanced TMC2209 Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 7: Advanced TMC2209 Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-setting-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Current Setting Calculation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#microstepping-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Microstepping Configuration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-8-software-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 8: Software Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-9-initial-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 9: Initial Testing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-10-tmc2209-feature-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 10: TMC2209 Feature Configuration
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 10: TMC2209 Feature Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#silent-operation-stealthchop" class="md-nav__link">
+    <span class="md-ellipsis">
+      Silent Operation (StealthChop)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stall-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Stall Detection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coolstep-current-reduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      CoolStep (Current Reduction)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Tuning
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#speed-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Speed Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#precision-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Precision Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#power-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Power Optimization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#no-motor-movement" class="md-nav__link">
+    <span class="md-ellipsis">
+      No motor movement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#noisy-operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Noisy operation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overheating" class="md-nav__link">
+    <span class="md-ellipsis">
+      Overheating
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#uart-communication-failure" class="md-nav__link">
+    <span class="md-ellipsis">
+      UART communication failure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Features
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multiple-tmc2209-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multiple TMC2209 Drivers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#closed-loop-operation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Closed-Loop Operation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparison-with-uln2003" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comparison with ULN2003
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="tmc2209-nema17-assembly-guide">TMC2209 + NEMA17 Assembly Guide<a class="headerlink" href="#tmc2209-nema17-assembly-guide" title="Permanent link">&para;</a></h1>
+<p>This guide covers assembling the professional-grade configuration using the TMC2209 silent stepper driver with NEMA17 bipolar stepper motor.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<p>Before starting, ensure you have:
+- ✅ Read the <a href="../configuration-options/">Configuration Options</a> guide
+- ✅ Intermediate electronics experience
+- ✅ Gathered all required components for TMC2209 configuration
+- ✅ Good soldering skills and proper tools
+- ✅ Multimeter and oscilloscope (recommended)</p>
+<h2 id="wiring-diagram-reference">Wiring Diagram Reference<a class="headerlink" href="#wiring-diagram-reference" title="Permanent link">&para;</a></h2>
+<p><img alt="TMC2209 Wiring Diagram" src="../../diagrams/wiring-tmc2209.svg" /></p>
+<h2 id="step-by-step-assembly">Step-by-Step Assembly<a class="headerlink" href="#step-by-step-assembly" title="Permanent link">&para;</a></h2>
+<h3 id="step-1-prepare-the-esp32-c3-board">Step 1: Prepare the ESP32-C3 Board<a class="headerlink" href="#step-1-prepare-the-esp32-c3-board" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Inspect and test the board</strong> as in the ULN2003 guide</li>
+<li><strong>Verify UART capabilities</strong>:</li>
+<li>Ensure GPIO16 and GPIO17 are available</li>
+<li>Test basic UART communication if possible</li>
+</ol>
+<h3 id="step-2-prepare-the-tmc2209-driver">Step 2: Prepare the TMC2209 Driver<a class="headerlink" href="#step-2-prepare-the-tmc2209-driver" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Inspect the TMC2209 board</strong>:</li>
+<li>Verify it's a genuine TMC2209 (not clone)</li>
+<li>Check for proper soldering of the TMC2209 chip</li>
+<li>
+<p>Note the pin layout (varies by manufacturer)</p>
+</li>
+<li>
+<p><strong>Configure driver settings</strong>:</p>
+</li>
+<li><strong>Microstepping</strong>: Default is usually 1/16</li>
+<li><strong>Current setting</strong>: Adjust via UART (will be done in software)</li>
+<li><strong>Address pins</strong>: Set if using multiple drivers</li>
+</ol>
+<div class="admonition warning">
+<p class="admonition-title">Driver Quality</p>
+<p>TMC2209 clones may not support all features. For best results, use genuine Trinamic TMC2209 or quality boards like BTT TMC2209.</p>
+</div>
+<h3 id="step-3-control-signal-connections">Step 3: Control Signal Connections<a class="headerlink" href="#step-3-control-signal-connections" title="Permanent link">&para;</a></h3>
+<p>Connect the ESP32-C3 to TMC2209 control pins:</p>
+<table>
+<thead>
+<tr>
+<th>ESP32-C3 Pin</th>
+<th>TMC2209 Pin</th>
+<th>Function</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GPIO2</strong></td>
+<td>STEP</td>
+<td>Step pulse</td>
+<td>Rising edge triggers step</td>
+</tr>
+<tr>
+<td><strong>GPIO3</strong></td>
+<td>DIR</td>
+<td>Direction</td>
+<td>HIGH/LOW for direction</td>
+</tr>
+<tr>
+<td><strong>GPIO4</strong></td>
+<td>EN</td>
+<td>Enable</td>
+<td>LOW to enable, HIGH to disable</td>
+</tr>
+<tr>
+<td><strong>GPIO16</strong></td>
+<td>PDN_UART</td>
+<td>Power down/UART</td>
+<td>For configuration</td>
+</tr>
+<tr>
+<td><strong>GPIO17</strong></td>
+<td>UART</td>
+<td>UART communication</td>
+<td>Bidirectional</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Signal Quality</p>
+<ul>
+<li>Use short wires (&lt;15cm) for control signals</li>
+<li>Twisted pair for STEP/DIR if longer runs needed</li>
+<li>Keep away from motor power wires</li>
+</ul>
+</div>
+<h3 id="step-4-power-connections">Step 4: Power Connections<a class="headerlink" href="#step-4-power-connections" title="Permanent link">&para;</a></h3>
+<h4 id="logic-power-33v5v">Logic Power (3.3V/5V)<a class="headerlink" href="#logic-power-33v5v" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>ESP32-C3 Pin</th>
+<th>TMC2209 Pin</th>
+<th>Function</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>3.3V</strong></td>
+<td>VCC_IO</td>
+<td>Logic power</td>
+</tr>
+<tr>
+<td><strong>5V</strong></td>
+<td>VCC</td>
+<td>Logic power (alternative)</td>
+</tr>
+<tr>
+<td><strong>GND</strong></td>
+<td>GND</td>
+<td>Ground</td>
+</tr>
+</tbody>
+</table>
+<h4 id="motor-power-12-24v">Motor Power (12-24V)<a class="headerlink" href="#motor-power-12-24v" title="Permanent link">&para;</a></h4>
+<p>Connect your external power supply:
+| Power Supply | TMC2209 Pin | Function |
+|--------------|-------------|----------|
+| <strong>+12-24V</strong> | VM | Motor power |
+| <strong>GND</strong> | GND | Power ground |</p>
+<div class="admonition danger">
+<p class="admonition-title">Power Supply Requirements</p>
+<ul>
+<li><strong>Voltage</strong>: 12-24V (higher voltage = better performance)</li>
+<li><strong>Current</strong>: Minimum 2A, 3A recommended for NEMA17</li>
+<li><strong>Quality</strong>: Use switching supply with low ripple</li>
+<li><strong>Protection</strong>: Fuse the motor power supply</li>
+</ul>
+</div>
+<h3 id="step-5-motor-connection">Step 5: Motor Connection<a class="headerlink" href="#step-5-motor-connection" title="Permanent link">&para;</a></h3>
+<p>Connect the NEMA17 bipolar stepper:</p>
+<h4 id="standard-nema17-wiring">Standard NEMA17 Wiring<a class="headerlink" href="#standard-nema17-wiring" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>TMC2209 Pin</th>
+<th>Motor Wire</th>
+<th>Coil</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>2B</strong></td>
+<td>Black</td>
+<td>Coil 2</td>
+</tr>
+<tr>
+<td><strong>2A</strong></td>
+<td>Green</td>
+<td>Coil 2</td>
+</tr>
+<tr>
+<td><strong>1A</strong></td>
+<td>Red</td>
+<td>Coil 1</td>
+</tr>
+<tr>
+<td><strong>1B</strong></td>
+<td>Blue</td>
+<td>Coil 1</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Motor Wire Colors</p>
+<p>Wire colors vary by manufacturer. Measure coil resistance to identify pairs:
+- Coil 1: Usually Red-Blue (1-3Ω resistance)
+- Coil 2: Usually Black-Green (1-3Ω resistance)
+- Between coils: Open circuit (infinite resistance)</p>
+</div>
+<h3 id="step-6-display-and-encoder-connections">Step 6: Display and Encoder Connections<a class="headerlink" href="#step-6-display-and-encoder-connections" title="Permanent link">&para;</a></h3>
+<p>Connect I2C devices exactly as in the ULN2003 guide:
+- OLED display on GPIO5 (SDA) and GPIO6 (SCL)
+- AS5600 encoder (optional) on same I2C bus
+- <strong>Use 3.3V power only</strong> for both devices</p>
+<h3 id="step-7-advanced-tmc2209-configuration">Step 7: Advanced TMC2209 Configuration<a class="headerlink" href="#step-7-advanced-tmc2209-configuration" title="Permanent link">&para;</a></h3>
+<h4 id="current-setting-calculation">Current Setting Calculation<a class="headerlink" href="#current-setting-calculation" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">// Motor current = (Rsense * 2.5V) / (1.41 * 256)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1">// For 0.11Ω sense resistor and 800mA motor:</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1">// Current setting = (800mA * 256 * 1.41) / (2.5V / 0.11Ω) = ~12</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1">// This will be set via UART in firmware</span>
+</code></pre></div>
+<h4 id="microstepping-configuration">Microstepping Configuration<a class="headerlink" href="#microstepping-configuration" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">// Available options: 1, 2, 4, 8, 16, 32, 64, 128, 256</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1">// 16 microsteps = 3200 steps per revolution</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1">// 256 microsteps = 51200 steps per revolution (ultra-smooth)</span>
+</code></pre></div>
+<h3 id="step-8-software-configuration">Step 8: Software Configuration<a class="headerlink" href="#step-8-software-configuration" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Configure the firmware</strong>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// In src/config.h:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="cp">#define MOTOR_DRIVER_TMC2209      </span><span class="c1">// Enable TMC2209 support</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">// Verify pin assignments:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="cp">#define MOTOR_STEP_PIN 2          </span><span class="c1">// Step pulse</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="cp">#define MOTOR_DIR_PIN 3           </span><span class="c1">// Direction</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="cp">#define MOTOR_ENABLE_PIN 4        </span><span class="c1">// Enable</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="cp">#define MOTOR_RX_PIN 16           </span><span class="c1">// UART RX</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="cp">#define MOTOR_TX_PIN 17           </span><span class="c1">// UART TX</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="cp">#define MOTOR_MICROSTEPS 16       </span><span class="c1">// Microstepping</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="cp">#define MOTOR_CURRENT_MA 800      </span><span class="c1">// Motor current</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Update motor parameters</strong>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">// High-performance settings for TMC2209:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="cp">#define MAX_MOTOR_SPEED 2000.0    </span><span class="c1">// Much faster than ULN2003</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="cp">#define MOTOR_ACCELERATION 1000.0 </span><span class="c1">// Higher acceleration</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="cp">#define MOTOR_SPEED 1000.0        </span><span class="c1">// Normal operating speed</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="step-9-initial-testing">Step 9: Initial Testing<a class="headerlink" href="#step-9-initial-testing" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>Power supply test</strong>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Check voltages with multimeter:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1"># - 12-24V at TMC2209 VM pin</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># - 3.3V or 5V at TMC2209 VCC_IO</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># - No shorts between power rails</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>UART communication test</strong>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Upload firmware and check serial output for:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1"># - TMC2209 initialization messages</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># - UART communication status</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># - Driver configuration confirmation</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Motor movement test</strong>:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Test basic movement:</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1">#GP          # Get position</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1">#SF100       # Step forward 100 steps</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1">#SB100       # Step backward 100 steps</span>
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="step-10-tmc2209-feature-configuration">Step 10: TMC2209 Feature Configuration<a class="headerlink" href="#step-10-tmc2209-feature-configuration" title="Permanent link">&para;</a></h3>
+<h4 id="silent-operation-stealthchop">Silent Operation (StealthChop)<a class="headerlink" href="#silent-operation-stealthchop" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1">// Enable in firmware for near-silent operation</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1">// Trade-off: Slightly reduced torque at high speeds</span>
+</code></pre></div>
+<h4 id="stall-detection">Stall Detection<a class="headerlink" href="#stall-detection" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1">// Configure stallGuard for automatic stall detection</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1">// Useful for automatic homing and protection</span>
+</code></pre></div>
+<h4 id="coolstep-current-reduction">CoolStep (Current Reduction)<a class="headerlink" href="#coolstep-current-reduction" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1">// Automatically reduces current when motor load is low</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="c1">// Improves efficiency and reduces heat</span>
+</code></pre></div>
+<h2 id="performance-tuning">Performance Tuning<a class="headerlink" href="#performance-tuning" title="Permanent link">&para;</a></h2>
+<h3 id="speed-optimization">Speed Optimization<a class="headerlink" href="#speed-optimization" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1">// TMC2209 can handle much higher speeds:</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="cp">#define MAX_MOTOR_SPEED 5000.0      </span><span class="c1">// 5000 steps/second</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="cp">#define MOTOR_ACCELERATION 2000.0   </span><span class="c1">// Fast acceleration</span>
+</code></pre></div>
+<h3 id="precision-optimization">Precision Optimization<a class="headerlink" href="#precision-optimization" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1">// Use high microstepping for ultimate precision:</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="cp">#define MOTOR_MICROSTEPS 64         </span><span class="c1">// 12800 steps/revolution</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="c1">// or even:</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="cp">#define MOTOR_MICROSTEPS 256        </span><span class="c1">// 51200 steps/revolution</span>
+</code></pre></div>
+<h3 id="power-optimization">Power Optimization<a class="headerlink" href="#power-optimization" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1">// Current reduction settings:</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c1">// - Hold current: 50% of run current when stationary</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1">// - StealthChop: Enable for silent operation</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1">// - CoolStep: Automatic current adjustment</span>
+</code></pre></div>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="no-motor-movement">No motor movement<a class="headerlink" href="#no-motor-movement" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Check power supply</strong> - Verify 12-24V at VM pin</li>
+<li><strong>UART communication</strong> - Verify TMC2209 responds to configuration</li>
+<li><strong>Enable signal</strong> - Ensure EN pin is LOW to enable driver</li>
+<li><strong>Motor wiring</strong> - Verify coil connections and polarity</li>
+</ul>
+<h3 id="noisy-operation">Noisy operation<a class="headerlink" href="#noisy-operation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Disable StealthChop</strong> - May be unstable at certain speeds</li>
+<li><strong>Adjust microstepping</strong> - Higher values generally quieter</li>
+<li><strong>Check power supply</strong> - Ripple can cause noise</li>
+<li><strong>Motor mounting</strong> - Mechanical resonance</li>
+</ul>
+<h3 id="overheating">Overheating<a class="headerlink" href="#overheating" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Reduce current</strong> - Lower MOTOR_CURRENT_MA setting</li>
+<li><strong>Improve cooling</strong> - Add heatsink to TMC2209</li>
+<li><strong>Check voltage</strong> - Higher voltage reduces heat for same power</li>
+<li><strong>Enable CoolStep</strong> - Automatic current reduction</li>
+</ul>
+<h3 id="uart-communication-failure">UART communication failure<a class="headerlink" href="#uart-communication-failure" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Check wiring</strong> - Verify RX/TX connections</li>
+<li><strong>Baud rate</strong> - Ensure correct UART settings</li>
+<li><strong>Driver address</strong> - Verify if multiple drivers used</li>
+<li><strong>Power sequence</strong> - Power TMC2209 before UART init</li>
+</ul>
+<h2 id="advanced-features">Advanced Features<a class="headerlink" href="#advanced-features" title="Permanent link">&para;</a></h2>
+<h3 id="multiple-tmc2209-drivers">Multiple TMC2209 Drivers<a class="headerlink" href="#multiple-tmc2209-drivers" title="Permanent link">&para;</a></h3>
+<p>If using multiple filter wheels:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1">// Set different UART addresses</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="c1">// Configure each driver independently</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="c1">// Coordinate movements between wheels</span>
+</code></pre></div></p>
+<h3 id="closed-loop-operation">Closed-Loop Operation<a class="headerlink" href="#closed-loop-operation" title="Permanent link">&para;</a></h3>
+<p>With AS5600 encoder:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1">// Real-time position feedback</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="c1">// Automatic error correction</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="c1">// Stall detection and recovery</span>
+</code></pre></div></p>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<p>After successful assembly:</p>
+<ol>
+<li><strong>Advanced Calibration</strong> - TMC2209-specific calibration with high-precision settings</li>
+<li><strong>Performance Tuning</strong> - Optimize motor current, microstepping, and speed settings</li>
+<li><strong>ASCOM Integration</strong> - Same serial protocol as ULN2003 configuration</li>
+</ol>
+<h2 id="comparison-with-uln2003">Comparison with ULN2003<a class="headerlink" href="#comparison-with-uln2003" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>ULN2003</th>
+<th>TMC2209</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Steps/revolution</strong></td>
+<td>2048</td>
+<td>3200 (16μ) to 51200 (256μ)</td>
+</tr>
+<tr>
+<td><strong>Max speed</strong></td>
+<td>500 steps/sec</td>
+<td>5000+ steps/sec</td>
+</tr>
+<tr>
+<td><strong>Noise level</strong></td>
+<td>Moderate</td>
+<td>Near silent</td>
+</tr>
+<tr>
+<td><strong>Power efficiency</strong></td>
+<td>Poor</td>
+<td>Excellent</td>
+</tr>
+<tr>
+<td><strong>Features</strong></td>
+<td>Basic</td>
+<td>Advanced</td>
+</tr>
+<tr>
+<td><strong>Setup complexity</strong></td>
+<td>Simple</td>
+<td>Advanced</td>
+</tr>
+</tbody>
+</table>
+<p>The TMC2209 configuration provides professional-grade performance with significantly enhanced capabilities over the basic ULN2003 setup.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 27, 2025 09:49:23 UTC">September 27, 2025</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/yourusername/auto-filter-wheel" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.0.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "search.share", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      
+    
+  </body>
+</html>

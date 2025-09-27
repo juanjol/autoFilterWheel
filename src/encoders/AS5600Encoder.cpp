@@ -138,7 +138,7 @@ bool AS5600Encoder::performSelfTest() {
     return true;
 }
 
-uint8_t AS5600Encoder::getMagnetStatus() {
+uint8_t AS5600Encoder::getMagnetStatus() const {
     uint8_t status = readRegister8(AS5600_STATUS);
 
     if (!(status & AS5600_STATUS_MD)) {
@@ -162,7 +162,7 @@ uint16_t AS5600Encoder::getMagnitude() {
     return readRegister16(AS5600_MAGNITUDE_H);
 }
 
-bool AS5600Encoder::isMagnetPositionOK() {
+bool AS5600Encoder::isMagnetPositionOK() const {
     return getMagnetStatus() == 0;
 }
 
@@ -179,7 +179,7 @@ void AS5600Encoder::resetErrorStats() {
     errorCount = 0;
 }
 
-uint16_t AS5600Encoder::readRegister16(uint8_t reg) {
+uint16_t AS5600Encoder::readRegister16(uint8_t reg) const {
     wire->beginTransmission(AS5600_ADDRESS);
     wire->write(reg);
     if (wire->endTransmission() != 0) {
@@ -196,7 +196,7 @@ uint16_t AS5600Encoder::readRegister16(uint8_t reg) {
     return 0xFFFF;  // Error
 }
 
-uint8_t AS5600Encoder::readRegister8(uint8_t reg) {
+uint8_t AS5600Encoder::readRegister8(uint8_t reg) const {
     wire->beginTransmission(AS5600_ADDRESS);
     wire->write(reg);
     if (wire->endTransmission() != 0) {
