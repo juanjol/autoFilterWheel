@@ -38,15 +38,57 @@
 // Set MOTOR_REVERSE_DIRECTION to true if your motor turns the wrong way
 
 // ============================================
+// MOTOR DRIVER CONFIGURATION
+// ============================================
+
+// Select motor driver type (uncomment only one)
+#define MOTOR_DRIVER_ULN2003    // ULN2003 with 28BYJ-48 stepper
+//#define MOTOR_DRIVER_TMC2209    // TMC2209 with NEMA17 or similar bipolar stepper
+//#define MOTOR_DRIVER_A4988      // A4988 with bipolar stepper
+//#define MOTOR_DRIVER_DRV8825    // DRV8825 with bipolar stepper
+
+// ============================================
 // PIN DEFINITIONS - ESP32-C3
 // ============================================
 
-// ULN2003 Driver pins for 28BYJ-48 motor
-// PIN4 (8) corresponds to LED D on ULN2003
-#define MOTOR_PIN1 2   // IN1 on ULN2003 -> LED A
-#define MOTOR_PIN2 3   // IN2 on ULN2003 -> LED B
-#define MOTOR_PIN3 4   // IN3 on ULN2003 -> LED C
-#define MOTOR_PIN4 10   // IN4 on ULN2003 -> LED D (the problematic one)
+#ifdef MOTOR_DRIVER_ULN2003
+  // ULN2003 Driver pins for 28BYJ-48 motor
+  #define MOTOR_PIN1 2   // IN1 on ULN2003 -> LED A
+  #define MOTOR_PIN2 3   // IN2 on ULN2003 -> LED B
+  #define MOTOR_PIN3 4   // IN3 on ULN2003 -> LED C
+  #define MOTOR_PIN4 10  // IN4 on ULN2003 -> LED D
+#endif
+
+#ifdef MOTOR_DRIVER_TMC2209
+  // TMC2209 Driver pins for bipolar stepper
+  #define MOTOR_STEP_PIN 2     // Step pulse
+  #define MOTOR_DIR_PIN 3      // Direction
+  #define MOTOR_ENABLE_PIN 4   // Enable (active low)
+  #define MOTOR_RX_PIN 16      // UART RX for TMC2209 configuration
+  #define MOTOR_TX_PIN 17      // UART TX for TMC2209 configuration
+  #define MOTOR_MICROSTEPS 16  // Microstepping configuration
+  #define MOTOR_CURRENT_MA 800 // Motor current in mA
+#endif
+
+#ifdef MOTOR_DRIVER_A4988
+  // A4988 Driver pins for bipolar stepper
+  #define MOTOR_STEP_PIN 2     // Step pulse
+  #define MOTOR_DIR_PIN 3      // Direction
+  #define MOTOR_ENABLE_PIN 4   // Enable (active low)
+  #define MOTOR_MS1_PIN 5      // Microstep select 1
+  #define MOTOR_MS2_PIN 6      // Microstep select 2
+  #define MOTOR_MS3_PIN 7      // Microstep select 3
+#endif
+
+#ifdef MOTOR_DRIVER_DRV8825
+  // DRV8825 Driver pins for bipolar stepper
+  #define MOTOR_STEP_PIN 2     // Step pulse
+  #define MOTOR_DIR_PIN 3      // Direction
+  #define MOTOR_ENABLE_PIN 4   // Enable (active low)
+  #define MOTOR_M0_PIN 5       // Microstep mode 0
+  #define MOTOR_M1_PIN 6       // Microstep mode 1
+  #define MOTOR_M2_PIN 7       // Microstep mode 2
+#endif
 
 // I2C pins for AS5600 and OLED (ESP32-C3 with 0.42" OLED)
 #define I2C_SDA 5      // SDA pin (GPIO5 for 0.42" OLED)

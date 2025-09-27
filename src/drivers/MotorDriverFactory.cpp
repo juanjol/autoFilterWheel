@@ -1,4 +1,5 @@
 #include "MotorDriverFactory.h"
+#include "../config.h"
 #include <cstring>
 
 std::unique_ptr<MotorDriver> MotorDriverFactory::createULN2003Driver(const ULN2003Config& config) {
@@ -41,22 +42,41 @@ std::unique_ptr<MotorDriver> MotorDriverFactory::createDriver(MotorDriverType ty
     switch (type) {
         case MotorDriverType::ULN2003_28BYJ48: {
             ULN2003Config config;
-            // Default pin assignment from config.h would be used here
-            config.pin1 = 2;   // These would come from config.h
-            config.pin2 = 3;
-            config.pin3 = 4;
-            config.pin4 = 10;
+            #ifdef MOTOR_DRIVER_ULN2003
+                config.pin1 = MOTOR_PIN1;
+                config.pin2 = MOTOR_PIN2;
+                config.pin3 = MOTOR_PIN3;
+                config.pin4 = MOTOR_PIN4;
+            #else
+                // Fallback defaults if not defined
+                config.pin1 = 2;
+                config.pin2 = 3;
+                config.pin3 = 4;
+                config.pin4 = 10;
+            #endif
             return createULN2003Driver(config);
         }
 
         case MotorDriverType::TMC2209_BIPOLAR: {
             TMC2209Config config;
-            // Default pin assignment for TMC2209
-            config.stepPin = 2;
-            config.dirPin = 3;
-            config.enablePin = 4;
-            config.rxPin = 16;
-            config.txPin = 17;
+            #ifdef MOTOR_DRIVER_TMC2209
+                config.stepPin = MOTOR_STEP_PIN;
+                config.dirPin = MOTOR_DIR_PIN;
+                config.enablePin = MOTOR_ENABLE_PIN;
+                config.rxPin = MOTOR_RX_PIN;
+                config.txPin = MOTOR_TX_PIN;
+                config.microsteps = MOTOR_MICROSTEPS;
+                config.currentMA = MOTOR_CURRENT_MA;
+            #else
+                // Fallback defaults if not defined
+                config.stepPin = 2;
+                config.dirPin = 3;
+                config.enablePin = 4;
+                config.rxPin = 16;
+                config.txPin = 17;
+                config.microsteps = 16;
+                config.currentMA = 800;
+            #endif
             return createTMC2209Driver(config);
         }
 
