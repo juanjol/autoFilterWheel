@@ -66,7 +66,7 @@ public:
      * Get magnet status
      * @return 0=OK, 1=too weak, 2=too strong, 3=not detected
      */
-    uint8_t getMagnetStatus();
+    uint8_t getMagnetStatus() const;
 
     /**
      * Get automatic gain control value
@@ -81,7 +81,7 @@ public:
     /**
      * Check if magnet is properly positioned
      */
-    bool isMagnetPositionOK();
+    bool isMagnetPositionOK() const;
 
     /**
      * Get error statistics
@@ -103,12 +103,12 @@ private:
     /**
      * Read 16-bit value from AS5600 register
      */
-    uint16_t readRegister16(uint8_t reg);
+    uint16_t readRegister16(uint8_t reg) const;
 
     /**
      * Read 8-bit value from AS5600 register
      */
-    uint8_t readRegister8(uint8_t reg);
+    uint8_t readRegister8(uint8_t reg) const;
 
     /**
      * Check if AS5600 is responding

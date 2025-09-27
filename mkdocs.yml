@@ -70,6 +70,9 @@ nav:
   - Getting Started:
     - Overview: getting-started/overview.md
     - Hardware Requirements: getting-started/hardware.md
+    - Configuration Options: getting-started/configuration-options.md
+    - ULN2003 Assembly: getting-started/assembly-uln2003.md
+    - TMC2209 Assembly: getting-started/assembly-tmc2209.md
   - Command Reference:
     - Overview: commands/overview.md
     - Basic Commands: commands/basic.md

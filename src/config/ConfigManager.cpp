@@ -322,3 +322,50 @@ String ConfigManager::readString(uint16_t address, uint8_t maxLength) {
 
     return result;
 }
+
+// Individual motor parameter save methods
+void ConfigManager::saveMotorSpeed(uint16_t speed) {
+    MotorConfig config = loadMotorConfig();
+    config.speed = speed;
+    saveMotorConfig(config.speed, config.maxSpeed, config.acceleration, config.disableDelay);
+}
+
+void ConfigManager::saveMaxMotorSpeed(uint16_t maxSpeed) {
+    MotorConfig config = loadMotorConfig();
+    config.maxSpeed = maxSpeed;
+    saveMotorConfig(config.speed, config.maxSpeed, config.acceleration, config.disableDelay);
+}
+
+void ConfigManager::saveMotorAcceleration(uint16_t acceleration) {
+    MotorConfig config = loadMotorConfig();
+    config.acceleration = acceleration;
+    saveMotorConfig(config.speed, config.maxSpeed, config.acceleration, config.disableDelay);
+}
+
+void ConfigManager::saveMotorDisableDelay(uint16_t disableDelay) {
+    MotorConfig config = loadMotorConfig();
+    config.disableDelay = disableDelay;
+    saveMotorConfig(config.speed, config.maxSpeed, config.acceleration, config.disableDelay);
+}
+
+void ConfigManager::resetMotorConfiguration() {
+    clearMotorConfig();
+}
+
+// Individual direction parameter save methods
+void ConfigManager::saveDirectionMode(bool bidirectional) {
+    DirectionConfig config = loadDirectionConfig();
+    config.directionMode = bidirectional ? 1 : 0;
+    saveDirectionConfig(config.directionMode, config.reverseDirection);
+}
+
+void ConfigManager::saveReverseDirection(bool reverse) {
+    DirectionConfig config = loadDirectionConfig();
+    config.reverseDirection = reverse;
+    saveDirectionConfig(config.directionMode, config.reverseDirection);
+}
+
+// Save steps per revolution (for revolution calibration)
+void ConfigManager::saveStepsPerRevolution(uint16_t steps) {
+    saveRevolutionCalibration(steps);
+}

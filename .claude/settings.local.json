@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del \"C:\\Users\\juanjo\\Documents\\Arduino\\sketch_mar28a\\sketch_mar28a.ino\")",
+      "WebFetch(domain:emalliab.wordpress.com)",
+      "Bash(git add:*)",
+      "WebFetch(domain:ascom-standards.org)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(git commit:*)",
+      "Bash(git reset:*)",
+      "Bash(git push:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh.exe:*)",
+      "Bash(source ~/.bashrc)",
+      "Read(//c/Program Files//**)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run list)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run view 18049330558)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run view 18049330558 --log-failed)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run list --limit 3)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run view 18049595989 --log-failed)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run watch)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run list --limit 1)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run view 18049656332 --log-failed)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run view 18049656332)",
+      "Bash(\"/c/Program Files/GitHub CLI/gh.exe\" run view 18058243712 --log-failed)",
+      "Bash(mkdocs build:*)",
+      "Bash(python:*)",
+      "Bash(pio run:*)",
+      "Read(//c/Users/juanjo/**)",
+      "Bash(\"/c/Users/juanjo/.platformio/penv/Scripts/pio.exe\" run)",
+      "Bash(\"/c/Users/juanjo/.platformio/penv/Scripts/pio.exe\" run --environment esp32-c3-devkitm-1)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
