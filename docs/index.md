@@ -49,10 +49,10 @@ The controller supports two configurations - choose based on your needs and expe
 ### Assembly Process
 
 1. **[Choose Configuration](getting-started/configuration-options.md)** - Compare options and decide
-2. **[Hardware Requirements](getting-started/hardware.md)** - Gather required components
+2. **Hardware Requirements** - Gather required components (see assembly guides)
 3. **Assembly Guide** - Follow your configuration-specific guide:
-   - **[ULN2003 Assembly →](getting-started/assembly-uln2003.md)**
-   - **[TMC2209 Assembly →](getting-started/assembly-tmc2209.md)**
+   - **[ULN2003 Assembly](getting-started/assembly-uln2003.md)**
+   - **[TMC2209 Assembly](getting-started/assembly-tmc2209.md)**
 4. **Firmware Installation** - Flash the ESP32-C3 (documentation coming soon)
 5. **First Setup** - Configure your filter wheel (documentation coming soon)
 
@@ -122,7 +122,7 @@ Over **50 serial commands** for complete control:
     #CAL       # Set home position
     ```
 
-[View Complete Command Reference →](commands/overview.md){ .md-button .md-button--primary }
+**Command Reference** - Over 50 serial commands for complete control (see CLAUDE.md for full list)
 
 ## 🏗️ Architecture Overview
 
@@ -184,4 +184,4 @@ Active development with community contributions, regular updates, and responsive
 
 ---
 
-*Ready to build your own professional filter wheel controller? [Get started now!](getting-started/overview.md)*
+*Ready to build your own professional filter wheel controller? Get started with the [Configuration Options](getting-started/configuration-options.md)!*

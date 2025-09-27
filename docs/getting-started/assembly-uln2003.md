@@ -6,7 +6,7 @@ This guide covers assembling the budget-friendly configuration using the ULN2003
 
 Before starting, ensure you have:
 - ✅ Read the [Configuration Options](configuration-options.md) guide
-- ✅ Gathered all [required components](hardware.md#uln2003-configuration)
+- ✅ Gathered all required components
 - ✅ Basic soldering skills
 - ✅ Multimeter for testing
 
@@ -221,9 +221,9 @@ If using the AS5600 magnetic encoder:
 
 Once assembly is complete:
 
-1. **[Initial Setup →](../user-guide/setup.md)** - Configure filter names and positions
-2. **[Calibration →](../user-guide/calibration.md)** - Perform precision calibration
-3. **[ASCOM Integration →](../ascom/installation.md)** - Connect to astronomy software
+1. **Initial Setup** - Configure filter names and positions using serial commands
+2. **Calibration** - Perform precision calibration with `#CAL` and `#REVCAL` commands
+3. **ASCOM Integration** - Connect to astronomy software using the serial protocol
 
 ## Upgrade Path
 

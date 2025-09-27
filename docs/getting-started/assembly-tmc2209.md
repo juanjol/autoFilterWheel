@@ -7,7 +7,7 @@ This guide covers assembling the professional-grade configuration using the TMC2
 Before starting, ensure you have:
 - ✅ Read the [Configuration Options](configuration-options.md) guide
 - ✅ Intermediate electronics experience
-- ✅ Gathered all [required components](hardware.md#tmc2209-configuration)
+- ✅ Gathered all required components for TMC2209 configuration
 - ✅ Good soldering skills and proper tools
 - ✅ Multimeter and oscilloscope (recommended)
 
@@ -265,9 +265,9 @@ With AS5600 encoder:
 
 After successful assembly:
 
-1. **[Advanced Calibration →](../user-guide/calibration-advanced.md)** - TMC2209-specific calibration
-2. **[Performance Tuning →](../user-guide/motor-tuning-tmc2209.md)** - Optimize for your application
-3. **[ASCOM Integration →](../ascom/installation.md)** - Same as ULN2003 configuration
+1. **Advanced Calibration** - TMC2209-specific calibration with high-precision settings
+2. **Performance Tuning** - Optimize motor current, microstepping, and speed settings
+3. **ASCOM Integration** - Same serial protocol as ULN2003 configuration
 
 ## Comparison with ULN2003
 
