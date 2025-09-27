@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../drivers/MotorDriver.h"
+#include "../drivers/MotorDriverFactory.h"
 #include "../display/DisplayManager.h"
 #include "../commands/CommandProcessor.h"
 #include "../commands/CommandHandlers.h"
