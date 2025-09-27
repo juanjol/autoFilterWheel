@@ -127,8 +127,8 @@ The system will automatically configure pins, timing, and features based on your
 
 Choose your configuration and proceed to the specific assembly guide:
 
-- **[ULN2003 Assembly Guide →](assembly-uln2003.md)** - Step-by-step for beginners
-- **[TMC2209 Assembly Guide →](assembly-tmc2209.md)** - Professional configuration
+- **[ULN2003 Assembly Guide](assembly-uln2003.md)** - Step-by-step for beginners
+- **[TMC2209 Assembly Guide](assembly-tmc2209.md)** - Professional configuration
 
 Both configurations share the same:
 - Firmware (automatically adapts)
