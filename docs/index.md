@@ -37,9 +37,22 @@ A professional, open-source astronomy filter wheel controller built on the ESP32
 
 ## 🚀 Quick Start
 
-1. **[Hardware Setup](getting-started/hardware.md)** - Gather required components
-2. **Assembly Guide** - Build your filter wheel (documentation coming soon)
-3. **Wiring Diagram** - Connect all components (documentation coming soon)
+### Choose Your Configuration
+
+The controller supports two configurations - choose based on your needs and experience:
+
+| Configuration | Best For | Cost | Complexity |
+|---------------|----------|------|------------|
+| **[ULN2003 + 28BYJ-48](getting-started/assembly-uln2003.md)** | Beginners, Budget builds | ~$25 | Simple |
+| **[TMC2209 + NEMA17](getting-started/assembly-tmc2209.md)** | Professional setups | ~$80 | Advanced |
+
+### Assembly Process
+
+1. **[Choose Configuration](getting-started/configuration-options.md)** - Compare options and decide
+2. **[Hardware Requirements](getting-started/hardware.md)** - Gather required components
+3. **Assembly Guide** - Follow your configuration-specific guide:
+   - **[ULN2003 Assembly →](getting-started/assembly-uln2003.md)**
+   - **[TMC2209 Assembly →](getting-started/assembly-tmc2209.md)**
 4. **Firmware Installation** - Flash the ESP32-C3 (documentation coming soon)
 5. **First Setup** - Configure your filter wheel (documentation coming soon)
 
@@ -51,16 +64,38 @@ A professional, open-source astronomy filter wheel controller built on the ESP32
 
 ## 📋 Specifications
 
+### Common Components
 | Feature | Specification |
 |---------|---------------|
 | **Microcontroller** | ESP32-C3 (160MHz, WiFi, BLE) |
-| **Motor** | 28BYJ-48 stepper (2048 steps/revolution) |
 | **Display** | 0.42" OLED SSD1306 (128x64, I2C) |
-| **Encoder** | AS5600 magnetic (12-bit resolution) |
+| **Encoder** | AS5600 magnetic (12-bit resolution, optional) |
 | **Filters** | 3-8 positions (configurable) |
 | **Communication** | USB Serial (115200 baud) |
-| **Power** | 5V USB or external 5V/12V |
-| **Dimensions** | Compact desktop form factor |
+
+### Motor Configurations
+
+=== "ULN2003 + 28BYJ-48"
+    | Feature | Specification |
+    |---------|---------------|
+    | **Motor** | 28BYJ-48 unipolar stepper |
+    | **Steps/Revolution** | 2048 (with internal gearing) |
+    | **Max Speed** | ~500 steps/second |
+    | **Power** | 5V, <300mA |
+    | **Noise Level** | Moderate |
+    | **Precision** | ±0.2° |
+    | **Cost** | ~$25 total |
+
+=== "TMC2209 + NEMA17"
+    | Feature | Specification |
+    |---------|---------------|
+    | **Motor** | NEMA17 bipolar stepper |
+    | **Steps/Revolution** | 3200-51200 (microstepping) |
+    | **Max Speed** | >5000 steps/second |
+    | **Power** | 12-24V, 1-3A |
+    | **Noise Level** | Near silent |
+    | **Precision** | ±0.05° |
+    | **Cost** | ~$80 total |
 
 ## 🛠️ Supported Commands
 
