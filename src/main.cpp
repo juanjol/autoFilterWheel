@@ -23,8 +23,26 @@ void setup() {
     // Initialize I2C
     Wire.begin(I2C_SDA, I2C_SCL);
 
-    // Initialize controller with ULN2003 motor driver
-    if (!controller.init(MotorDriverType::ULN2003_28BYJ48)) {
+    // Initialize controller with configured motor driver
+    MotorDriverType driverType;
+
+    #ifdef MOTOR_DRIVER_ULN2003
+        driverType = MotorDriverType::ULN2003_28BYJ48;
+        Serial.println("Motor Driver: ULN2003 with 28BYJ-48");
+    #elif defined(MOTOR_DRIVER_TMC2209)
+        driverType = MotorDriverType::TMC2209_BIPOLAR;
+        Serial.println("Motor Driver: TMC2209 with bipolar stepper");
+    #elif defined(MOTOR_DRIVER_A4988)
+        driverType = MotorDriverType::A4988_BIPOLAR;
+        Serial.println("Motor Driver: A4988 with bipolar stepper");
+    #elif defined(MOTOR_DRIVER_DRV8825)
+        driverType = MotorDriverType::DRV8825_BIPOLAR;
+        Serial.println("Motor Driver: DRV8825 with bipolar stepper");
+    #else
+        #error "No motor driver selected! Please define one in config.h"
+    #endif
+
+    if (!controller.init(driverType)) {
         Serial.println("ERROR: Failed to initialize filter wheel controller!");
         Serial.println("Check hardware connections and restart.");
         while(1) {
