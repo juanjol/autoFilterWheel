@@ -214,7 +214,7 @@ bool FilterWheelController::initializeMotorDriver(MotorDriverType motorType) {
 }
 
 bool FilterWheelController::initializeDisplay() {
-    displayManager = make_unique_compat<DisplayManager>(128, 64, &Wire, -1, 30);
+    displayManager = make_unique_compat<DisplayManager>(128, 64, &Wire, -1, 5);
     return displayManager->init(0x3C);
 }
 
