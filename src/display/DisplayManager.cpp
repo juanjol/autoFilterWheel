@@ -138,6 +138,8 @@ void DisplayManager::showFilterWheelState(const char* status, uint8_t position,
     truncateText(truncatedName, filterName, 12);
     drawCenteredText(truncatedName, FILTER_NAME_LINE_Y, 1);
 
+    // Immediately update the display
+    display->display();
     needsUpdate = true;
 }
 

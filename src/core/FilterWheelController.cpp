@@ -58,6 +58,19 @@ bool FilterWheelController::init(MotorDriverType motorType) {
     // Show splash screen
     showSplashScreen();
 
+    // After splash screen, show initial state
+    if (displayManager) {
+        delay(1500);  // Let splash screen display for a moment
+        const char* status = isCalibrated ? "READY" : "NOT CAL";
+        displayManager->showFilterWheelState(
+            status,
+            currentPosition,
+            numFilters,
+            getFilterName(currentPosition).c_str(),
+            false
+        );
+    }
+
     return true;
 }
 
@@ -286,6 +299,28 @@ void FilterWheelController::updateMotorMovement() {
 
 void FilterWheelController::updateDisplay() {
     if (displayManager) {
+        // Update display content based on current state
+        const char* status;
+        if (!isCalibrated) {
+            status = "NOT CAL";
+        } else if (isMoving) {
+            status = "MOVING";
+        } else if (errorCode != 0) {
+            status = "ERROR";
+        } else {
+            status = "READY";
+        }
+
+        // Update the display with current state
+        displayManager->showFilterWheelState(
+            status,
+            currentPosition,
+            numFilters,
+            getFilterName(currentPosition).c_str(),
+            isMoving
+        );
+
+        // Process any display updates
         displayManager->update();
     }
 }
