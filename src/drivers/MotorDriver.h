@@ -80,4 +80,21 @@ public:
     virtual void startRevolutionCalibration() { /* Default: no-op */ }
     virtual void adjustRevolutionCalibration(int steps) { move(steps); }
     virtual int finishRevolutionCalibration() { return 2048; /* Default steps per revolution */ }
+
+    // Backlash calibration methods
+    virtual void startBacklashCalibration() { /* Default: no-op */ }
+    virtual int backlashTestStep(int steps) { move(steps); return steps; }
+    virtual bool markBacklashMovement() { return true; /* Default: forward */ }
+    virtual int getCurrentBacklashSteps() const { return 0; }
+    virtual int finishBacklashCalibration() { return 0; /* Default: no backlash */ }
+
+    // Backlash configuration
+    virtual void setBacklashSteps(int steps) { /* Default: no-op */ }
+    virtual int getBacklashSteps() const { return 0; }
+    virtual void setBacklashEnabled(bool enabled) { /* Default: no-op */ }
+    virtual bool isBacklashEnabled() const { return false; }
+
+    // Steps per revolution configuration
+    virtual void setStepsPerRevolution(int steps) { /* Default: no-op */ }
+    virtual int getStepsPerRevolution() const { return 2048; /* Default value */ }
 };
