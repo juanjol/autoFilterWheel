@@ -16,6 +16,23 @@ private:
     // Pin assignments
     uint8_t pin1, pin2, pin3, pin4;
 
+    // Backlash compensation
+    int backlashSteps;
+    bool backlashEnabled;
+    bool lastMoveWasForward;
+
+    // Unidirectional mode settings
+    bool unidirectionalMode;
+
+    // Calibration state
+    bool revolutionCalibrationActive;
+    long revolutionCalibrationStartPos;
+    bool backlashCalibrationActive;
+    int backlashCalibrationSteps;
+
+    // Configurable steps per revolution
+    int stepsPerRevolution;
+
     // Motor specifications
     static constexpr uint16_t STEPS_PER_REVOLUTION = 2048;  // 28BYJ-48 with internal gearing
     static constexpr float DEFAULT_SPEED = 300.0;           // steps/second
@@ -65,7 +82,35 @@ public:
     const char* getDriverName() const override { return "ULN2003"; }
     const char* getDriverVersion() const override { return "1.0.0"; }
 
+    // Backlash compensation overrides
+    void setBacklashSteps(int steps) override;
+    int getBacklashSteps() const override;
+    void setBacklashEnabled(bool enabled) override;
+    bool isBacklashEnabled() const override;
+
+    // Steps per revolution overrides
+    void setStepsPerRevolution(int steps) override;
+    int getStepsPerRevolution() const override;
+
+    // Calibration method overrides
+    void startRevolutionCalibration() override;
+    void adjustRevolutionCalibration(int steps) override;
+    int finishRevolutionCalibration() override;
+    void startBacklashCalibration() override;
+    int backlashTestStep(int steps) override;
+    bool markBacklashMovement() override;
+    int getCurrentBacklashSteps() const override;
+    int finishBacklashCalibration() override;
+
+    // Unidirectional mode
+    void setUnidirectionalMode(bool enabled);
+    bool isUnidirectionalMode() const;
+
     // ULN2003-specific methods
-    uint16_t getStepsPerRevolution() const { return STEPS_PER_REVOLUTION; }
     void forceAllPinsLow();  // Ensure complete motor shutdown
+
+private:
+    // Internal backlash compensation logic
+    void moveWithBacklashCompensation(long targetPosition);
+    bool needsBacklashCompensation(long targetPosition) const;
 };

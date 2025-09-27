@@ -1,5 +1,6 @@
 #include "CommandHandlers.h"
 #include "../drivers/MotorDriver.h"
+#include "../drivers/ULN2003Driver.h"
 #include "../display/DisplayManager.h"
 #include "../config/ConfigManager.h"
 #include "../encoders/EncoderInterface.h"
@@ -90,6 +91,12 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
     processor.registerCommand("GDC", "Get direction configuration",
         [this](const String& cmd, String& response) { return handleGetDirectionConfig(cmd, response); });
 
+    processor.registerCommand("SPR", "Set steps per revolution",
+        [this](const String& cmd, String& response) { return handleSetStepsPerRevolution(cmd, response); });
+
+    processor.registerCommand("GPR", "Get steps per revolution",
+        [this](const String& cmd, String& response) { return handleGetStepsPerRevolution(cmd, response); });
+
     // Manual Step Commands
     processor.registerCommand("SF", "Step forward",
         [this](const String& cmd, String& response) { return handleStepForward(cmd, response); });
@@ -121,6 +128,32 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
 
     processor.registerCommand("RCFIN", "Finish revolution calibration",
         [this](const String& cmd, String& response) { return handleFinishRevCalibration(cmd, response); });
+
+    // Backlash Calibration Commands
+    processor.registerCommand("BLCAL", "Start backlash calibration",
+        [this](const String& cmd, String& response) { return handleStartBacklashCalibration(cmd, response); });
+
+    processor.registerCommand("BLS", "Backlash step",
+        [this](const String& cmd, String& response) { return handleBacklashStep(cmd, response); });
+
+    processor.registerCommand("BLM", "Backlash mark",
+        [this](const String& cmd, String& response) { return handleBacklashMark(cmd, response); });
+
+    processor.registerCommand("BLFIN", "Finish backlash calibration",
+        [this](const String& cmd, String& response) { return handleFinishBacklashCalibration(cmd, response); });
+
+    // Backlash Configuration Commands
+    processor.registerCommand("BLS", "Set backlash steps",
+        [this](const String& cmd, String& response) { return handleSetBacklashSteps(cmd, response); });
+
+    processor.registerCommand("BLG", "Get backlash configuration",
+        [this](const String& cmd, String& response) { return handleGetBacklashConfig(cmd, response); });
+
+    processor.registerCommand("BLE", "Enable/disable backlash compensation",
+        [this](const String& cmd, String& response) { return handleSetBacklashEnabled(cmd, response); });
+
+    processor.registerCommand("UNI", "Set unidirectional mode",
+        [this](const String& cmd, String& response) { return handleSetUnidirectionalMode(cmd, response); });
 }
 
 CommandResult CommandHandlers::handleGetPosition(const String& cmd, String& response) {
@@ -341,8 +374,9 @@ CommandResult CommandHandlers::handleGetMotorConfig(const String& cmd, String& r
         response += ",MAX_SPEED=" + String(motorDriver->getMaxSpeed());
         response += ",ACCEL=" + String(motorDriver->getAcceleration());
         response += ",DISABLE_DELAY=" + String(motorDriver->getDisableDelay());
+        response += ",STEPS_PER_REV=" + String(motorDriver->getStepsPerRevolution());
     } else {
-        response = "MOTOR_CONFIG:SPEED=1000,MAX_SPEED=2000,ACCEL=500,DISABLE_DELAY=1000";
+        response = "MOTOR_CONFIG:SPEED=1000,MAX_SPEED=2000,ACCEL=500,DISABLE_DELAY=1000,STEPS_PER_REV=2048";
     }
     return CommandResult::SUCCESS;
 }
@@ -496,6 +530,37 @@ CommandResult CommandHandlers::handleGetDirectionConfig(const String& cmd, Strin
 
     response = "DIRECTION_CONFIG:MODE=" + String(dirMode ? 1 : 0);
     response += ",REVERSE=" + String(revMode ? 1 : 0);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetStepsPerRevolution(const String& cmd, String& response) {
+    int steps;
+    if (!parseIntParameter(cmd, "SPR", steps)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (steps < 200 || steps > 8192) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setStepsPerRevolution(steps);
+        if (configManager) {
+            configManager->saveStepsPerRevolution(steps);
+        }
+    }
+
+    response = "SPR" + String(steps);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetStepsPerRevolution(const String& cmd, String& response) {
+    int steps = 2048; // Default value
+    if (motorDriver) {
+        steps = motorDriver->getStepsPerRevolution();
+    }
+
+    response = "SPR:" + String(steps);
     return CommandResult::SUCCESS;
 }
 
@@ -669,5 +734,152 @@ CommandResult CommandHandlers::handleFinishRevCalibration(const String& cmd, Str
         response = "REV_CAL_COMPLETE:2048";
     }
 
+    return CommandResult::SUCCESS;
+}
+
+// ========================================
+// BACKLASH CALIBRATION COMMANDS
+// ========================================
+
+CommandResult CommandHandlers::handleStartBacklashCalibration(const String& cmd, String& response) {
+    if (*isMoving) {
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    if (motorDriver) {
+        motorDriver->startBacklashCalibration();
+    }
+
+    response = "BACKLASH_CAL_STARTED";
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleBacklashStep(const String& cmd, String& response) {
+    int steps = 1; // Default
+    if (cmd.length() > 3) {
+        if (!parseIntParameter(cmd, "BLS", steps)) {
+            return CommandResult::ERROR_INVALID_FORMAT;
+        }
+    }
+
+    if (steps < 1 || steps > 50) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        int totalSteps = motorDriver->backlashTestStep(steps);
+        response = "BLS" + String(steps) + " TOTAL:" + String(totalSteps);
+    } else {
+        response = "BLS" + String(steps) + " TOTAL:0";
+    }
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleBacklashMark(const String& cmd, String& response) {
+    if (motorDriver) {
+        bool isForward = motorDriver->markBacklashMovement();
+        int steps = motorDriver->getCurrentBacklashSteps();
+
+        if (isForward) {
+            response = "BLM_FORWARD:" + String(steps);
+        } else {
+            response = "BLM_BACKWARD:" + String(steps);
+        }
+    } else {
+        response = "BLM_FORWARD:0";
+    }
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleFinishBacklashCalibration(const String& cmd, String& response) {
+    if (motorDriver) {
+        int backlashSteps = motorDriver->finishBacklashCalibration();
+        if (configManager) {
+            configManager->saveBacklashSteps(backlashSteps);
+        }
+        response = "BACKLASH_CAL_COMPLETE:" + String(backlashSteps);
+    } else {
+        response = "BACKLASH_CAL_COMPLETE:0";
+    }
+
+    return CommandResult::SUCCESS;
+}
+
+// ========================================
+// BACKLASH CONFIGURATION COMMANDS
+// ========================================
+
+CommandResult CommandHandlers::handleSetBacklashSteps(const String& cmd, String& response) {
+    int steps;
+    if (!parseIntParameter(cmd, "BLS", steps)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (steps < 0 || steps > 100) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setBacklashSteps(steps);
+        if (configManager) {
+            configManager->saveBacklashSteps(steps);
+        }
+    }
+
+    response = "BLS" + String(steps);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetBacklashConfig(const String& cmd, String& response) {
+    int steps = 0;
+    bool enabled = false;
+
+    if (motorDriver) {
+        steps = motorDriver->getBacklashSteps();
+        enabled = motorDriver->isBacklashEnabled();
+    }
+
+    response = "BACKLASH_CONFIG:STEPS=" + String(steps);
+    response += ",ENABLED=" + String(enabled ? "YES" : "NO");
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetBacklashEnabled(const String& cmd, String& response) {
+    int enable;
+    if (!parseIntParameter(cmd, "BLE", enable)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (enable != 0 && enable != 1) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setBacklashEnabled(enable == 1);
+    }
+
+    response = "BLE" + String(enable);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetUnidirectionalMode(const String& cmd, String& response) {
+    int mode;
+    if (!parseIntParameter(cmd, "UNI", mode)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (mode != 0 && mode != 1) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    // For now, save the mode in ConfigManager - the actual driver implementation
+    // will read this setting during initialization
+    if (configManager) {
+        configManager->saveDirectionMode(mode == 0);  // unidirectional = !bidirectional
+    }
+
+    response = "UNI" + String(mode);
     return CommandResult::SUCCESS;
 }

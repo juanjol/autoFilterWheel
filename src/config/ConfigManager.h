@@ -232,6 +232,11 @@ public:
      */
     void saveStepsPerRevolution(uint16_t steps);
 
+    /**
+     * Save backlash steps (for backlash calibration)
+     */
+    void saveBacklashSteps(uint8_t steps);
+
     // ========================================
     // DIRECTION CONFIGURATION
     // ========================================

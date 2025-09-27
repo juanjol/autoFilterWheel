@@ -142,6 +142,16 @@ public:
      */
     CommandResult handleGetDirectionConfig(const String& cmd, String& response);
 
+    /**
+     * Set steps per revolution - SPR[X]
+     */
+    CommandResult handleSetStepsPerRevolution(const String& cmd, String& response);
+
+    /**
+     * Get steps per revolution - GPR
+     */
+    CommandResult handleGetStepsPerRevolution(const String& cmd, String& response);
+
     // ========================================
     // CALIBRATION COMMANDS
     // ========================================
@@ -190,6 +200,30 @@ public:
      * Finish backlash calibration - BLFIN
      */
     CommandResult handleFinishBacklashCalibration(const String& cmd, String& response);
+
+    // ========================================
+    // BACKLASH CONFIGURATION COMMANDS
+    // ========================================
+
+    /**
+     * Set backlash steps - BLS[X]
+     */
+    CommandResult handleSetBacklashSteps(const String& cmd, String& response);
+
+    /**
+     * Get backlash configuration - BLG
+     */
+    CommandResult handleGetBacklashConfig(const String& cmd, String& response);
+
+    /**
+     * Set backlash enabled - BLE[0/1]
+     */
+    CommandResult handleSetBacklashEnabled(const String& cmd, String& response);
+
+    /**
+     * Set unidirectional mode - UNI[0/1]
+     */
+    CommandResult handleSetUnidirectionalMode(const String& cmd, String& response);
 
     // ========================================
     // MANUAL CONTROL COMMANDS

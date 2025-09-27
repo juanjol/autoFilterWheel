@@ -369,3 +369,8 @@ void ConfigManager::saveReverseDirection(bool reverse) {
 void ConfigManager::saveStepsPerRevolution(uint16_t steps) {
     saveRevolutionCalibration(steps);
 }
+
+// Save backlash steps
+void ConfigManager::saveBacklashSteps(uint8_t steps) {
+    saveBacklashCalibration(steps);
+}
