@@ -2,8 +2,14 @@
 #include "../config.h"
 #include <cstring>
 
+// C++11 compatibility helper for make_unique
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique_compat(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 std::unique_ptr<MotorDriver> MotorDriverFactory::createULN2003Driver(const ULN2003Config& config) {
-    auto driver = std::make_unique<ULN2003Driver>(config.pin1, config.pin2, config.pin3, config.pin4);
+    auto driver = make_unique_compat<ULN2003Driver>(config.pin1, config.pin2, config.pin3, config.pin4);
 
     driver->init();
     driver->setSpeed(config.speed);
@@ -18,7 +24,7 @@ std::unique_ptr<MotorDriver> MotorDriverFactory::createTMC2209Driver(const TMC22
     // Note: TMC2209Driver is not yet implemented
     // This would create and configure a TMC2209 driver when implemented
 
-    auto driver = std::make_unique<TMC2209Driver>(
+    auto driver = make_unique_compat<TMC2209Driver>(
         config.stepPin, config.dirPin, config.enablePin,
         config.rxPin, config.txPin, config.slaveAddress
     );

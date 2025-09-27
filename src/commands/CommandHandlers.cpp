@@ -61,6 +61,66 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
 
     processor.registerCommand("HELP", "Show help",
         [this](const String& cmd, String& response) { return handleHelp(cmd, response); });
+
+    // Motor Configuration Commands
+    processor.registerCommand("GMC", "Get motor configuration",
+        [this](const String& cmd, String& response) { return handleGetMotorConfig(cmd, response); });
+
+    processor.registerCommand("MS", "Set motor speed",
+        [this](const String& cmd, String& response) { return handleSetMotorSpeed(cmd, response); });
+
+    processor.registerCommand("MXS", "Set max motor speed",
+        [this](const String& cmd, String& response) { return handleSetMaxMotorSpeed(cmd, response); });
+
+    processor.registerCommand("MA", "Set motor acceleration",
+        [this](const String& cmd, String& response) { return handleSetMotorAcceleration(cmd, response); });
+
+    processor.registerCommand("MDD", "Set motor disable delay",
+        [this](const String& cmd, String& response) { return handleSetMotorDisableDelay(cmd, response); });
+
+    processor.registerCommand("RMC", "Reset motor configuration",
+        [this](const String& cmd, String& response) { return handleResetMotorConfig(cmd, response); });
+
+    processor.registerCommand("MDM", "Set direction mode",
+        [this](const String& cmd, String& response) { return handleSetDirectionMode(cmd, response); });
+
+    processor.registerCommand("MRV", "Set reverse direction",
+        [this](const String& cmd, String& response) { return handleSetReverseDirection(cmd, response); });
+
+    processor.registerCommand("GDC", "Get direction configuration",
+        [this](const String& cmd, String& response) { return handleGetDirectionConfig(cmd, response); });
+
+    // Manual Step Commands
+    processor.registerCommand("SF", "Step forward",
+        [this](const String& cmd, String& response) { return handleStepForward(cmd, response); });
+
+    processor.registerCommand("SB", "Step backward",
+        [this](const String& cmd, String& response) { return handleStepBackward(cmd, response); });
+
+    processor.registerCommand("ST", "Step to absolute position",
+        [this](const String& cmd, String& response) { return handleStepToPosition(cmd, response); });
+
+    processor.registerCommand("GST", "Get step position",
+        [this](const String& cmd, String& response) { return handleGetStepPosition(cmd, response); });
+
+    processor.registerCommand("ME", "Enable motor",
+        [this](const String& cmd, String& response) { return handleMotorEnable(cmd, response); });
+
+    processor.registerCommand("MD", "Disable motor",
+        [this](const String& cmd, String& response) { return handleMotorDisable(cmd, response); });
+
+    // Calibration Commands
+    processor.registerCommand("REVCAL", "Start revolution calibration",
+        [this](const String& cmd, String& response) { return handleStartRevCalibration(cmd, response); });
+
+    processor.registerCommand("RCP", "Add calibration steps",
+        [this](const String& cmd, String& response) { return handleRevCalAdjustPlus(cmd, response); });
+
+    processor.registerCommand("RCM", "Subtract calibration steps",
+        [this](const String& cmd, String& response) { return handleRevCalAdjustMinus(cmd, response); });
+
+    processor.registerCommand("RCFIN", "Finish revolution calibration",
+        [this](const String& cmd, String& response) { return handleFinishRevCalibration(cmd, response); });
 }
 
 CommandResult CommandHandlers::handleGetPosition(const String& cmd, String& response) {
@@ -129,7 +189,7 @@ CommandResult CommandHandlers::handleGetStatus(const String& cmd, String& respon
 }
 
 CommandResult CommandHandlers::handleGetDeviceId(const String& cmd, String& response) {
-    response = "DEVICE_ID:ESP32FW-" + String(*numFilters) + "POS-V1.0";
+    response = "DEVICE_ID:ESP32_FILTER_WHEEL_V1";
     return CommandResult::SUCCESS;
 }
 
@@ -269,4 +329,345 @@ bool CommandHandlers::isValidPosition(uint8_t position) {
 
 bool CommandHandlers::canExecuteMovement() {
     return !*isMoving && *isCalibrated;
+}
+
+// ========================================
+// MOTOR CONFIGURATION COMMANDS
+// ========================================
+
+CommandResult CommandHandlers::handleGetMotorConfig(const String& cmd, String& response) {
+    if (motorDriver) {
+        response = "MOTOR_CONFIG:SPEED=" + String(motorDriver->getCurrentSpeed());
+        response += ",MAX_SPEED=" + String(motorDriver->getMaxSpeed());
+        response += ",ACCEL=" + String(motorDriver->getAcceleration());
+        response += ",DISABLE_DELAY=" + String(motorDriver->getDisableDelay());
+    } else {
+        response = "MOTOR_CONFIG:SPEED=1000,MAX_SPEED=2000,ACCEL=500,DISABLE_DELAY=1000";
+    }
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetMotorSpeed(const String& cmd, String& response) {
+    int speed;
+    if (!parseIntParameter(cmd, "MS", speed)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (speed < 50 || speed > 3000) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setSpeed(speed);
+        if (configManager) {
+            configManager->saveMotorSpeed(speed);
+        }
+    }
+
+    response = "MS" + String(speed);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetMaxMotorSpeed(const String& cmd, String& response) {
+    int maxSpeed;
+    if (!parseIntParameter(cmd, "MXS", maxSpeed)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (maxSpeed < 100 || maxSpeed > 5000) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setMaxSpeed(maxSpeed);
+        if (configManager) {
+            configManager->saveMaxMotorSpeed(maxSpeed);
+        }
+    }
+
+    response = "MXS" + String(maxSpeed);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetMotorAcceleration(const String& cmd, String& response) {
+    int accel;
+    if (!parseIntParameter(cmd, "MA", accel)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (accel < 50 || accel > 2000) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setAcceleration(accel);
+        if (configManager) {
+            configManager->saveMotorAcceleration(accel);
+        }
+    }
+
+    response = "MA" + String(accel);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetMotorDisableDelay(const String& cmd, String& response) {
+    int delay;
+    if (!parseIntParameter(cmd, "MDD", delay)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (delay < 500 || delay > 10000) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setDisableDelay(delay);
+        if (configManager) {
+            configManager->saveMotorDisableDelay(delay);
+        }
+    }
+
+    response = "MDD" + String(delay);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleResetMotorConfig(const String& cmd, String& response) {
+    if (motorDriver) {
+        motorDriver->resetToDefaults();
+        if (configManager) {
+            configManager->resetMotorConfiguration();
+        }
+    }
+
+    response = "MOTOR_CONFIG_RESET";
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetDirectionMode(const String& cmd, String& response) {
+    int mode;
+    if (!parseIntParameter(cmd, "MDM", mode)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (mode != 0 && mode != 1) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setDirectionMode(mode == 1);
+        if (configManager) {
+            configManager->saveDirectionMode(mode == 1);
+        }
+    }
+
+    response = "MDM" + String(mode);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetReverseDirection(const String& cmd, String& response) {
+    int reverse;
+    if (!parseIntParameter(cmd, "MRV", reverse)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (reverse != 0 && reverse != 1) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->setReverseDirection(reverse == 1);
+        if (configManager) {
+            configManager->saveReverseDirection(reverse == 1);
+        }
+    }
+
+    response = "MRV" + String(reverse);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetDirectionConfig(const String& cmd, String& response) {
+    bool dirMode = false;
+    bool revMode = false;
+
+    if (motorDriver) {
+        dirMode = motorDriver->getDirectionMode();
+        revMode = motorDriver->getReverseDirection();
+    }
+
+    response = "DIRECTION_CONFIG:MODE=" + String(dirMode ? 1 : 0);
+    response += ",REVERSE=" + String(revMode ? 1 : 0);
+    return CommandResult::SUCCESS;
+}
+
+// ========================================
+// MANUAL STEP COMMANDS
+// ========================================
+
+CommandResult CommandHandlers::handleStepForward(const String& cmd, String& response) {
+    if (!canExecuteMovement()) {
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    int steps = 1; // Default to 1 step
+    if (cmd.length() > 2) {
+        if (!parseIntParameter(cmd, "SF", steps)) {
+            return CommandResult::ERROR_INVALID_FORMAT;
+        }
+    }
+
+    if (steps < 1 || steps > 1000) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->stepForward(steps);
+    }
+
+    response = "SF" + String(steps);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleStepBackward(const String& cmd, String& response) {
+    if (!canExecuteMovement()) {
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    int steps = 1; // Default to 1 step
+    if (cmd.length() > 2) {
+        if (!parseIntParameter(cmd, "SB", steps)) {
+            return CommandResult::ERROR_INVALID_FORMAT;
+        }
+    }
+
+    if (steps < 1 || steps > 1000) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->stepBackward(steps);
+    }
+
+    response = "SB" + String(steps);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleStepToPosition(const String& cmd, String& response) {
+    if (!canExecuteMovement()) {
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    int stepPos;
+    if (!parseIntParameter(cmd, "ST", stepPos)) {
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    if (stepPos < 0 || stepPos > 4096) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->goToStep(stepPos);
+    }
+
+    response = "ST" + String(stepPos);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetStepPosition(const String& cmd, String& response) {
+    int stepPos = 0;
+    if (motorDriver) {
+        stepPos = motorDriver->getCurrentStep();
+    }
+
+    response = "STEP:" + String(stepPos);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleMotorEnable(const String& cmd, String& response) {
+    if (motorDriver) {
+        motorDriver->enableMotor();
+    }
+
+    response = "MOTOR_ENABLED";
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleMotorDisable(const String& cmd, String& response) {
+    if (motorDriver) {
+        motorDriver->disableMotor();
+    }
+
+    response = "MOTOR_DISABLED";
+    return CommandResult::SUCCESS;
+}
+
+// ========================================
+// CALIBRATION COMMANDS
+// ========================================
+
+CommandResult CommandHandlers::handleStartRevCalibration(const String& cmd, String& response) {
+    if (*isMoving) {
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    if (motorDriver) {
+        motorDriver->startRevolutionCalibration();
+    }
+
+    response = "REV_CAL_STARTED";
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleRevCalAdjustPlus(const String& cmd, String& response) {
+    int steps = 1; // Default
+    if (cmd.length() > 3) {
+        if (!parseIntParameter(cmd, "RCP", steps)) {
+            return CommandResult::ERROR_INVALID_FORMAT;
+        }
+    }
+
+    if (steps < 1 || steps > 100) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->adjustRevolutionCalibration(steps);
+    }
+
+    response = "RCP" + String(steps);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleRevCalAdjustMinus(const String& cmd, String& response) {
+    int steps = 1; // Default
+    if (cmd.length() > 3) {
+        if (!parseIntParameter(cmd, "RCM", steps)) {
+            return CommandResult::ERROR_INVALID_FORMAT;
+        }
+    }
+
+    if (steps < 1 || steps > 100) {
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (motorDriver) {
+        motorDriver->adjustRevolutionCalibration(-steps);
+    }
+
+    response = "RCM" + String(steps);
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleFinishRevCalibration(const String& cmd, String& response) {
+    if (motorDriver) {
+        int totalSteps = motorDriver->finishRevolutionCalibration();
+        if (configManager) {
+            configManager->saveStepsPerRevolution(totalSteps);
+        }
+        response = "REV_CAL_COMPLETE:" + String(totalSteps);
+    } else {
+        response = "REV_CAL_COMPLETE:2048";
+    }
+
+    return CommandResult::SUCCESS;
 }

@@ -206,6 +206,46 @@ public:
     CommandResult handleStepBackward(const String& cmd, String& response);
 
     /**
+     * Step to position - ST[X]
+     */
+    CommandResult handleStepToPosition(const String& cmd, String& response);
+
+    /**
+     * Get step position - GST
+     */
+    CommandResult handleGetStepPosition(const String& cmd, String& response);
+
+    /**
+     * Motor enable - ME
+     */
+    CommandResult handleMotorEnable(const String& cmd, String& response);
+
+    /**
+     * Motor disable - MD
+     */
+    CommandResult handleMotorDisable(const String& cmd, String& response);
+
+    /**
+     * Start revolution calibration - REVCAL
+     */
+    CommandResult handleStartRevCalibration(const String& cmd, String& response);
+
+    /**
+     * Revolution calibration adjust plus - RCP
+     */
+    CommandResult handleRevCalAdjustPlus(const String& cmd, String& response);
+
+    /**
+     * Revolution calibration adjust minus - RCM
+     */
+    CommandResult handleRevCalAdjustMinus(const String& cmd, String& response);
+
+    /**
+     * Finish revolution calibration - RCFIN
+     */
+    CommandResult handleFinishRevCalibration(const String& cmd, String& response);
+
+    /**
      * Go to step - ST[X]
      */
     CommandResult handleGoToStep(const String& cmd, String& response);

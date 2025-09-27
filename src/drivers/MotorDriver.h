@@ -1,5 +1,8 @@
 #pragma once
 
+#include <Arduino.h>
+#include <stdint.h>
+
 /**
  * Abstract base class for motor drivers
  * Provides common interface for different stepper motor drivers
@@ -56,4 +59,16 @@ public:
     virtual uint16_t getCurrent() const { return 0; }
     virtual void setStealthChopEnabled(bool enabled) { /* Default: no-op */ }
     virtual bool isStealthChopEnabled() const { return false; }
+
+    // Additional methods needed by command handlers
+    virtual float getCurrentSpeed() const { return getSpeed(); }
+    virtual void setDisableDelay(uint32_t delayMs) { /* Default: no-op */ }
+    virtual uint32_t getDisableDelay() const { return 1000; }
+    virtual void resetToDefaults() { /* Default: no-op */ }
+    virtual void setDirectionMode(bool bidirectional) { /* Default: no-op */ }
+    virtual bool getDirectionMode() const { return false; }
+    virtual void setReverseDirection(bool reverse) { setDirectionReversed(reverse); }
+    virtual bool getReverseDirection() const { return isDirectionReversed(); }
+    virtual void stepForward(long steps) { move(steps); }
+    virtual void stepBackward(long steps) { move(-steps); }
 };

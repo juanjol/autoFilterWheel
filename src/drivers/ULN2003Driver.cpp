@@ -49,12 +49,12 @@ void ULN2003Driver::setCurrentPosition(long position) {
 }
 
 long ULN2003Driver::getCurrentPosition() const {
-    long pos = stepper.currentPosition();
+    long pos = const_cast<AccelStepper&>(stepper).currentPosition();
     return directionReversed ? -pos : pos;
 }
 
 long ULN2003Driver::getTargetPosition() const {
-    long pos = stepper.targetPosition();
+    long pos = const_cast<AccelStepper&>(stepper).targetPosition();
     return directionReversed ? -pos : pos;
 }
 
@@ -73,7 +73,7 @@ void ULN2003Driver::runToPosition() {
 }
 
 bool ULN2003Driver::isRunning() const {
-    return motorEnabled && stepper.isRunning();
+    return motorEnabled && const_cast<AccelStepper&>(stepper).isRunning();
 }
 
 void ULN2003Driver::stop() {
@@ -99,15 +99,15 @@ void ULN2003Driver::setAcceleration(float acceleration) {
 }
 
 float ULN2003Driver::getSpeed() const {
-    return stepper.speed();
+    return const_cast<AccelStepper&>(stepper).speed();
 }
 
 float ULN2003Driver::getMaxSpeed() const {
-    return stepper.maxSpeed();
+    return const_cast<AccelStepper&>(stepper).maxSpeed();
 }
 
 float ULN2003Driver::getAcceleration() const {
-    return stepper.acceleration();
+    return const_cast<AccelStepper&>(stepper).acceleration();
 }
 
 void ULN2003Driver::enableMotor() {
