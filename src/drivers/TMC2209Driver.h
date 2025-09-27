@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MotorDriver.h"
+#include <stdint.h>
 
 /**
  * TMC2209 Driver implementation for high-performance stepper control

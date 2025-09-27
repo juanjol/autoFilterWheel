@@ -212,6 +212,26 @@ public:
      */
     void clearMotorConfig();
 
+    /**
+     * Individual motor parameter save methods
+     */
+    void saveMotorSpeed(uint16_t speed);
+    void saveMaxMotorSpeed(uint16_t maxSpeed);
+    void saveMotorAcceleration(uint16_t acceleration);
+    void saveMotorDisableDelay(uint16_t disableDelay);
+    void resetMotorConfiguration();
+
+    /**
+     * Individual direction parameter save methods
+     */
+    void saveDirectionMode(bool bidirectional);
+    void saveReverseDirection(bool reverse);
+
+    /**
+     * Save steps per revolution (for revolution calibration)
+     */
+    void saveStepsPerRevolution(uint16_t steps);
+
     // ========================================
     // DIRECTION CONFIGURATION
     // ========================================

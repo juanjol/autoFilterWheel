@@ -3,6 +3,12 @@
 #include "../encoders/AS5600Encoder.h"
 #include <Wire.h>
 
+// C++11 compatibility helper for make_unique
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique_compat(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 FilterWheelController::FilterWheelController()
     : currentPosition(1)
     , numFilters(5)
@@ -43,7 +49,7 @@ bool FilterWheelController::init(MotorDriverType motorType) {
     }
 
     // Initialize configuration manager
-    configManager = std::make_unique<ConfigManager>();
+    configManager = make_unique_compat<ConfigManager>();
     configManager->init();
 
     // Load system configuration
@@ -195,21 +201,21 @@ bool FilterWheelController::initializeMotorDriver(MotorDriverType motorType) {
 }
 
 bool FilterWheelController::initializeDisplay() {
-    displayManager = std::make_unique<DisplayManager>(128, 64, &Wire, -1, 30);
+    displayManager = make_unique_compat<DisplayManager>(128, 64, &Wire, -1, 30);
     return displayManager->init(0x3C);
 }
 
 bool FilterWheelController::initializeEncoder() {
-    encoder = std::make_unique<AS5600Encoder>(&Wire);
+    encoder = make_unique_compat<AS5600Encoder>(&Wire);
     return encoder->init();
 }
 
 bool FilterWheelController::initializeCommandSystem() {
-    commandProcessor = std::make_unique<CommandProcessor>();
+    commandProcessor = make_unique_compat<CommandProcessor>();
     commandProcessor->init();
 
     // Create command handlers and register them
-    commandHandlers = std::make_unique<CommandHandlers>(
+    commandHandlers = make_unique_compat<CommandHandlers>(
         motorDriver.get(), displayManager.get(), configManager.get(), encoder.get(),
         &currentPosition, &numFilters, &isCalibrated, &isMoving
     );
