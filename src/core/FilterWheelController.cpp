@@ -13,7 +13,7 @@ FilterWheelController::FilterWheelController()
     : currentPosition(1)
     , numFilters(5)
     , targetPosition(1)
-    , isCalibrated(false)
+    , isCalibrated(true)
     , isMoving(false)
     , motorEnabled(false)
     , errorCode(0)
@@ -58,12 +58,11 @@ bool FilterWheelController::init(MotorDriverType motorType) {
     // Show splash screen
     showSplashScreen();
 
-    // After splash screen, show initial state
+    // After splash screen, show initial state (always READY)
     if (displayManager) {
         delay(1500);  // Let splash screen display for a moment
-        const char* status = isCalibrated ? "READY" : "NOT CAL";
         displayManager->showFilterWheelState(
-            status,
+            "READY",
             currentPosition,
             numFilters,
             getFilterName(currentPosition).c_str(),
@@ -244,8 +243,8 @@ void FilterWheelController::loadSystemConfiguration() {
 
     // Load basic configuration
     numFilters = configManager->loadFilterCount();
-    isCalibrated = configManager->isCalibrated();
     currentPosition = configManager->loadCurrentPosition();
+    // Note: isCalibrated is always true - system is always ready
 
     // Load motor configuration
     if (motorDriver && configManager->hasMotorConfig()) {
@@ -301,9 +300,7 @@ void FilterWheelController::updateDisplay() {
     if (displayManager) {
         // Update display content based on current state
         const char* status;
-        if (!isCalibrated) {
-            status = "NOT CAL";
-        } else if (isMoving) {
+        if (isMoving) {
             status = "MOVING";
         } else if (errorCode != 0) {
             status = "ERROR";
