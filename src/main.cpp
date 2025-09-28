@@ -31,7 +31,10 @@ void setup() {
         Serial.println("Motor Driver: ULN2003 with 28BYJ-48");
     #elif defined(MOTOR_DRIVER_TMC2209)
         driverType = MotorDriverType::TMC2209_BIPOLAR;
-        Serial.println("Motor Driver: TMC2209 with bipolar stepper");
+        Serial.println("Motor Driver: TMC2209 with bipolar stepper (UART)");
+    #elif defined(MOTOR_DRIVER_TMC2130)
+        driverType = MotorDriverType::TMC2130_BIPOLAR;
+        Serial.println("Motor Driver: TMC2130 with bipolar stepper (SPI)");
     #elif defined(MOTOR_DRIVER_A4988)
         driverType = MotorDriverType::A4988_BIPOLAR;
         Serial.println("Motor Driver: A4988 with bipolar stepper");

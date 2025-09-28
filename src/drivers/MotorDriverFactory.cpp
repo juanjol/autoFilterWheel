@@ -21,25 +21,23 @@ std::unique_ptr<MotorDriver> MotorDriverFactory::createULN2003Driver(const ULN20
 }
 
 std::unique_ptr<MotorDriver> MotorDriverFactory::createTMC2209Driver(const TMC2209Config& config) {
-    // Note: TMC2209Driver is not yet implemented
-    // This would create and configure a TMC2209 driver when implemented
-
     auto driver = make_unique_compat<TMC2209Driver>(
         config.stepPin, config.dirPin, config.enablePin,
         config.rxPin, config.txPin, config.slaveAddress
     );
 
-    // Would configure TMC2209-specific settings here
-    /*
-    driver->init();
-    driver->setMicrosteps(config.microsteps);
-    driver->setCurrent(config.currentMA);
-    driver->setSpeed(config.speed);
-    driver->setMaxSpeed(config.maxSpeed);
-    driver->setAcceleration(config.acceleration);
-    driver->setDirectionReversed(config.reverseDirection);
-    driver->setStealthChopEnabled(config.stealthChopEnabled);
-    */
+    // TMC2209 driver is now fully implemented
+    // Configuration will be applied in init()
+
+    return driver;
+}
+
+std::unique_ptr<MotorDriver> MotorDriverFactory::createTMC2130Driver(const TMC2130Config& config) {
+    auto driver = make_unique_compat<TMC2130Driver>(
+        config.stepPin, config.dirPin, config.enablePin, config.csPin
+    );
+
+    // TMC2130 driver configuration will be applied in init()
 
     return driver;
 }
@@ -78,12 +76,39 @@ std::unique_ptr<MotorDriver> MotorDriverFactory::createDriver(MotorDriverType ty
                 config.stepPin = 2;
                 config.dirPin = 3;
                 config.enablePin = 4;
-                config.rxPin = 16;
-                config.txPin = 17;
+                config.rxPin = 7;
+                config.txPin = 10;
                 config.microsteps = 16;
                 config.currentMA = 800;
             #endif
             return createTMC2209Driver(config);
+        }
+
+        case MotorDriverType::TMC2130_BIPOLAR: {
+            TMC2130Config config;
+            #ifdef MOTOR_DRIVER_TMC2130
+                config.stepPin = MOTOR_STEP_PIN;
+                config.dirPin = MOTOR_DIR_PIN;
+                config.enablePin = MOTOR_ENABLE_PIN;
+                config.csPin = TMC_CS_PIN;
+                config.microsteps = MOTOR_MICROSTEPS;
+                config.currentMA = MOTOR_CURRENT_MA;
+                config.stealthChopEnabled = USE_STEALTHCHOP;
+                config.stallGuardEnabled = USE_STALLGUARD;
+                config.stallGuardThreshold = STALLGUARD_THRESHOLD;
+            #else
+                // Fallback defaults if not defined
+                config.stepPin = 2;
+                config.dirPin = 3;
+                config.enablePin = 4;
+                config.csPin = 10;
+                config.microsteps = 16;
+                config.currentMA = 800;
+                config.stealthChopEnabled = true;
+                config.stallGuardEnabled = true;
+                config.stallGuardThreshold = 8;
+            #endif
+            return createTMC2130Driver(config);
         }
 
         default:
@@ -97,6 +122,8 @@ const char* MotorDriverFactory::getDriverTypeName(MotorDriverType type) {
             return "ULN2003_28BYJ48";
         case MotorDriverType::TMC2209_BIPOLAR:
             return "TMC2209_BIPOLAR";
+        case MotorDriverType::TMC2130_BIPOLAR:
+            return "TMC2130_BIPOLAR";
         case MotorDriverType::A4988_BIPOLAR:
             return "A4988_BIPOLAR";
         case MotorDriverType::DRV8825_BIPOLAR:
@@ -112,6 +139,9 @@ MotorDriverType MotorDriverFactory::parseDriverType(const char* typeStr) {
     }
     if (strcmp(typeStr, "TMC2209_BIPOLAR") == 0) {
         return MotorDriverType::TMC2209_BIPOLAR;
+    }
+    if (strcmp(typeStr, "TMC2130_BIPOLAR") == 0) {
+        return MotorDriverType::TMC2130_BIPOLAR;
     }
     if (strcmp(typeStr, "A4988_BIPOLAR") == 0) {
         return MotorDriverType::A4988_BIPOLAR;

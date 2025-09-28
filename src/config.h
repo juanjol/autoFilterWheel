@@ -44,6 +44,7 @@
 // Select motor driver type (uncomment only one)
 #define MOTOR_DRIVER_ULN2003    // ULN2003 with 28BYJ-48 stepper
 //#define MOTOR_DRIVER_TMC2209    // TMC2209 with NEMA17 or similar bipolar stepper (also supports TMC2208)
+//#define MOTOR_DRIVER_TMC2130    // TMC2130 with NEMA17 or similar bipolar stepper (SPI control)
 //#define MOTOR_DRIVER_A4988      // A4988 with bipolar stepper
 //#define MOTOR_DRIVER_DRV8825    // DRV8825 with bipolar stepper
 
@@ -92,6 +93,37 @@
   // Aliases for backward compatibility
   #define MOTOR_RX_PIN TMC_RX_PIN
   #define MOTOR_TX_PIN TMC_TX_PIN
+  #define MOTOR_MICROSTEPS DEFAULT_MICROSTEPS
+  #define MOTOR_CURRENT_MA DEFAULT_MOTOR_CURRENT
+#endif
+
+#ifdef MOTOR_DRIVER_TMC2130
+  // TMC2130 Driver pins for bipolar stepper with SPI control
+  #define MOTOR_STEP_PIN 2     // Step pulse
+  #define MOTOR_DIR_PIN 3      // Direction
+  #define MOTOR_ENABLE_PIN 4   // Enable (active low)
+  #define TMC_CS_PIN 10        // SPI Chip Select for TMC2130
+
+  // TMC2130 SPI Configuration (uses hardware SPI)
+  #define TMC_R_SENSE 0.11f    // Sense resistor value (0.11 ohms typical for SilentStepStick)
+
+  // Default motor configuration (can be changed via commands)
+  #define DEFAULT_MICROSTEPS 16      // Default microstepping (1, 2, 4, 8, 16, 32, 64, 128, 256)
+  #define DEFAULT_MOTOR_CURRENT 800  // Default RMS current in mA (max depends on driver cooling)
+  #define MAX_MOTOR_CURRENT 1500     // Maximum allowed RMS current in mA
+  #define MIN_MOTOR_CURRENT 100      // Minimum RMS current in mA
+
+  // TMC2130 StealthChop and SpreadCycle configuration
+  #define USE_STEALTHCHOP true       // Enable StealthChop (quiet mode)
+  #define STEALTHCHOP_THRESHOLD 100  // Velocity threshold for StealthChop
+  #define USE_STALLGUARD true        // Enable StallGuard (stall detection)
+  #define STALLGUARD_THRESHOLD 8     // StallGuard threshold (lower = more sensitive)
+
+  // Motor specifications (adjust for your motor)
+  #define MOTOR_STEPS_PER_REV 200   // Full steps per revolution (200 for 1.8° motor, 400 for 0.9°)
+  #define MOTOR_HOLD_MULTIPLIER 0.5f // Hold current multiplier (0.0 to 1.0)
+
+  // Aliases for backward compatibility
   #define MOTOR_MICROSTEPS DEFAULT_MICROSTEPS
   #define MOTOR_CURRENT_MA DEFAULT_MOTOR_CURRENT
 #endif
