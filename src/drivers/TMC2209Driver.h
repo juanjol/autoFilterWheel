@@ -3,16 +3,22 @@
 #include "MotorDriver.h"
 #include <stdint.h>
 
+#ifdef MOTOR_DRIVER_TMC2209
+#include "../config.h"
+#include <TMCStepper.h>
+#include <AccelStepper.h>
+
 /**
  * TMC2209 Driver implementation for high-performance stepper control
- * Supports UART communication, microstepping, stall detection, and CoolStep
- *
- * Note: This is a placeholder implementation for future development
+ * Supports UART communication, microstepping, stall detection, and StealthChop
+ * Compatible with TMC2208 in write-only mode
  */
 class TMC2209Driver : public MotorDriver {
 private:
-    // Hardware UART or SoftwareSerial for TMC2209 communication
-    // TMC2209Stepper* driver;  // Would use TMC2209Stepper library
+    // TMC2209 driver instance
+    TMC2209Stepper* tmcDriver;
+    AccelStepper* stepper;
+    HardwareSerial* tmcSerial;
 
     // Pin assignments
     uint8_t stepPin, dirPin, enablePin;
@@ -36,6 +42,10 @@ private:
     float speed;
     float maxSpeed;
     float acceleration;
+
+    // Helper methods for EEPROM
+    void saveConfigToEEPROM();
+    void loadConfigFromEEPROM();
 
 public:
     /**
@@ -105,4 +115,47 @@ public:
     uint32_t getDriverStatus() const;
     float getSupplyVoltage() const;
     float getDriverTemperature() const;
+
+    // TMC Status and Error Reporting
+    String getTMCStatusString() const;
+    bool checkTMCCommunication() const;
 };
+
+#else // Not using TMC2209
+
+// Placeholder class when TMC2209 is not selected
+class TMC2209Driver : public MotorDriver {
+public:
+    TMC2209Driver(uint8_t stepPin, uint8_t dirPin, uint8_t enablePin,
+                  uint8_t rxPin, uint8_t txPin, uint8_t slaveAddr = 0) {}
+
+    void init() override {}
+    void move(long steps) override {}
+    void moveTo(long position) override {}
+    void setCurrentPosition(long position) override {}
+    long getCurrentPosition() const override { return 0; }
+    long getTargetPosition() const override { return 0; }
+    bool run() override { return false; }
+    void runToPosition() override {}
+    bool isRunning() const override { return false; }
+    void stop() override {}
+    void emergencyStop() override {}
+    void setSpeed(float speed) override {}
+    void setMaxSpeed(float maxSpeed) override {}
+    void setAcceleration(float acceleration) override {}
+    float getSpeed() const override { return 0; }
+    float getMaxSpeed() const override { return 0; }
+    float getAcceleration() const override { return 0; }
+    void enableMotor() override {}
+    void disableMotor() override {}
+    bool isMotorEnabled() const override { return false; }
+    void setDirectionReversed(bool reversed) override {}
+    bool isDirectionReversed() const override { return false; }
+    const char* getDriverName() const override { return "TMC2209_DISABLED"; }
+    const char* getDriverVersion() const override { return "0.0.0"; }
+    bool supportsMicrostepping() const override { return false; }
+    bool supportsStallDetection() const override { return false; }
+    bool supportsCoolStep() const override { return false; }
+};
+
+#endif // MOTOR_DRIVER_TMC2209

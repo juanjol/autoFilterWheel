@@ -43,7 +43,7 @@
 
 // Select motor driver type (uncomment only one)
 #define MOTOR_DRIVER_ULN2003    // ULN2003 with 28BYJ-48 stepper
-//#define MOTOR_DRIVER_TMC2209    // TMC2209 with NEMA17 or similar bipolar stepper
+//#define MOTOR_DRIVER_TMC2209    // TMC2209 with NEMA17 or similar bipolar stepper (also supports TMC2208)
 //#define MOTOR_DRIVER_A4988      // A4988 with bipolar stepper
 //#define MOTOR_DRIVER_DRV8825    // DRV8825 with bipolar stepper
 
@@ -60,14 +60,40 @@
 #endif
 
 #ifdef MOTOR_DRIVER_TMC2209
-  // TMC2209 Driver pins for bipolar stepper
+  // TMC2209/TMC2208 Driver pins for bipolar stepper
   #define MOTOR_STEP_PIN 2     // Step pulse
   #define MOTOR_DIR_PIN 3      // Direction
   #define MOTOR_ENABLE_PIN 4   // Enable (active low)
-  #define MOTOR_RX_PIN 16      // UART RX for TMC2209 configuration
-  #define MOTOR_TX_PIN 17      // UART TX for TMC2209 configuration
-  #define MOTOR_MICROSTEPS 16  // Microstepping configuration
-  #define MOTOR_CURRENT_MA 800 // Motor current in mA
+  #define TMC_RX_PIN 7         // UART RX for TMC2209 configuration (GPIO7)
+  #define TMC_TX_PIN 10        // UART TX for TMC2209 configuration (GPIO10)
+
+  // TMC2209 UART Configuration
+  #define TMC_SERIAL_BAUD 115200  // UART baud rate for TMC communication
+  #define TMC_R_SENSE 0.11f       // Sense resistor value (0.11 ohms typical for SilentStepStick)
+
+  // Default motor configuration (can be changed via commands)
+  #define DEFAULT_MICROSTEPS 16      // Default microstepping (1, 2, 4, 8, 16, 32, 64, 128, 256)
+  #define DEFAULT_MOTOR_CURRENT 800  // Default RMS current in mA (max depends on driver cooling)
+  #define MAX_MOTOR_CURRENT 1500     // Maximum allowed RMS current in mA
+  #define MIN_MOTOR_CURRENT 100      // Minimum RMS current in mA
+
+  // TMC2209 StealthChop and SpreadCycle configuration
+  #define USE_STEALTHCHOP true       // Enable StealthChop (quiet mode)
+  #define STEALTHCHOP_THRESHOLD 100  // Velocity threshold for StealthChop
+  #define USE_COOLSTEP false         // Enable CoolStep (dynamic current control)
+
+  // Motor specifications (adjust for your motor)
+  #define MOTOR_STEPS_PER_REV 200   // Full steps per revolution (200 for 1.8° motor, 400 for 0.9°)
+  #define MOTOR_HOLD_MULTIPLIER 0.5f // Hold current multiplier (0.0 to 1.0)
+
+  // TMC2209 driver address (0-3, only if using multiple drivers on same UART)
+  #define TMC_DRIVER_ADDRESS 0
+
+  // Aliases for backward compatibility
+  #define MOTOR_RX_PIN TMC_RX_PIN
+  #define MOTOR_TX_PIN TMC_TX_PIN
+  #define MOTOR_MICROSTEPS DEFAULT_MICROSTEPS
+  #define MOTOR_CURRENT_MA DEFAULT_MOTOR_CURRENT
 #endif
 
 #ifdef MOTOR_DRIVER_A4988
@@ -195,6 +221,15 @@
 #define CMD_SET_REVERSE_MODE "MRV"      // Set reverse mode (MRV0=normal, MRV1=reversed)
 #define CMD_GET_DIRECTION_CONFIG "GDC"  // Get direction configuration
 
+// TMC2209 specific commands
+#define CMD_SET_MICROSTEPS "TMC_MS"     // Set microsteps (TMC_MS16, TMC_MS32, etc.)
+#define CMD_SET_CURRENT "TMC_CUR"        // Set motor current in mA (TMC_CUR800)
+#define CMD_GET_TMC_STATUS "TMC_STATUS" // Get TMC2209 status and diagnostics
+#define CMD_SET_STEALTHCHOP "TMC_SC"    // Enable/disable StealthChop (TMC_SC0, TMC_SC1)
+#define CMD_GET_TMC_TEMP "TMC_TEMP"     // Get driver temperature status
+#define CMD_TMC_RESET "TMC_RESET"        // Reset TMC2209 to defaults
+#define CMD_SET_HOLD_CURRENT "TMC_HOLD"  // Set hold current multiplier (TMC_HOLD50 = 50%)
+
 // ============================================
 // SYSTEM CONFIGURATION
 // ============================================
@@ -220,6 +255,11 @@
 #define EEPROM_DIRECTION_FLAG 0x124     // Direction config flag (0xEE when saved)
 #define EEPROM_DIRECTION_MODE 0x128     // Direction mode (uint8_t: 0=unidirectional, 1=bidirectional)
 #define EEPROM_REVERSE_MODE 0x12C       // Reverse mode (uint8_t: 0=normal, 1=reversed)
+#define EEPROM_TMC_CONFIG_FLAG 0x130    // TMC2209 config flag (0xFF when saved)
+#define EEPROM_TMC_MICROSTEPS 0x134     // TMC2209 microsteps (uint16_t)
+#define EEPROM_TMC_CURRENT 0x138        // TMC2209 motor current in mA (uint16_t)
+#define EEPROM_TMC_STEALTHCHOP 0x13C    // TMC2209 StealthChop enabled (uint8_t)
+#define EEPROM_TMC_HOLD_MULT 0x140      // TMC2209 hold current multiplier (float)
 #define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
 #define MIN_FILTER_COUNT 3           // Minimum number of filters
 #define MAX_FILTER_COUNT 8           // Maximum number of filters (hardware/EEPROM limit)
@@ -235,7 +275,6 @@
 
 // Motor power management
 #define MOTOR_DISABLE_DELAY 1000    // Time in ms to keep motor powered after movement (reduced to 1 second)
-#define MOTOR_ENABLE_PIN -1         // Pin to control motor power (set to valid GPIO if using external enable)
 #define AUTO_DISABLE_MOTOR true     // Automatically disable motor after movement
 #define MOTOR_HOLD_CURRENT false    // Set to true if you want to keep position with reduced current
 
@@ -246,13 +285,13 @@
 // ERROR CODES
 // ============================================
 
-#define ERROR_NONE 0
-#define ERROR_MOTOR_TIMEOUT 1
-#define ERROR_ENCODER_FAULT 2
-#define ERROR_INVALID_POSITION 3
-#define ERROR_CALIBRATION_FAILED 4
-#define ERROR_EEPROM_FAULT 5
-#define ERROR_COMMUNICATION 6
+#define FW_ERROR_NONE 0
+#define FW_ERROR_MOTOR_TIMEOUT 1
+#define FW_ERROR_ENCODER_FAULT 2
+#define FW_ERROR_INVALID_POSITION 3
+#define FW_ERROR_CALIBRATION_FAILED 4
+#define FW_ERROR_EEPROM_FAULT 5
+#define FW_ERROR_COMMUNICATION 6
 
 // ============================================
 // FIRMWARE INFORMATION
