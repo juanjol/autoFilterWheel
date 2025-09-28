@@ -323,6 +323,16 @@ public:
      */
     CommandResult handleHelp(const String& cmd, String& response);
 
+    /**
+     * Rotate display - ROTATE[0/1]
+     */
+    CommandResult handleRotateDisplay(const String& cmd, String& response);
+
+    /**
+     * Get display info - DISPLAY
+     */
+    CommandResult handleGetDisplayInfo(const String& cmd, String& response);
+
 private:
     /**
      * Helper methods for parameter parsing

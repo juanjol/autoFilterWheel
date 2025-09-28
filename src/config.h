@@ -196,6 +196,10 @@
 // Display update interval
 #define DISPLAY_UPDATE_INTERVAL 100  // milliseconds
 
+// Display rotation (set to true to rotate display 180 degrees)
+#define OLED_ROTATION_180 false    // Default: normal orientation
+// Note: Rotation can be changed at runtime via serial command #ROTATE
+
 // ============================================
 // SERIAL COMMUNICATION
 // ============================================
@@ -262,6 +266,10 @@
 #define CMD_TMC_RESET "TMC_RESET"        // Reset TMC2209 to defaults
 #define CMD_SET_HOLD_CURRENT "TMC_HOLD"  // Set hold current multiplier (TMC_HOLD50 = 50%)
 
+// Display commands
+#define CMD_ROTATE_DISPLAY "ROTATE"     // Rotate display 180 degrees (ROTATE0, ROTATE1)
+#define CMD_GET_DISPLAY_INFO "DISPLAY"  // Get display configuration info
+
 // ============================================
 // SYSTEM CONFIGURATION
 // ============================================
@@ -292,6 +300,8 @@
 #define EEPROM_TMC_CURRENT 0x138        // TMC2209 motor current in mA (uint16_t)
 #define EEPROM_TMC_STEALTHCHOP 0x13C    // TMC2209 StealthChop enabled (uint8_t)
 #define EEPROM_TMC_HOLD_MULT 0x140      // TMC2209 hold current multiplier (float)
+#define EEPROM_DISPLAY_CONFIG_FLAG 0x144  // Display config flag (0xAA when saved)
+#define EEPROM_DISPLAY_ROTATION 0x148     // Display rotation (uint8_t: 0=normal, 1=180°)
 #define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
 #define MIN_FILTER_COUNT 3           // Minimum number of filters
 #define MAX_FILTER_COUNT 8           // Maximum number of filters (hardware/EEPROM limit)

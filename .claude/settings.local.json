@@ -29,7 +29,10 @@
       "Bash(pio run:*)",
       "Read(//c/Users/juanjo/**)",
       "Bash(\"/c/Users/juanjo/.platformio/penv/Scripts/pio.exe\" run)",
-      "Bash(\"/c/Users/juanjo/.platformio/penv/Scripts/pio.exe\" run --environment esp32-c3-devkitm-1)"
+      "Bash(\"/c/Users/juanjo/.platformio/penv/Scripts/pio.exe\" run --environment esp32-c3-devkitm-1)",
+      "Bash(/c/Users/juanjo/.platformio/penv/Scripts/pio.exe run --environment esp32-c3-devkitm-1)",
+      "Bash(git checkout:*)",
+      "Bash(/c/Users/juanjo/.platformio/penv/Scripts/pio.exe run)"
     ],
     "deny": [],
     "ask": []

@@ -4,6 +4,7 @@
 #include "../display/DisplayManager.h"
 #include "../config/ConfigManager.h"
 #include "../encoders/EncoderInterface.h"
+#include "../config.h"
 
 CommandHandlers::CommandHandlers(MotorDriver* motor, DisplayManager* display,
                                  ConfigManager* config, EncoderInterface* enc,
@@ -62,6 +63,13 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
 
     processor.registerCommand("HELP", "Show help",
         [this](const String& cmd, String& response) { return handleHelp(cmd, response); });
+
+    // Display Commands
+    processor.registerCommand("ROTATE", "Rotate display 180 degrees",
+        [this](const String& cmd, String& response) { return handleRotateDisplay(cmd, response); });
+
+    processor.registerCommand("DISPLAY", "Get display information",
+        [this](const String& cmd, String& response) { return handleGetDisplayInfo(cmd, response); });
 
     // Motor Configuration Commands
     processor.registerCommand("GMC", "Get motor configuration",
@@ -337,7 +345,7 @@ CommandResult CommandHandlers::handleSetFilterName(const String& cmd, String& re
 }
 
 CommandResult CommandHandlers::handleHelp(const String& cmd, String& response) {
-    response = "HELP:Use #COMMAND format. Available: GP,MP[X],SP[X],STATUS,CAL,ID,VER,GF,FC[X],GN[X],SN[X]:Name,STOP";
+    response = "HELP:Use #COMMAND format. Available: GP,MP[X],SP[X],STATUS,CAL,ID,VER,GF,FC[X],GN[X],SN[X]:Name,ROTATE[0/1],DISPLAY,STOP";
     return CommandResult::SUCCESS;
 }
 
@@ -881,5 +889,51 @@ CommandResult CommandHandlers::handleSetUnidirectionalMode(const String& cmd, St
     }
 
     response = "UNI" + String(mode);
+    return CommandResult::SUCCESS;
+}
+
+// ========================================
+// DISPLAY COMMANDS
+// ========================================
+
+CommandResult CommandHandlers::handleRotateDisplay(const String& cmd, String& response) {
+    if (!displayManager) {
+        response = "ERROR:Display not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Parse rotation parameter: ROTATE0 = normal, ROTATE1 = 180°
+    if (cmd.length() > 6) {
+        int rotation = cmd.substring(6).toInt();
+
+        if (rotation < 0 || rotation > 1) {
+            response = "ERROR:Invalid rotation (0=normal, 1=180°)";
+            return CommandResult::ERROR_SYSTEM_BUSY;
+        }
+
+        displayManager->setRotation(rotation == 1);
+        response = "ROTATE" + String(rotation);
+        return CommandResult::SUCCESS;
+    } else {
+        // Just toggle rotation if no parameter provided
+        bool currentRotation = displayManager->isRotated180();
+        displayManager->setRotation(!currentRotation);
+        response = "ROTATE" + String(displayManager->isRotated180() ? 1 : 0);
+        return CommandResult::SUCCESS;
+    }
+}
+
+CommandResult CommandHandlers::handleGetDisplayInfo(const String& cmd, String& response) {
+    if (!displayManager) {
+        response = "ERROR:Display not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    response = "DISPLAY:";
+    response += "Size=" + String(displayManager->getWidth()) + "x" + String(displayManager->getHeight());
+    response += ",Rotation=" + String(displayManager->isRotated180() ? "180°" : "Normal");
+    response += ",Enabled=" + String(displayManager->isEnabled() ? "Yes" : "No");
+    response += ",Update=" + String(DISPLAY_UPDATE_INTERVAL) + "ms";
+
     return CommandResult::SUCCESS;
 }
