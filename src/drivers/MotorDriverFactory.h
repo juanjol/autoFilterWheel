@@ -3,6 +3,7 @@
 #include "MotorDriver.h"
 #include "ULN2003Driver.h"
 #include "TMC2209Driver.h"
+#include "TMC2130Driver.h"
 #include <memory>
 
 /**
@@ -10,7 +11,8 @@
  */
 enum class MotorDriverType {
     ULN2003_28BYJ48,    // ULN2003 with 28BYJ-48 stepper
-    TMC2209_BIPOLAR,    // TMC2209 with bipolar stepper
+    TMC2209_BIPOLAR,    // TMC2209 with bipolar stepper (UART)
+    TMC2130_BIPOLAR,    // TMC2130 with bipolar stepper (SPI)
     // Future drivers can be added here
     A4988_BIPOLAR,      // A4988 with bipolar stepper
     DRV8825_BIPOLAR     // DRV8825 with bipolar stepper
@@ -45,6 +47,23 @@ struct TMC2209Config {
 };
 
 /**
+ * Configuration structure for TMC2130 driver
+ */
+struct TMC2130Config {
+    uint8_t stepPin, dirPin, enablePin;
+    uint8_t csPin;  // SPI chip select
+    uint16_t microsteps = 16;
+    uint16_t currentMA = 800;
+    float speed = 1000.0;
+    float maxSpeed = 2000.0;
+    float acceleration = 500.0;
+    bool reverseDirection = false;
+    bool stealthChopEnabled = true;
+    bool stallGuardEnabled = true;
+    int8_t stallGuardThreshold = 8;
+};
+
+/**
  * Factory class for creating motor driver instances
  */
 class MotorDriverFactory {
@@ -58,6 +77,11 @@ public:
      * Create TMC2209 driver instance
      */
     static std::unique_ptr<MotorDriver> createTMC2209Driver(const TMC2209Config& config);
+
+    /**
+     * Create TMC2130 driver instance
+     */
+    static std::unique_ptr<MotorDriver> createTMC2130Driver(const TMC2130Config& config);
 
     /**
      * Create driver by type with default configuration
