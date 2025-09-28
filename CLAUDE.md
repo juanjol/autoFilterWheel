@@ -167,3 +167,8 @@ The system supports dynamic filter names configurable at runtime:
 - Document any new configuration options
 - Follow existing code formatting and commenting style
 - Update README.md for user-facing changes
+
+### Git
+- Commits must not have any Claude trace or text
+- We use main branch for stable releases, develop for working
+- We use dedicated branches for new features

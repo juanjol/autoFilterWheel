@@ -24,6 +24,7 @@ private:
     // Display state
     bool displayEnabled;
     bool needsUpdate;
+    bool rotation180;       // True if display is rotated 180 degrees
 
     // Layout constants for 0.42" OLED (72x40 visible area)
     static constexpr uint8_t STATUS_LINE_Y = 24;
@@ -147,6 +148,28 @@ public:
      */
     uint8_t getWidth() const { return screenWidth; }
     uint8_t getHeight() const { return screenHeight; }
+
+    /**
+     * Set display rotation
+     * @param rotate180 True to rotate display 180 degrees
+     */
+    void setRotation(bool rotate180);
+
+    /**
+     * Get current rotation state
+     * @return True if display is rotated 180 degrees
+     */
+    bool isRotated180() const { return rotation180; }
+
+    /**
+     * Save display configuration to EEPROM
+     */
+    void saveDisplayConfig();
+
+    /**
+     * Load display configuration from EEPROM
+     */
+    void loadDisplayConfig();
     uint8_t getXOffset() const { return xOffset; }
 
     /**

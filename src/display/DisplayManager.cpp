@@ -1,6 +1,8 @@
 #include "DisplayManager.h"
+#include "../config.h"
 #include <Arduino.h>
 #include <Wire.h>
+#include <EEPROM.h>
 
 DisplayManager::DisplayManager(uint8_t width, uint8_t height, TwoWire* wire,
                                int8_t resetPin, uint8_t xOffset)
@@ -13,6 +15,7 @@ DisplayManager::DisplayManager(uint8_t width, uint8_t height, TwoWire* wire,
     , updateInterval(100)  // 100ms default
     , displayEnabled(true)
     , needsUpdate(false)
+    , rotation180(OLED_ROTATION_180)  // Use default from config
 {
     display = new Adafruit_SSD1306(width, height, wire, resetPin);
 }
@@ -26,10 +29,16 @@ bool DisplayManager::init(uint8_t address) {
         return false;
     }
 
+    // Load display configuration from EEPROM
+    loadDisplayConfig();
+
     // Configure display
     display->clearDisplay();
     display->setTextColor(SSD1306_WHITE);
     display->setTextWrap(false);
+
+    // Set rotation
+    display->setRotation(rotation180 ? 2 : 0);  // 0 = normal, 2 = 180 degrees
 
     showSplashScreen();
     forceUpdate();
@@ -305,5 +314,40 @@ void DisplayManager::truncateText(char* buffer, const char* text, uint8_t maxCha
         buffer[maxChars - 2] = '.';
         buffer[maxChars - 1] = '.';
         buffer[maxChars] = '\0';
+    }
+}
+
+void DisplayManager::setRotation(bool rotate180) {
+    rotation180 = rotate180;
+
+    if (display) {
+        display->setRotation(rotation180 ? 2 : 0);  // 0 = normal, 2 = 180 degrees
+        needsUpdate = true;
+        forceUpdate();  // Immediate update to show rotation change
+    }
+
+    // Save to EEPROM
+    saveDisplayConfig();
+
+    Serial.print("Display rotation: ");
+    Serial.println(rotation180 ? "180°" : "Normal");
+}
+
+void DisplayManager::saveDisplayConfig() {
+    EEPROM.write(EEPROM_DISPLAY_CONFIG_FLAG, 0xAA);  // Magic byte to indicate config is saved
+    EEPROM.write(EEPROM_DISPLAY_ROTATION, rotation180 ? 1 : 0);
+    EEPROM.commit();
+}
+
+void DisplayManager::loadDisplayConfig() {
+    // Check if display config is saved in EEPROM
+    if (EEPROM.read(EEPROM_DISPLAY_CONFIG_FLAG) == 0xAA) {
+        uint8_t rotationValue = EEPROM.read(EEPROM_DISPLAY_ROTATION);
+        rotation180 = (rotationValue == 1);
+        Serial.println("Display configuration loaded from EEPROM");
+    } else {
+        // Use default from config.h
+        rotation180 = OLED_ROTATION_180;
+        Serial.println("Using default display configuration");
     }
 }
