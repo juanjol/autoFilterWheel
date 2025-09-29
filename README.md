@@ -1,19 +1,19 @@
-# ESP32-C3 Filter Wheel Controller
+# DIY ASCOM compatible Filter Wheel for astronomy
 
 [![Documentation Status](https://img.shields.io/badge/docs-mkdocs-blue)](https://juanjol.github.io/autoFilterWheel/)
 [![GitHub Release](https://img.shields.io/github/v/release/juanjol/autoFilterWheel)](https://github.com/juanjol/autoFilterWheel/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/juanjol/autoFilterWheel/docs.yml)](https://github.com/juanjol/autoFilterWheel/actions)
 
-A professional, open-source astronomy filter wheel controller built on the ESP32-C3 microcontroller. Features integrated OLED display, stepper motor control, magnetic encoder feedback, and full ASCOM compatibility for seamless integration with popular astronomy software.
+A DIY, open-source astronomy filter wheel controller built on the ESP32-C3 microcontroller. Features integrated OLED display, stepper motor control, magnetic encoder feedback, and full ASCOM compatibility for seamless integration with popular astronomy software.
 
-## **[Complete Documentation Available](https://juanjol.github.io/autoFilterWheel/)**
+## **[Complete Documentation Work in progress](https://juanjol.github.io/autoFilterWheel/)**
 
 This README provides a quick overview. **For comprehensive guides, tutorials, and references, visit our full documentation site.**
 
 ## Features
 
-- **5-Position Filter Control** - Automated filter wheel positioning
+- **3-8-Position Filter Control** - Automated filter wheel positioning
 - **0.42" OLED Display** - Real-time status and position display
 - **AS5600 Magnetic Encoder** - Precise position feedback (optional)
 - **Power Management** - Automatic motor disable for energy saving

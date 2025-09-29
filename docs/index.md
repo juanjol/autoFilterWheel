@@ -59,7 +59,7 @@ The controller supports two configurations - choose based on your needs and expe
 ## 🎬 Demo Video
 
 <div class="video-wrapper">
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/your-demo-video" frameborder="0" allowfullscreen></iframe>
+  WIP
 </div>
 
 ## 📋 Specifications
@@ -163,12 +163,7 @@ Active development with community contributions, regular updates, and responsive
 - **Wiring diagrams** and assembly instructions
 - **Example configurations** for common setups
 
-## 🤝 Community & Support
 
-- **GitHub Repository**: [Source code and issues](https://github.com/juanjol/autoFilterWheel)
-- **Discord Community**: [Real-time chat and support](#)
-- **Forum**: [CloudyNights thread](#)
-- **Email**: [project@example.com](mailto:project@example.com)
 
 ## 📈 Project Status
 
@@ -184,4 +179,4 @@ Active development with community contributions, regular updates, and responsive
 
 ---
 
-*Ready to build your own professional filter wheel controller? Get started with the [Configuration Options](getting-started/configuration-options.md)!*
+*Ready to build your own DIY filter wheel controller? Get started with the [Configuration Options](getting-started/configuration-options.md)!*
