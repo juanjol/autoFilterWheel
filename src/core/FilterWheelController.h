@@ -31,6 +31,8 @@ private:
     bool isMoving;
     bool motorEnabled;
     uint8_t errorCode;
+    bool needsCalibration;          // True when encoder mismatch detected
+    bool inCalibrationMode;         // True during guided calibration
 
     // Timing and management
     unsigned long lastUpdate;
@@ -106,6 +108,26 @@ public:
      * Set current position without moving (calibration)
      */
     void setCurrentPosition(uint8_t position);
+
+    /**
+     * Start guided calibration mode
+     */
+    void startGuidedCalibration();
+
+    /**
+     * Finish guided calibration and save encoder offset
+     */
+    void finishGuidedCalibration();
+
+    /**
+     * Check if system needs calibration
+     */
+    bool needsCalibrationCheck() const;
+
+    /**
+     * Check if in calibration mode
+     */
+    bool isInCalibrationMode() const;
 
     // ========================================
     // CONFIGURATION INTERFACE
@@ -257,6 +279,11 @@ private:
     bool initializeDisplay();
     bool initializeEncoder();
     bool initializeCommandSystem();
+
+    /**
+     * Convert angle to filter position
+     */
+    uint8_t angleToPosition(float angle);
 
     /**
      * Load configuration from EEPROM
