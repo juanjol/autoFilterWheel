@@ -13,13 +13,13 @@ This README provides a quick overview. **For comprehensive guides, tutorials, an
 
 ## Features
 
-- **3-8-Position Filter Control** - Automated filter wheel positioning
-- **0.42" OLED Display** - Real-time status and position display
-- **AS5600 Magnetic Encoder** - Precise position feedback (optional)
-- **Power Management** - Automatic motor disable for energy saving
+- **3-9 Position Filter Control** - Automated filter wheel positioning with configurable filter count
+- **0.42" OLED Display** - Real-time status and position display with 180° rotation support
+- **AS5600 Magnetic Encoder** - Precise angle-based positioning with PID control
+- **Power Management** - Automatic motor disable after 1 second for energy saving
 - **Serial Protocol** - ASCOM-compatible command interface
-- **Position Memory** - Remembers position through power cycles
-- **Flexible Direction** - Unidirectional or bidirectional movement
+- **Position Memory** - Stores position and calibration in EEPROM
+- **Dynamic Filter Names** - Customizable filter names stored in EEPROM
 
 ## Hardware Requirements
 
@@ -137,9 +137,9 @@ The system supports **dynamic filter names** that can be configured via software
 
 ### Motor Settings
 ```cpp
-#define MOTOR_DIRECTION_MODE 0        // 0=Unidirectional, 1=Bidirectional
-#define MOTOR_REVERSE_DIRECTION true  // Reverse if motor turns wrong way
 #define MOTOR_SPEED 300.0             // Steps per second
+#define MAX_MOTOR_SPEED 430.0         // Maximum speed
+#define MOTOR_ACCELERATION 1000.0     // Acceleration rate
 ```
 
 ### Display Settings
@@ -163,7 +163,7 @@ The system supports **dynamic filter names** that can be configured via software
 | Command | Description | Example | Response |
 |---------|-------------|---------|-----------|
 | `#GF` | Get number of filters | `#GF` | `F5` |
-| `#FC[3-8]` | Set filter count | `#FC6` | `FC6` |
+| `#FC[3-9]` | Set filter count | `#FC6` | `FC6` |
 | `#GN` | Get all filter names | `#GN` | `NAMES:Luminance,Red,Green,Blue,H-Alpha` |
 | `#GN[1-X]` | Get specific filter name | `#GN2` | `N2:Red` |
 | `#SN[1-X]:Name` | Set filter name | `#SN1:Luminance` | `SN1:Luminance` |
@@ -211,9 +211,10 @@ Line 3: [Filter Name]     - Name of current filter
 - **Supply**: 3.3V only
 
 ### Performance
-- **Position Accuracy**: ±1 step with encoder feedback
-- **Movement Speed**: Configurable up to 500 steps/second
+- **Position Accuracy**: <0.8° with encoder PID control (<1° tolerance)
+- **Movement Speed**: Configurable up to 430 steps/second
 - **Power Consumption**: <50mA standby, <300mA during movement
+- **PID Control**: Automatic closed-loop positioning with encoder feedback
 
 ## Troubleshooting
 
@@ -223,7 +224,7 @@ Line 3: [Filter Name]     - Name of current filter
 |---------|-------|----------|
 | Motor doesn't move | Insufficient power | Use external 5V/1A supply |
 | Erratic movement | Loose connections | Check all wiring |
-| Wrong direction | Direction setting | Change `MOTOR_REVERSE_DIRECTION` |
+| Wrong direction | Encoder/motor mismatch | Set `AS5600_INVERT_DIRECTION` in config.h |
 
 ### Display Issues
 
@@ -293,13 +294,28 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### Version 2.0.0 (Current)
+**Major Release - Encoder-Based PID Control System**
+
+- **Complete architectural redesign** for encoder-based closed-loop control
+- **PID Controller**: Precision angle-based positioning with <0.8° accuracy
+- **Flexible Filter Count**: Support for 3-9 filter configurations (previously 3-8)
+- **Dynamic Filter Names**: Runtime-configurable filter names stored in EEPROM
+- **Display Rotation**: 180° rotation support with coordinate adjustment
+- **Encoder Direction Control**: Configurable `AS5600_INVERT_DIRECTION` flag
+- **Improved Calibration**: Simplified encoder offset calibration system
+- **Code Cleanup**: Removed 1000+ lines of obsolete calibration code
+- **Documentation**: Complete update of technical documentation and guides
+- **Breaking Changes**:
+  - Removed step-based calibration commands (REVCAL, BLCAL, etc.)
+  - Removed direction mode configuration (encoder determines optimal path)
+  - Changed DEVICE_ID format to ESP32FW-PID-V2.0
+
 ### Version 1.0.0
 - Initial release
 - 5-position filter wheel control
-- AS5600 encoder support
-- OLED display with status
-- Power management features
-- EEPROM position memory
+- Basic AS5600 encoder support
+- Step-based positioning
 - Serial command interface
 
 ---

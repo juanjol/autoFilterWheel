@@ -21,25 +21,12 @@ private:
     static constexpr uint16_t EEPROM_FILTER_COUNT = 0x10;           // 1 byte
     static constexpr uint16_t EEPROM_FILTER_NAMES_START = 0x20;     // 16 bytes per name
 
-    // Revolution calibration
-    static constexpr uint16_t EEPROM_REVOLUTION_FLAG = 0x100;       // 4 bytes
-    static constexpr uint16_t EEPROM_STEPS_PER_REVOLUTION = 0x104;  // 2 bytes
-
-    // Backlash calibration
-    static constexpr uint16_t EEPROM_BACKLASH_FLAG = 0x108;         // 4 bytes
-    static constexpr uint16_t EEPROM_BACKLASH_STEPS = 0x10C;        // 1 byte
-
     // Motor configuration
     static constexpr uint16_t EEPROM_MOTOR_CONFIG_FLAG = 0x110;     // 4 bytes
     static constexpr uint16_t EEPROM_MOTOR_SPEED = 0x114;           // 2 bytes
     static constexpr uint16_t EEPROM_MOTOR_MAX_SPEED = 0x116;       // 2 bytes
     static constexpr uint16_t EEPROM_MOTOR_ACCELERATION = 0x118;    // 2 bytes
     static constexpr uint16_t EEPROM_MOTOR_DISABLE_DELAY = 0x11A;   // 2 bytes
-
-    // Direction configuration
-    static constexpr uint16_t EEPROM_DIRECTION_FLAG = 0x124;        // 4 bytes
-    static constexpr uint16_t EEPROM_DIRECTION_MODE = 0x128;        // 1 byte
-    static constexpr uint16_t EEPROM_REVERSE_DIRECTION = 0x129;     // 1 byte
 
     // Magic bytes for validation
     static constexpr uint32_t CALIBRATION_MAGIC = 0xAA;
@@ -63,7 +50,7 @@ private:
     };
 
 public:
-    static constexpr uint8_t MAX_FILTER_COUNT = 8;
+    static constexpr uint8_t MAX_FILTER_COUNT = 9;
     static constexpr uint8_t MAX_FILTER_NAME_LENGTH = 15;
 
     /**
@@ -140,54 +127,6 @@ public:
     void clearFilterNames();
 
     // ========================================
-    // REVOLUTION CALIBRATION
-    // ========================================
-
-    /**
-     * Save revolution calibration
-     */
-    void saveRevolutionCalibration(uint16_t stepsPerRevolution);
-
-    /**
-     * Load revolution calibration
-     */
-    uint16_t loadRevolutionCalibration();
-
-    /**
-     * Check if revolution calibration exists
-     */
-    bool hasRevolutionCalibration();
-
-    /**
-     * Clear revolution calibration
-     */
-    void clearRevolutionCalibration();
-
-    // ========================================
-    // BACKLASH CALIBRATION
-    // ========================================
-
-    /**
-     * Save backlash calibration
-     */
-    void saveBacklashCalibration(uint8_t backlashSteps);
-
-    /**
-     * Load backlash calibration
-     */
-    uint8_t loadBacklashCalibration();
-
-    /**
-     * Check if backlash calibration exists
-     */
-    bool hasBacklashCalibration();
-
-    /**
-     * Clear backlash calibration
-     */
-    void clearBacklashCalibration();
-
-    // ========================================
     // MOTOR CONFIGURATION
     // ========================================
 
@@ -220,46 +159,6 @@ public:
     void saveMotorAcceleration(uint16_t acceleration);
     void saveMotorDisableDelay(uint16_t disableDelay);
     void resetMotorConfiguration();
-
-    /**
-     * Individual direction parameter save methods
-     */
-    void saveDirectionMode(bool bidirectional);
-    void saveReverseDirection(bool reverse);
-
-    /**
-     * Save steps per revolution (for revolution calibration)
-     */
-    void saveStepsPerRevolution(uint16_t steps);
-
-    /**
-     * Save backlash steps (for backlash calibration)
-     */
-    void saveBacklashSteps(uint8_t steps);
-
-    // ========================================
-    // DIRECTION CONFIGURATION
-    // ========================================
-
-    /**
-     * Save direction configuration
-     */
-    void saveDirectionConfig(uint8_t directionMode, bool reverseDirection);
-
-    /**
-     * Load direction configuration
-     */
-    DirectionConfig loadDirectionConfig();
-
-    /**
-     * Check if direction configuration exists
-     */
-    bool hasDirectionConfig();
-
-    /**
-     * Clear direction configuration (reset to defaults)
-     */
-    void clearDirectionConfig();
 
     // ========================================
     // UTILITY METHODS

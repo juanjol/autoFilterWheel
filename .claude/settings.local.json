@@ -33,7 +33,9 @@
       "Bash(/c/Users/juanjo/.platformio/penv/Scripts/pio.exe run --environment esp32-c3-devkitm-1)",
       "Bash(git checkout:*)",
       "Bash(/c/Users/juanjo/.platformio/penv/Scripts/pio.exe run)",
-      "Bash(/c/Users/juanjo/.platformio/penv/Scripts/pio.exe run -t upload)"
+      "Bash(/c/Users/juanjo/.platformio/penv/Scripts/pio.exe run -t upload)",
+      "Bash(platformio run:*)",
+      "Bash(~/.platformio/penv/Scripts/platformio.exe run)"
     ],
     "deny": [],
     "ask": []

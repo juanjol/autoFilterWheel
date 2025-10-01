@@ -81,46 +81,6 @@ void ConfigManager::clearFilterNames() {
     writeUint32(EEPROM_FILTER_NAMES_FLAG, 0);
 }
 
-void ConfigManager::saveRevolutionCalibration(uint16_t stepsPerRevolution) {
-    writeUint32(EEPROM_REVOLUTION_FLAG, REVOLUTION_MAGIC);
-    writeUint16(EEPROM_STEPS_PER_REVOLUTION, stepsPerRevolution);
-}
-
-uint16_t ConfigManager::loadRevolutionCalibration() {
-    if (hasRevolutionCalibration()) {
-        return readUint16(EEPROM_STEPS_PER_REVOLUTION);
-    }
-    return 2048; // Default for 28BYJ-48
-}
-
-bool ConfigManager::hasRevolutionCalibration() {
-    return readUint32(EEPROM_REVOLUTION_FLAG) == REVOLUTION_MAGIC;
-}
-
-void ConfigManager::clearRevolutionCalibration() {
-    writeUint32(EEPROM_REVOLUTION_FLAG, 0);
-}
-
-void ConfigManager::saveBacklashCalibration(uint8_t backlashSteps) {
-    writeUint32(EEPROM_BACKLASH_FLAG, BACKLASH_MAGIC);
-    writeUint8(EEPROM_BACKLASH_STEPS, backlashSteps);
-}
-
-uint8_t ConfigManager::loadBacklashCalibration() {
-    if (hasBacklashCalibration()) {
-        return readUint8(EEPROM_BACKLASH_STEPS);
-    }
-    return 0; // Default: no backlash compensation
-}
-
-bool ConfigManager::hasBacklashCalibration() {
-    return readUint32(EEPROM_BACKLASH_FLAG) == BACKLASH_MAGIC;
-}
-
-void ConfigManager::clearBacklashCalibration() {
-    writeUint32(EEPROM_BACKLASH_FLAG, 0);
-}
-
 void ConfigManager::saveMotorConfig(uint16_t speed, uint16_t maxSpeed,
                                    uint16_t acceleration, uint16_t disableDelay) {
     writeUint32(EEPROM_MOTOR_CONFIG_FLAG, MOTOR_CONFIG_MAGIC);
@@ -157,35 +117,6 @@ void ConfigManager::clearMotorConfig() {
     writeUint32(EEPROM_MOTOR_CONFIG_FLAG, 0);
 }
 
-void ConfigManager::saveDirectionConfig(uint8_t directionMode, bool reverseDirection) {
-    writeUint32(EEPROM_DIRECTION_FLAG, DIRECTION_CONFIG_MAGIC);
-    writeUint8(EEPROM_DIRECTION_MODE, directionMode);
-    writeUint8(EEPROM_REVERSE_DIRECTION, reverseDirection ? 1 : 0);
-}
-
-ConfigManager::DirectionConfig ConfigManager::loadDirectionConfig() {
-    DirectionConfig config;
-
-    if (hasDirectionConfig()) {
-        config.directionMode = readUint8(EEPROM_DIRECTION_MODE);
-        config.reverseDirection = readUint8(EEPROM_REVERSE_DIRECTION) != 0;
-    } else {
-        // Defaults
-        config.directionMode = 0; // Unidirectional
-        config.reverseDirection = true; // Default reversed for 28BYJ-48
-    }
-
-    return config;
-}
-
-bool ConfigManager::hasDirectionConfig() {
-    return readUint32(EEPROM_DIRECTION_FLAG) == DIRECTION_CONFIG_MAGIC;
-}
-
-void ConfigManager::clearDirectionConfig() {
-    writeUint32(EEPROM_DIRECTION_FLAG, 0);
-}
-
 void ConfigManager::factoryReset() {
     // Clear all EEPROM data
     for (uint16_t i = 0; i < EEPROM_SIZE; i++) {
@@ -199,10 +130,7 @@ String ConfigManager::getConfigSummary() {
     summary += "Calibrated: " + String(isCalibrated() ? "YES" : "NO") + "\n";
     summary += "Filter Count: " + String(loadFilterCount()) + "\n";
     summary += "Custom Names: " + String(hasCustomFilterNames() ? "YES" : "NO") + "\n";
-    summary += "Revolution Cal: " + String(hasRevolutionCalibration() ? "YES" : "NO") + "\n";
-    summary += "Backlash Cal: " + String(hasBacklashCalibration() ? "YES" : "NO") + "\n";
-    summary += "Motor Config: " + String(hasMotorConfig() ? "CUSTOM" : "DEFAULT") + "\n";
-    summary += "Direction Config: " + String(hasDirectionConfig() ? "CUSTOM" : "DEFAULT");
+    summary += "Motor Config: " + String(hasMotorConfig() ? "CUSTOM" : "DEFAULT");
     return summary;
 }
 
@@ -231,10 +159,7 @@ ConfigManager::EEPROMStats ConfigManager::getEEPROMStats() {
     stats.numStoredConfigs = 0;
     if (isCalibrated()) stats.numStoredConfigs++;
     if (hasCustomFilterNames()) stats.numStoredConfigs++;
-    if (hasRevolutionCalibration()) stats.numStoredConfigs++;
-    if (hasBacklashCalibration()) stats.numStoredConfigs++;
     if (hasMotorConfig()) stats.numStoredConfigs++;
-    if (hasDirectionConfig()) stats.numStoredConfigs++;
 
     return stats;
 }
@@ -350,27 +275,4 @@ void ConfigManager::saveMotorDisableDelay(uint16_t disableDelay) {
 
 void ConfigManager::resetMotorConfiguration() {
     clearMotorConfig();
-}
-
-// Individual direction parameter save methods
-void ConfigManager::saveDirectionMode(bool bidirectional) {
-    DirectionConfig config = loadDirectionConfig();
-    config.directionMode = bidirectional ? 1 : 0;
-    saveDirectionConfig(config.directionMode, config.reverseDirection);
-}
-
-void ConfigManager::saveReverseDirection(bool reverse) {
-    DirectionConfig config = loadDirectionConfig();
-    config.reverseDirection = reverse;
-    saveDirectionConfig(config.directionMode, config.reverseDirection);
-}
-
-// Save steps per revolution (for revolution calibration)
-void ConfigManager::saveStepsPerRevolution(uint16_t steps) {
-    saveRevolutionCalibration(steps);
-}
-
-// Save backlash steps
-void ConfigManager::saveBacklashSteps(uint8_t steps) {
-    saveBacklashCalibration(steps);
 }
