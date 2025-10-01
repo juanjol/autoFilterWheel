@@ -133,31 +133,6 @@ public:
      */
     CommandResult handleResetMotorConfig(const String& cmd, String& response);
 
-    /**
-     * Set direction mode - MDM[0-1]
-     */
-    CommandResult handleSetDirectionMode(const String& cmd, String& response);
-
-    /**
-     * Set reverse direction - MRV[0-1]
-     */
-    CommandResult handleSetReverseDirection(const String& cmd, String& response);
-
-    /**
-     * Get direction configuration - GDC
-     */
-    CommandResult handleGetDirectionConfig(const String& cmd, String& response);
-
-    /**
-     * Set steps per revolution - SPR[X]
-     */
-    CommandResult handleSetStepsPerRevolution(const String& cmd, String& response);
-
-    /**
-     * Get steps per revolution - GPR
-     */
-    CommandResult handleGetStepsPerRevolution(const String& cmd, String& response);
-
     // ========================================
     // CALIBRATION COMMANDS
     // ========================================
@@ -168,51 +143,6 @@ public:
     CommandResult handleCalibrateHome(const String& cmd, String& response);
 
     /**
-     * Start revolution calibration - REVCAL
-     */
-    CommandResult handleStartRevolutionCalibration(const String& cmd, String& response);
-
-    /**
-     * Revolution calibration plus - RCP[X]
-     */
-    CommandResult handleRevolutionCalibrationPlus(const String& cmd, String& response);
-
-    /**
-     * Revolution calibration minus - RCM[X]
-     */
-    CommandResult handleRevolutionCalibrationMinus(const String& cmd, String& response);
-
-    /**
-     * Finish revolution calibration - RCFIN
-     */
-    CommandResult handleFinishRevolutionCalibration(const String& cmd, String& response);
-
-    /**
-     * Start backlash calibration - BLCAL
-     */
-    CommandResult handleStartBacklashCalibration(const String& cmd, String& response);
-
-    /**
-     * Backlash step - BLS[X]
-     */
-    CommandResult handleBacklashStep(const String& cmd, String& response);
-
-    /**
-     * Backlash mark - BLM
-     */
-    CommandResult handleBacklashMark(const String& cmd, String& response);
-
-    /**
-     * Finish backlash calibration - BLFIN
-     */
-    CommandResult handleFinishBacklashCalibration(const String& cmd, String& response);
-
-    /**
-     * Auto calibrate backlash with encoder - AUTOBLCAL
-     */
-    CommandResult handleAutoBacklashCalibration(const String& cmd, String& response);
-
-    /**
      * Start guided calibration - CALSTART
      */
     CommandResult handleStartGuidedCalibration(const String& cmd, String& response);
@@ -221,30 +151,6 @@ public:
      * Confirm guided calibration - CALCFM
      */
     CommandResult handleConfirmGuidedCalibration(const String& cmd, String& response);
-
-    // ========================================
-    // BACKLASH CONFIGURATION COMMANDS
-    // ========================================
-
-    /**
-     * Set backlash steps - BLS[X]
-     */
-    CommandResult handleSetBacklashSteps(const String& cmd, String& response);
-
-    /**
-     * Get backlash configuration - BLG
-     */
-    CommandResult handleGetBacklashConfig(const String& cmd, String& response);
-
-    /**
-     * Set backlash enabled - BLE[0/1]
-     */
-    CommandResult handleSetBacklashEnabled(const String& cmd, String& response);
-
-    /**
-     * Set unidirectional mode - UNI[0/1]
-     */
-    CommandResult handleSetUnidirectionalMode(const String& cmd, String& response);
 
     // ========================================
     // MANUAL CONTROL COMMANDS
@@ -261,16 +167,6 @@ public:
     CommandResult handleStepBackward(const String& cmd, String& response);
 
     /**
-     * Step to position - ST[X]
-     */
-    CommandResult handleStepToPosition(const String& cmd, String& response);
-
-    /**
-     * Get step position - GST
-     */
-    CommandResult handleGetStepPosition(const String& cmd, String& response);
-
-    /**
      * Motor enable - ME
      */
     CommandResult handleMotorEnable(const String& cmd, String& response);
@@ -284,51 +180,6 @@ public:
      * Test motor directly - TESTMOTOR
      */
     CommandResult handleTestMotor(const String& cmd, String& response);
-
-    /**
-     * Start revolution calibration - REVCAL
-     */
-    CommandResult handleStartRevCalibration(const String& cmd, String& response);
-
-    /**
-     * Revolution calibration adjust plus - RCP
-     */
-    CommandResult handleRevCalAdjustPlus(const String& cmd, String& response);
-
-    /**
-     * Revolution calibration adjust minus - RCM
-     */
-    CommandResult handleRevCalAdjustMinus(const String& cmd, String& response);
-
-    /**
-     * Finish revolution calibration - RCFIN
-     */
-    CommandResult handleFinishRevCalibration(const String& cmd, String& response);
-
-    /**
-     * Auto calibrate revolution with encoder - AUTOCAL
-     */
-    CommandResult handleAutoCalibrate(const String& cmd, String& response);
-
-    /**
-     * Go to step - ST[X]
-     */
-    CommandResult handleGoToStep(const String& cmd, String& response);
-
-    /**
-     * Get current step - GST
-     */
-    CommandResult handleGetCurrentStep(const String& cmd, String& response);
-
-    /**
-     * Enable motor - ME
-     */
-    CommandResult handleEnableMotor(const String& cmd, String& response);
-
-    /**
-     * Disable motor - MD
-     */
-    CommandResult handleDisableMotor(const String& cmd, String& response);
 
     // ========================================
     // SYSTEM INFO COMMANDS
@@ -373,6 +224,11 @@ public:
      * Get rotation direction - ENCDIR
      */
     CommandResult handleGetRotationDirection(const String& cmd, String& response);
+
+    /**
+     * Get raw encoder debug info - ENCRAW
+     */
+    CommandResult handleGetEncoderRaw(const String& cmd, String& response);
 
 private:
     /**
