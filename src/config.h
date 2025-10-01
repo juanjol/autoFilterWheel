@@ -28,12 +28,12 @@
 
 // Motor speed and acceleration
 #define MAX_MOTOR_SPEED 500.0      // Maximum steps per second
-#define MOTOR_ACCELERATION 200.0   // Steps per second squared
+#define MOTOR_ACCELERATION 1000.0  // Steps per second squared (increased for better response)
 #define MOTOR_SPEED 300.0          // Normal operating speed
 
 // Motor direction configuration
 #define MOTOR_DIRECTION_MODE 0      // 0 = Unidirectional (always forward), 1 = Bidirectional (shortest path)
-#define MOTOR_REVERSE_DIRECTION true   // If true, reverses the motor direction (for unidirectional mode)
+#define MOTOR_REVERSE_DIRECTION false  // If true, reverses the motor direction (for unidirectional mode)
 // Note: In unidirectional mode, the motor always goes in one direction (1->2->3->4->5->1)
 // Set MOTOR_REVERSE_DIRECTION to true if your motor turns the wrong way
 
@@ -270,6 +270,10 @@
 #define CMD_ROTATE_DISPLAY "ROTATE"     // Rotate display 180 degrees (ROTATE0, ROTATE1)
 #define CMD_GET_DISPLAY_INFO "DISPLAY"  // Get display configuration info
 
+// Encoder debugging commands
+#define CMD_GET_ENCODER_STATUS "ENCSTATUS"  // Get encoder status (angle, direction, health)
+#define CMD_GET_ROTATION_DIR "ENCDIR"       // Get current rotation direction
+
 // ============================================
 // SYSTEM CONFIGURATION
 // ============================================
@@ -312,7 +316,7 @@
 #define BACKLASH_COMPENSATION 10    // Steps for backlash compensation
 
 // Manual stepping configuration
-#define MAX_MANUAL_STEPS 2048       // Maximum steps allowed in one manual command
+#define MAX_MANUAL_STEPS 4096       // Maximum steps allowed in one manual command (2 revolutions)
 #define MIN_MANUAL_STEPS 1          // Minimum steps for manual movement
 
 // Motor power management
@@ -339,7 +343,7 @@
 // FIRMWARE INFORMATION
 // ============================================
 
-#define FIRMWARE_VERSION "1.0.0"
+#define FIRMWARE_VERSION "1.0.1"
 #define DEVICE_NAME "ESP32-C3 Filter Wheel"
 #define MANUFACTURER "DIY Astronomy"
 #define DEVICE_ID "ESP32FW-5POS-V1.0"     // Unique device identifier for ASCOM

@@ -12,6 +12,9 @@ class EncoderInterface;
  * Command handlers for different categories of functionality
  * These handlers bridge the command processor with the actual system components
  */
+// Forward declaration
+class FilterWheelController;
+
 class CommandHandlers {
 private:
     // Component references (injected via constructor)
@@ -19,6 +22,8 @@ private:
     DisplayManager* displayManager;
     ConfigManager* configManager;
     EncoderInterface* encoder;
+    CommandProcessor* commandProcessor;
+    FilterWheelController* controller;
 
     // System state references
     uint8_t* currentPosition;
@@ -33,7 +38,8 @@ public:
     CommandHandlers(MotorDriver* motor, DisplayManager* display,
                     ConfigManager* config, EncoderInterface* enc,
                     uint8_t* currentPos, uint8_t* filterCount,
-                    bool* calibrated, bool* moving);
+                    bool* calibrated, bool* moving,
+                    FilterWheelController* ctrl = nullptr);
 
     /**
      * Register all command handlers with the command processor
@@ -201,6 +207,21 @@ public:
      */
     CommandResult handleFinishBacklashCalibration(const String& cmd, String& response);
 
+    /**
+     * Auto calibrate backlash with encoder - AUTOBLCAL
+     */
+    CommandResult handleAutoBacklashCalibration(const String& cmd, String& response);
+
+    /**
+     * Start guided calibration - CALSTART
+     */
+    CommandResult handleStartGuidedCalibration(const String& cmd, String& response);
+
+    /**
+     * Confirm guided calibration - CALCFM
+     */
+    CommandResult handleConfirmGuidedCalibration(const String& cmd, String& response);
+
     // ========================================
     // BACKLASH CONFIGURATION COMMANDS
     // ========================================
@@ -260,6 +281,11 @@ public:
     CommandResult handleMotorDisable(const String& cmd, String& response);
 
     /**
+     * Test motor directly - TESTMOTOR
+     */
+    CommandResult handleTestMotor(const String& cmd, String& response);
+
+    /**
      * Start revolution calibration - REVCAL
      */
     CommandResult handleStartRevCalibration(const String& cmd, String& response);
@@ -278,6 +304,11 @@ public:
      * Finish revolution calibration - RCFIN
      */
     CommandResult handleFinishRevCalibration(const String& cmd, String& response);
+
+    /**
+     * Auto calibrate revolution with encoder - AUTOCAL
+     */
+    CommandResult handleAutoCalibrate(const String& cmd, String& response);
 
     /**
      * Go to step - ST[X]
@@ -332,6 +363,16 @@ public:
      * Get display info - DISPLAY
      */
     CommandResult handleGetDisplayInfo(const String& cmd, String& response);
+
+    /**
+     * Get encoder status - ENCSTATUS
+     */
+    CommandResult handleGetEncoderStatus(const String& cmd, String& response);
+
+    /**
+     * Get rotation direction - ENCDIR
+     */
+    CommandResult handleGetRotationDirection(const String& cmd, String& response);
 
 private:
     /**

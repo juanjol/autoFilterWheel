@@ -32,6 +32,10 @@ private:
     uint16_t lastRawValue;
     bool movementDetected;
 
+    // Direction tracking
+    uint16_t previousAngle;
+    int8_t rotationDirection;  // 1 = CW, -1 = CCW, 0 = no movement
+
     // Performance tracking
     uint32_t readCount;
     uint32_t errorCount;
@@ -98,6 +102,19 @@ public:
      * Reset error statistics
      */
     void resetErrorStats();
+
+    /**
+     * Get current rotation direction
+     * @return 1 = clockwise, -1 = counter-clockwise, 0 = no movement
+     */
+    int8_t getRotationDirection();
+
+    /**
+     * Get expected direction for target angle
+     * @param targetAngle Target angle in degrees (0-360)
+     * @return 1 = clockwise expected, -1 = counter-clockwise expected
+     */
+    int8_t getExpectedDirection(float targetAngle);
 
 private:
     /**

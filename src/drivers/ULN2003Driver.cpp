@@ -26,9 +26,10 @@ void ULN2003Driver::init() {
     pinMode(pin4, OUTPUT);
 
     // Initialize stepper with default settings
-    stepper.setSpeed(DEFAULT_SPEED);
     stepper.setMaxSpeed(DEFAULT_MAX_SPEED);
     stepper.setAcceleration(DEFAULT_ACCELERATION);
+    // Note: setSpeed() should be called AFTER setMaxSpeed()
+    stepper.setSpeed(DEFAULT_SPEED);
 
     // Start with motor disabled
     disableMotor();
@@ -78,6 +79,8 @@ bool ULN2003Driver::run() {
     if (!motorEnabled) {
         return false;
     }
+
+    // Simple approach: just run the stepper
     return stepper.run();
 }
 
@@ -357,4 +360,48 @@ int ULN2003Driver::finishBacklashCalibration() {
     backlashEnabled = backlashSteps > 0;
 
     return backlashSteps;
+}
+
+// Override stepForward to handle manual stepping properly
+void ULN2003Driver::stepForward(long steps) {
+    // Enable motor first
+    motorEnabled = true;
+
+    // Reset position to 0 for each manual command
+    stepper.setCurrentPosition(0);
+
+    // Set target
+    if (directionReversed) {
+        stepper.moveTo(-steps);
+    } else {
+        stepper.moveTo(steps);
+    }
+
+    // Run to completion immediately (blocking)
+    while (stepper.distanceToGo() != 0) {
+        stepper.run();
+        delay(1);  // Small delay to prevent watchdog issues
+    }
+}
+
+// Override stepBackward to handle manual stepping properly
+void ULN2003Driver::stepBackward(long steps) {
+    // Enable motor first
+    motorEnabled = true;
+
+    // Reset position to 0 for each manual command
+    stepper.setCurrentPosition(0);
+
+    // Set target (negative for backward)
+    if (directionReversed) {
+        stepper.moveTo(steps);  // Reversed, so positive is backward
+    } else {
+        stepper.moveTo(-steps);
+    }
+
+    // Run to completion immediately (blocking)
+    while (stepper.distanceToGo() != 0) {
+        stepper.run();
+        delay(1);  // Small delay to prevent watchdog issues
+    }
 }

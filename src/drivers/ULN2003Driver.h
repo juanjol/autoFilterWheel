@@ -37,7 +37,7 @@ private:
     static constexpr uint16_t STEPS_PER_REVOLUTION = 2048;  // 28BYJ-48 with internal gearing
     static constexpr float DEFAULT_SPEED = 300.0;           // steps/second
     static constexpr float DEFAULT_MAX_SPEED = 500.0;       // steps/second
-    static constexpr float DEFAULT_ACCELERATION = 200.0;    // steps/second²
+    static constexpr float DEFAULT_ACCELERATION = 1000.0;   // steps/second² (increased)
 
 public:
     /**
@@ -108,6 +108,8 @@ public:
 
     // ULN2003-specific methods
     void forceAllPinsLow();  // Ensure complete motor shutdown
+    void stepForward(long steps) override;
+    void stepBackward(long steps) override;
 
 private:
     // Internal backlash compensation logic
