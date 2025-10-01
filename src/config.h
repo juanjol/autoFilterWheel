@@ -305,7 +305,7 @@
 #define MOTOR_HOLD_CURRENT false    // Set to true if you want to keep position with reduced current
 
 // Debug mode (set to 1 to enable debug output)
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 
 // ============================================
 // ERROR CODES

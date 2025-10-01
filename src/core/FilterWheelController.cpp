@@ -101,17 +101,23 @@ void FilterWheelController::handleSerial() {
 }
 
 bool FilterWheelController::moveToPosition(uint8_t position) {
+    #if DEBUG_MODE
     Serial.print("[moveToPosition] Called with position: ");
     Serial.println(position);
+    #endif
 
     if (!isValidPosition(position)) {
+        #if DEBUG_MODE
         Serial.println("[moveToPosition] ERROR: Invalid position");
+        #endif
         setError(1); // Invalid position
         return false;
     }
 
     if (isMoving) {
+        #if DEBUG_MODE
         Serial.println("[moveToPosition] ERROR: System busy");
+        #endif
         setError(2); // System busy
         return false;
     }
@@ -127,31 +133,41 @@ bool FilterWheelController::moveToPosition(uint8_t position) {
 
     // ENCODER-BASED CONTROL: Use angle feedback if encoder is available
     if (encoder && encoder->isAvailable()) {
+        #if DEBUG_MODE
         Serial.println("[moveToPosition] Using ENCODER-BASED control");
+        #endif
 
         // Convert target position to angle
         float targetAngle = positionToAngle(position);
+        #if DEBUG_MODE
         Serial.print("[moveToPosition] Target angle: ");
         Serial.print(targetAngle, 2);
         Serial.println("°");
+        #endif
 
         // Use encoder feedback for precise positioning
         success = moveToAngleWithFeedback(targetAngle, ANGLE_CONTROL_TOLERANCE);
 
+        #if DEBUG_MODE
         if (success) {
             Serial.println("[moveToPosition] Encoder-based positioning succeeded");
         } else {
             Serial.println("[moveToPosition] WARNING: Encoder-based positioning failed, falling back to step-based");
         }
+        #endif
     }
 
     // STEP-BASED CONTROL: Fallback if encoder not available or encoder control failed
     if (!success) {
+        #if DEBUG_MODE
         Serial.println("[moveToPosition] Using STEP-BASED control (fallback)");
+        #endif
 
         int steps = calculateStepsToPosition(position);
+        #if DEBUG_MODE
         Serial.print("[moveToPosition] Calculated steps: ");
         Serial.println(steps);
+        #endif
 
         if (steps == 0) {
             // Already at target position
@@ -164,20 +180,28 @@ bool FilterWheelController::moveToPosition(uint8_t position) {
             motorDriver->enableMotor();
 
             // Execute movement
+            #if DEBUG_MODE
             Serial.println("[moveToPosition] Starting motor movement...");
+            #endif
             if (steps > 0) {
+                #if DEBUG_MODE
                 Serial.print("[moveToPosition] Moving forward ");
                 Serial.print(steps);
                 Serial.println(" steps");
+                #endif
                 motorDriver->stepForward(steps);
             } else if (steps < 0) {
+                #if DEBUG_MODE
                 Serial.print("[moveToPosition] Moving backward ");
                 Serial.print(-steps);
                 Serial.println(" steps");
+                #endif
                 motorDriver->stepBackward(-steps);  // stepBackward expects positive value
             }
 
+            #if DEBUG_MODE
             Serial.println("[moveToPosition] Movement completed");
+            #endif
             success = true;
         }
     }
@@ -197,6 +221,7 @@ bool FilterWheelController::moveToPosition(uint8_t position) {
             float targetAngle = positionToAngle(currentPosition);
             float error = abs(calculateAngularError(currentAngle, targetAngle));
 
+            #if DEBUG_MODE
             Serial.print("[moveToPosition] Final verification - Current angle: ");
             Serial.print(currentAngle, 2);
             Serial.print("°, Target: ");
@@ -204,9 +229,12 @@ bool FilterWheelController::moveToPosition(uint8_t position) {
             Serial.print("°, Error: ");
             Serial.print(error, 2);
             Serial.println("°");
+            #endif
 
             if (error > ANGLE_TOLERANCE) {
+                #if DEBUG_MODE
                 Serial.println("[moveToPosition] WARNING: Position verification shows significant error");
+                #endif
                 needsCalibration = true;
             }
         }
@@ -217,7 +245,9 @@ bool FilterWheelController::moveToPosition(uint8_t position) {
                                                 getFilterName(currentPosition).c_str());
         }
     } else {
+        #if DEBUG_MODE
         Serial.println("[moveToPosition] ERROR: Movement failed");
+        #endif
         setError(1); // Movement failed
     }
 
@@ -260,9 +290,11 @@ void FilterWheelController::setCurrentPosition(uint8_t position) {
 }
 
 void FilterWheelController::calibrateHome() {
+    #if DEBUG_MODE
     Serial.println("========================================");
     Serial.println("[CALIBRATION] Starting calibration process");
     Serial.println("========================================");
+    #endif
 
     setCurrentPosition(1);
     isCalibrated = true;
@@ -274,42 +306,53 @@ void FilterWheelController::calibrateHome() {
     // If encoder is available, calibrate angle offset so position 1 = 0°
     if (encoder && encoder->isAvailable()) {
         // Read raw angle multiple times to get stable reading
+        #if DEBUG_MODE
         Serial.println("[CALIBRATION] Reading encoder angle (averaging 5 samples)...");
+        #endif
         float angleSum = 0;
         const int SAMPLES = 5;
 
         for (int i = 0; i < SAMPLES; i++) {
             float reading = encoder->getAngle();
             angleSum += reading;
+            #if DEBUG_MODE
             Serial.print("[CALIBRATION] Sample ");
             Serial.print(i + 1);
             Serial.print(": ");
             Serial.print(reading, 2);
             Serial.println("°");
+            #endif
             delay(50);
         }
 
         float averageAngle = angleSum / SAMPLES;
+        #if DEBUG_MODE
         Serial.print("[CALIBRATION] Average angle BEFORE offset: ");
         Serial.print(averageAngle, 2);
         Serial.println("°");
+        #endif
 
         // IMPORTANT: First read the current offset to see what we're changing FROM
         float oldOffset = encoder->getAngleOffset();
+        #if DEBUG_MODE
         Serial.print("[CALIBRATION] Old offset was: ");
         Serial.print(oldOffset, 2);
         Serial.println("°");
+        #endif
 
         // Set offset so that current angle becomes 0° (position 1)
         // The new offset should be the RAW angle at this position
         // We need to add the old offset back to get the true raw angle
         float rawAngle = averageAngle + oldOffset;
+        #if DEBUG_MODE
         Serial.print("[CALIBRATION] Calculated raw angle: ");
         Serial.print(rawAngle, 2);
         Serial.println("°");
+        #endif
 
         encoder->setAngleOffset(rawAngle);
 
+        #if DEBUG_MODE
         Serial.print("[CALIBRATION] Set NEW encoder offset to: ");
         Serial.print(rawAngle, 2);
         Serial.println("°");
@@ -323,10 +366,12 @@ void FilterWheelController::calibrateHome() {
         if (abs(verifySet - rawAngle) > 0.1f) {
             Serial.println("[CALIBRATION] ERROR: Encoder did not accept offset!");
         }
+        #endif
 
         // Save offset to EEPROM
         if (configManager) {
             configManager->saveAngleOffset(rawAngle);
+            #if DEBUG_MODE
             Serial.println("[CALIBRATION] Offset saved to EEPROM");
 
             // Verify EEPROM save
@@ -338,8 +383,11 @@ void FilterWheelController::calibrateHome() {
             if (abs(verifyEEPROM - rawAngle) > 0.1f) {
                 Serial.println("[CALIBRATION] ERROR: EEPROM did not save correctly!");
             }
+            #endif
         } else {
+            #if DEBUG_MODE
             Serial.println("[CALIBRATION] ERROR: ConfigManager is NULL!");
+            #endif
         }
 
         // Verify calibration with multiple readings
@@ -364,10 +412,14 @@ void FilterWheelController::calibrateHome() {
         Serial.println("° (should be close to 0°)");
 
         if (abs(finalAngle) > 2.0f) {
+            #if DEBUG_MODE
             Serial.println("[CALIBRATION] WARNING: Calibration error > 2°");
             Serial.println("[CALIBRATION] This may indicate encoder noise or movement during calibration");
+            #endif
         } else {
+            #if DEBUG_MODE
             Serial.println("[CALIBRATION] ✓ Calibration successful!");
+            #endif
         }
     }
 
@@ -376,9 +428,11 @@ void FilterWheelController::calibrateHome() {
                                             getFilterName(currentPosition).c_str());
     }
 
+    #if DEBUG_MODE
     Serial.println("========================================");
     Serial.println("[CALIBRATION] Calibration complete!");
     Serial.println("========================================");
+    #endif
 }
 
 String FilterWheelController::getFilterName(uint8_t filterIndex) const {
@@ -551,15 +605,20 @@ int8_t FilterWheelController::determineRotationDirection(float currentAngle, flo
 
 bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tolerance) {
     if (!encoder || !encoder->isAvailable()) {
+        #if DEBUG_MODE
         Serial.println("[PID] ERROR: Encoder not available");
+        #endif
         return false;
     }
 
     if (!motorDriver) {
+        #if DEBUG_MODE
         Serial.println("[PID] ERROR: Motor driver not initialized");
+        #endif
         return false;
     }
 
+    #if DEBUG_MODE
     Serial.println("========================================");
     Serial.print("[PID] Starting PID control to ");
     Serial.print(targetAngle, 2);
@@ -567,6 +626,7 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
     Serial.print(tolerance, 2);
     Serial.println("°)");
     Serial.println("========================================");
+    #endif
 
     motorDriver->enableMotor();
 
@@ -584,7 +644,9 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
         // Read current angle from encoder
         float currentAngle = encoder->getAngle();
         if (currentAngle < 0) {
+            #if DEBUG_MODE
             Serial.println("[PID] ERROR: Failed to read encoder angle");
+            #endif
             return false;
         }
 
@@ -600,6 +662,7 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
             float finalAngle = encoder->getAngle();
             float finalError = calculateAngularError(finalAngle, targetAngle);
 
+            #if DEBUG_MODE
             Serial.println("[PID] ✓ TARGET REACHED!");
             Serial.print("[PID] Final angle: ");
             Serial.print(finalAngle, 2);
@@ -608,13 +671,16 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
             Serial.print("°), Final error: ");
             Serial.print(finalError, 2);
             Serial.println("°");
+            #endif
 
             // If error is still within tolerance after settling, accept it
             if (abs(finalError) <= tolerance) {
                 success = true;
                 break;
             } else {
+                #if DEBUG_MODE
                 Serial.println("[PID] Warning: Position drifted after settling, continuing...");
+                #endif
                 // Continue PID loop to correct
             }
         }
@@ -660,6 +726,7 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
         }
 
         // Log PID values
+        #if DEBUG_MODE
         Serial.print("[PID] Iter ");
         Serial.print(iteration + 1);
         Serial.print(": Angle=");
@@ -677,6 +744,7 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
         Serial.print(" steps (");
         Serial.print(abs(stepsNeeded) / stepsPerDegree, 1);
         Serial.println("°)");
+        #endif
 
         // Execute movement
         if (stepsNeeded > 0) {
@@ -695,32 +763,40 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
     }
 
     if (!success) {
+        #if DEBUG_MODE
         Serial.println("[PID] ✗ FAILED to reach target");
         Serial.print("[PID] Final error: ");
         Serial.print(previousError, 2);
         Serial.print("° after ");
         Serial.print(iteration);
         Serial.println(" iterations");
+        #endif
 
         // Disable motor even on failure
         if (motorDriver) {
             motorDriver->disableMotor();
+            #if DEBUG_MODE
             Serial.println("[PID] Motor disabled (failed positioning)");
+            #endif
         }
 
         setError(1); // Positioning error
         return false;
     }
 
+    #if DEBUG_MODE
     Serial.print("[PID] Success in ");
     Serial.print(iteration);
     Serial.println(" iterations");
+    #endif
 
     // Disable motor after successful positioning
     if (motorDriver) {
         delay(MOTOR_DISABLE_DELAY); // Wait before disabling (from config.h)
         motorDriver->disableMotor();
+        #if DEBUG_MODE
         Serial.println("[PID] Motor disabled (positioning complete)");
+        #endif
     }
 
     return true;
@@ -882,7 +958,9 @@ void FilterWheelController::setDebugMode(bool enabled) {
 }
 
 void FilterWheelController::startGuidedCalibration() {
+    #if DEBUG_MODE
     Serial.println("Starting guided calibration...");
+    #endif
 
     // Enter calibration mode
     inCalibrationMode = true;
@@ -897,12 +975,16 @@ void FilterWheelController::startGuidedCalibration() {
                                             "Use SF/SB", false);
     }
 
+    #if DEBUG_MODE
     Serial.println("Position wheel at filter 1, then use #CALCFM to confirm");
+    #endif
 }
 
 void FilterWheelController::finishGuidedCalibration() {
     if (!inCalibrationMode) {
+        #if DEBUG_MODE
         Serial.println("Not in calibration mode");
+        #endif
         return;
     }
 
@@ -925,9 +1007,11 @@ void FilterWheelController::finishGuidedCalibration() {
             configManager->saveAngleOffset(offset);
         }
 
+        #if DEBUG_MODE
         Serial.print("Calibration complete! Offset saved: ");
         Serial.print(offset, 2);
         Serial.println("°");
+        #endif
 
         // Exit calibration mode
         inCalibrationMode = false;
@@ -939,7 +1023,9 @@ void FilterWheelController::finishGuidedCalibration() {
                                                 getFilterName(currentPosition).c_str());
         }
     } else {
+        #if DEBUG_MODE
         Serial.println("ERROR: No encoder available for calibration");
+        #endif
         inCalibrationMode = false;
     }
 }
