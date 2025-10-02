@@ -1,4 +1,5 @@
 #include "AS5600Encoder.h"
+#include "../config.h"
 #include <Arduino.h>
 
 AS5600Encoder::AS5600Encoder(TwoWire* wireInterface)
@@ -44,6 +45,14 @@ float AS5600Encoder::getAngle() {
     }
 
     float angle = rawValue * DEGREES_PER_COUNT;
+
+    // Invert encoder direction if configured
+    #ifdef AS5600_INVERT_DIRECTION
+    #if AS5600_INVERT_DIRECTION
+    angle = 360.0f - angle;
+    #endif
+    #endif
+
     angle = normalizeAngle(angle - angleOffset);
 
     // Check for movement and update direction

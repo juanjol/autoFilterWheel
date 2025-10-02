@@ -23,19 +23,12 @@
 // "ND1", "ND2", "ND3", "ND4", "Moon"  - Neutral density + Moon
 
 // Motor configuration for 28BYJ-48
-#define STEPS_PER_REVOLUTION 2048  // 28BYJ-48 has 2048 steps per revolution (64 * 32)
-#define STEPS_PER_FILTER (STEPS_PER_REVOLUTION / NUM_FILTERS)  // Steps between each filter position
+#define STEPS_PER_REVOLUTION 2150  // 28BYJ-48 has 2048 steps per revolution (64 * 32)
 
 // Motor speed and acceleration
-#define MAX_MOTOR_SPEED 500.0      // Maximum steps per second
+#define MAX_MOTOR_SPEED 430.0      // Maximum steps per second
 #define MOTOR_ACCELERATION 1000.0  // Steps per second squared (increased for better response)
 #define MOTOR_SPEED 300.0          // Normal operating speed
-
-// Motor direction configuration
-#define MOTOR_DIRECTION_MODE 0      // 0 = Unidirectional (always forward), 1 = Bidirectional (shortest path)
-#define MOTOR_REVERSE_DIRECTION false  // If true, reverses the motor direction (for unidirectional mode)
-// Note: In unidirectional mode, the motor always goes in one direction (1->2->3->4->5->1)
-// Set MOTOR_REVERSE_DIRECTION to true if your motor turns the wrong way
 
 // ============================================
 // MOTOR DRIVER CONFIGURATION
@@ -165,10 +158,22 @@
 
 #define AS5600_ADDRESS 0x36        // I2C address of AS5600
 #define AS5600_RAW_ANGLE_REGISTER 0x0C  // Register for raw angle
+#define AS5600_INVERT_DIRECTION true   // Invert encoder reading direction (360° - angle)
 
-// Angle calibration
-#define ANGLE_TOLERANCE 5.0        // Degrees tolerance for position detection
+// Angle calibration and control
+#define ANGLE_TOLERANCE 5.0        // Degrees tolerance for position detection (verification only)
+#define ANGLE_CONTROL_TOLERANCE 0.8  // Degrees tolerance for encoder-based motor control (< 1°)
 #define AS5600_OFFSET 0.0          // Offset angle in degrees (set during calibration)
+#define ANGLE_CONTROL_MAX_ITERATIONS 30  // Maximum control loop iterations
+
+// PID Controller Parameters for Angle Control
+#define ANGLE_PID_KP 4.5f          // Proportional gain
+#define ANGLE_PID_KI 0.01f         // Integral gain
+#define ANGLE_PID_KD 0.3f          // Derivative gain
+#define ANGLE_PID_INTEGRAL_MAX 100.0f  // Maximum integral accumulation (anti-windup)
+#define ANGLE_PID_OUTPUT_MIN 10    // Minimum motor steps per iteration
+#define ANGLE_PID_OUTPUT_MAX 2000   // Maximum motor steps per iteration
+#define ANGLE_PID_SETTLING_TIME 150  // Delay in ms after each movement
 
 // Position angles for each filter (degrees)
 // These will be automatically calculated based on NUM_FILTERS
@@ -232,18 +237,6 @@
 #define CMD_MOTOR_ENABLE "ME"       // Enable motor power
 #define CMD_MOTOR_DISABLE "MD"      // Disable motor power
 
-// Revolution calibration commands
-#define CMD_START_REV_CAL "REVCAL"  // Start full revolution calibration
-#define CMD_REV_CAL_ADJUST_PLUS "RCP"  // Add steps during revolution calibration (RCP10)
-#define CMD_REV_CAL_ADJUST_MINUS "RCM" // Subtract steps during revolution calibration (RCM5)
-#define CMD_FINISH_REV_CAL "RCFIN"  // Finish revolution calibration and save result
-
-// Backlash calibration commands
-#define CMD_START_BACKLASH_CAL "BLCAL"  // Start backlash calibration
-#define CMD_BACKLASH_STEP "BLS"         // Manual step during backlash calibration (BLS10)
-#define CMD_BACKLASH_MARK "BLM"         // Mark movement detected during backlash calibration
-#define CMD_FINISH_BACKLASH_CAL "BLFIN" // Finish backlash calibration and save result
-
 // Motor configuration commands
 #define CMD_SET_MOTOR_SPEED "MS"        // Set motor speed (MS1000)
 #define CMD_SET_MAX_SPEED "MXS"         // Set maximum speed (MXS2000)
@@ -251,11 +244,6 @@
 #define CMD_GET_MOTOR_CONFIG "GMC"      // Get motor configuration
 #define CMD_RESET_MOTOR_CONFIG "RMC"    // Reset motor config to defaults
 #define CMD_SET_DISABLE_DELAY "MDD"     // Set motor disable delay (MDD2000)
-
-// Motor direction commands
-#define CMD_SET_DIRECTION_MODE "MDM"    // Set direction mode (MDM0=unidirectional, MDM1=bidirectional)
-#define CMD_SET_REVERSE_MODE "MRV"      // Set reverse mode (MRV0=normal, MRV1=reversed)
-#define CMD_GET_DIRECTION_CONFIG "GDC"  // Get direction configuration
 
 // TMC2209 specific commands
 #define CMD_SET_MICROSTEPS "TMC_MS"     // Set microsteps (TMC_MS16, TMC_MS32, etc.)
@@ -287,18 +275,11 @@
 #define EEPROM_POSITIONS_ADDR 0x10 // Starting address for filter positions
 #define EEPROM_FILTER_COUNT 0x0D     // Address for dynamic filter count
 #define EEPROM_FILTER_NAMES_ADDR 0x20 // Starting address for filter names (16 chars each)
-#define EEPROM_REV_CAL_FLAG 0x100     // Revolution calibration flag (0xBB when calibrated)
-#define EEPROM_STEPS_PER_REV 0x104    // Calibrated steps per revolution (uint16_t)
-#define EEPROM_BACKLASH_FLAG 0x108    // Backlash calibration flag (0xCC when calibrated)
-#define EEPROM_BACKLASH_STEPS 0x10C   // Calibrated backlash compensation steps (uint8_t)
 #define EEPROM_MOTOR_CONFIG_FLAG 0x110  // Motor config flag (0xDD when saved)
 #define EEPROM_MOTOR_SPEED 0x114      // Motor speed (uint16_t)
 #define EEPROM_MAX_MOTOR_SPEED 0x118  // Maximum motor speed (uint16_t)
 #define EEPROM_MOTOR_ACCELERATION 0x11C // Motor acceleration (uint16_t)
 #define EEPROM_MOTOR_DISABLE_DELAY 0x120 // Motor disable delay (uint16_t)
-#define EEPROM_DIRECTION_FLAG 0x124     // Direction config flag (0xEE when saved)
-#define EEPROM_DIRECTION_MODE 0x128     // Direction mode (uint8_t: 0=unidirectional, 1=bidirectional)
-#define EEPROM_REVERSE_MODE 0x12C       // Reverse mode (uint8_t: 0=normal, 1=reversed)
 #define EEPROM_TMC_CONFIG_FLAG 0x130    // TMC2209 config flag (0xFF when saved)
 #define EEPROM_TMC_MICROSTEPS 0x134     // TMC2209 microsteps (uint16_t)
 #define EEPROM_TMC_CURRENT 0x138        // TMC2209 motor current in mA (uint16_t)
@@ -308,12 +289,11 @@
 #define EEPROM_DISPLAY_ROTATION 0x148     // Display rotation (uint8_t: 0=normal, 1=180°)
 #define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
 #define MIN_FILTER_COUNT 3           // Minimum number of filters
-#define MAX_FILTER_COUNT 8           // Maximum number of filters (hardware/EEPROM limit)
+#define MAX_FILTER_COUNT 9           // Maximum number of filters (3-9 supported)
 
 // Safety and timeouts
 #define MOVEMENT_TIMEOUT 10000      // Maximum time for movement in ms
 #define POSITION_RETRY_COUNT 3      // Number of retries for positioning
-#define BACKLASH_COMPENSATION 10    // Steps for backlash compensation
 
 // Manual stepping configuration
 #define MAX_MANUAL_STEPS 4096       // Maximum steps allowed in one manual command (2 revolutions)
@@ -343,9 +323,9 @@
 // FIRMWARE INFORMATION
 // ============================================
 
-#define FIRMWARE_VERSION "1.0.1"
+#define FIRMWARE_VERSION "2.0.0"
 #define DEVICE_NAME "ESP32-C3 Filter Wheel"
 #define MANUFACTURER "DIY Astronomy"
-#define DEVICE_ID "ESP32FW-5POS-V1.0"     // Unique device identifier for ASCOM
+#define DEVICE_ID "ESP32FW-PID-V2.0"     // Unique device identifier for ASCOM
 
 #endif // CONFIG_H

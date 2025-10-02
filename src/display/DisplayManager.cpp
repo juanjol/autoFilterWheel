@@ -89,7 +89,7 @@ void DisplayManager::showStatus(const char* status) {
     if (!display) return;
 
     display->setTextSize(1);
-    display->setCursor(xOffset, STATUS_LINE_Y);
+    display->setCursor(xOffset, getStatusLineY());
     display->print(status);
     needsUpdate = true;
 }
@@ -103,7 +103,7 @@ void DisplayManager::showPosition(uint8_t position, uint8_t maxPosition) {
     snprintf(posText, sizeof(posText), "POS %d", position);
 
     uint8_t x = centerTextX(posText, 2);
-    display->setCursor(x, POSITION_LINE_Y);
+    display->setCursor(x, getPositionLineY());
     display->print(posText);
     needsUpdate = true;
 }
@@ -118,7 +118,7 @@ void DisplayManager::showFilterName(const char* filterName) {
     truncateText(truncatedName, filterName, 12);
 
     uint8_t x = centerTextX(truncatedName, 1);
-    display->setCursor(x, FILTER_NAME_LINE_Y);
+    display->setCursor(x, getFilterNameLineY());
     display->print(truncatedName);
     needsUpdate = true;
 }
@@ -133,19 +133,19 @@ void DisplayManager::showFilterWheelState(const char* status, uint8_t position,
     // Status line
     display->setTextSize(1);
     const char* displayStatus = isMoving ? "MOVING" : status;
-    drawCenteredText(displayStatus, STATUS_LINE_Y, 1);
+    drawCenteredText(displayStatus, getStatusLineY(), 1);
 
     // Position line (large text)
     display->setTextSize(2);
     char posText[16];
     snprintf(posText, sizeof(posText), "POS %d", position);
-    drawCenteredText(posText, POSITION_LINE_Y, 2);
+    drawCenteredText(posText, getPositionLineY(), 2);
 
     // Filter name line
     display->setTextSize(1);
     char truncatedName[16];
     truncateText(truncatedName, filterName, 12);
-    drawCenteredText(truncatedName, FILTER_NAME_LINE_Y, 1);
+    drawCenteredText(truncatedName, getFilterNameLineY(), 1);
 
     // Immediately update the display
     display->display();
@@ -158,17 +158,17 @@ void DisplayManager::showCalibrationProgress(uint8_t step, uint8_t totalSteps, c
     display->clearDisplay();
 
     // Calibration title
-    drawCenteredText("CALIBRATION", STATUS_LINE_Y, 1);
+    drawCenteredText("CALIBRATION", getStatusLineY(), 1);
 
     // Progress
     char progressText[16];
     snprintf(progressText, sizeof(progressText), "Step %d/%d", step, totalSteps);
-    drawCenteredText(progressText, POSITION_LINE_Y, 1);
+    drawCenteredText(progressText, getPositionLineY(), 1);
 
     // Message
     char truncatedMsg[16];
     truncateText(truncatedMsg, message, 12);
-    drawCenteredText(truncatedMsg, FILTER_NAME_LINE_Y, 1);
+    drawCenteredText(truncatedMsg, getFilterNameLineY(), 1);
 
     needsUpdate = true;
 }
@@ -179,17 +179,17 @@ void DisplayManager::showError(uint8_t errorCode, const char* errorMessage) {
     display->clearDisplay();
 
     // Error indicator
-    drawCenteredText("ERROR", STATUS_LINE_Y, 1);
+    drawCenteredText("ERROR", getStatusLineY(), 1);
 
     // Error code
     char errorText[16];
     snprintf(errorText, sizeof(errorText), "Code: %d", errorCode);
-    drawCenteredText(errorText, POSITION_LINE_Y, 1);
+    drawCenteredText(errorText, getPositionLineY(), 1);
 
     // Error message
     char truncatedMsg[16];
     truncateText(truncatedMsg, errorMessage, 12);
-    drawCenteredText(truncatedMsg, FILTER_NAME_LINE_Y, 1);
+    drawCenteredText(truncatedMsg, getFilterNameLineY(), 1);
 
     needsUpdate = true;
 }
@@ -200,17 +200,17 @@ void DisplayManager::showConfigMenu(const char* menuItem, const char* value) {
     display->clearDisplay();
 
     // Menu title
-    drawCenteredText("CONFIG", STATUS_LINE_Y, 1);
+    drawCenteredText("CONFIG", getStatusLineY(), 1);
 
     // Menu item
     char truncatedItem[16];
     truncateText(truncatedItem, menuItem, 12);
-    drawCenteredText(truncatedItem, POSITION_LINE_Y, 1);
+    drawCenteredText(truncatedItem, getPositionLineY(), 1);
 
     // Value
     char truncatedValue[16];
     truncateText(truncatedValue, value, 12);
-    drawCenteredText(truncatedValue, FILTER_NAME_LINE_Y, 1);
+    drawCenteredText(truncatedValue, getFilterNameLineY(), 1);
 
     needsUpdate = true;
 }
@@ -227,9 +227,9 @@ void DisplayManager::showSplashScreen() {
     display->clearDisplay();
 
     // Title
-    drawCenteredText("ESP32-C3", STATUS_LINE_Y, 1);
-    drawCenteredText("Filter", POSITION_LINE_Y, 1);
-    drawCenteredText("Wheel", FILTER_NAME_LINE_Y, 1);
+    drawCenteredText("ESP32-C3", getStatusLineY(), 1);
+    drawCenteredText("Filter", getPositionLineY(), 1);
+    drawCenteredText("Wheel", getFilterNameLineY(), 1);
 
     needsUpdate = true;
 }
@@ -242,14 +242,14 @@ void DisplayManager::showVersionInfo(const char* version, const char* driver) {
     // Version
     char versionText[16];
     snprintf(versionText, sizeof(versionText), "v%s", version);
-    drawCenteredText(versionText, STATUS_LINE_Y, 1);
+    drawCenteredText(versionText, getStatusLineY(), 1);
 
     // Driver type
     char truncatedDriver[16];
     truncateText(truncatedDriver, driver, 12);
-    drawCenteredText(truncatedDriver, POSITION_LINE_Y, 1);
+    drawCenteredText(truncatedDriver, getPositionLineY(), 1);
 
-    drawCenteredText("Ready", FILTER_NAME_LINE_Y, 1);
+    drawCenteredText("Ready", getFilterNameLineY(), 1);
 
     needsUpdate = true;
 }
@@ -272,7 +272,7 @@ void DisplayManager::runDisplayTest() {
         display->clearDisplay();
         char testText[16];
         snprintf(testText, sizeof(testText), "Test %d", i + 1);
-        drawCenteredText(testText, STATUS_LINE_Y + (i * 12), 1);
+        drawCenteredText(testText, getStatusLineY() + (i * 12), 1);
         forceUpdate();
         delay(500);
     }
