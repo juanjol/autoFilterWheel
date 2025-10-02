@@ -41,7 +41,7 @@ private:
         CommandHandler handler;
     };
 
-    static constexpr uint8_t MAX_COMMAND_MAPPINGS = 32;
+    static constexpr uint8_t MAX_COMMAND_MAPPINGS = 64;
     CommandMapping commandMappings[MAX_COMMAND_MAPPINGS];
     uint8_t numMappings;
 
@@ -103,6 +103,11 @@ public:
      * Show help information for all registered commands
      */
     void showHelp();
+
+    /**
+     * Get help information as string
+     */
+    String getHelpString();
 
     /**
      * Get statistics about command processing

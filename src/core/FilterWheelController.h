@@ -31,6 +31,8 @@ private:
     bool isMoving;
     bool motorEnabled;
     uint8_t errorCode;
+    bool needsCalibration;          // True when encoder mismatch detected
+    bool inCalibrationMode;         // True during guided calibration
 
     // Timing and management
     unsigned long lastUpdate;
@@ -106,6 +108,26 @@ public:
      * Set current position without moving (calibration)
      */
     void setCurrentPosition(uint8_t position);
+
+    /**
+     * Start guided calibration mode
+     */
+    void startGuidedCalibration();
+
+    /**
+     * Finish guided calibration and save encoder offset
+     */
+    void finishGuidedCalibration();
+
+    /**
+     * Check if system needs calibration
+     */
+    bool needsCalibrationCheck() const;
+
+    /**
+     * Check if in calibration mode
+     */
+    bool isInCalibrationMode() const;
 
     // ========================================
     // CONFIGURATION INTERFACE
@@ -249,6 +271,11 @@ public:
     ConfigManager* getConfigManager() const;
     EncoderInterface* getEncoder() const;
 
+    /**
+     * Convert filter position to target angle (PUBLIC for diagnostics)
+     */
+    float positionToAngle(uint8_t position);
+
 private:
     /**
      * Initialize components
@@ -257,6 +284,26 @@ private:
     bool initializeDisplay();
     bool initializeEncoder();
     bool initializeCommandSystem();
+
+    /**
+     * Convert angle to filter position
+     */
+    uint8_t angleToPosition(float angle);
+
+    /**
+     * Calculate angular error (handles 360° wraparound)
+     */
+    float calculateAngularError(float currentAngle, float targetAngle);
+
+    /**
+     * Move to target angle using encoder feedback (encoder-based control)
+     */
+    bool moveToAngleWithFeedback(float targetAngle, float tolerance);
+
+    /**
+     * Determine rotation direction for shortest path
+     */
+    int8_t determineRotationDirection(float currentAngle, float targetAngle);
 
     /**
      * Load configuration from EEPROM

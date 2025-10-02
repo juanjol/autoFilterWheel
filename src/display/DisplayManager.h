@@ -27,13 +27,30 @@ private:
     bool rotation180;       // True if display is rotated 180 degrees
 
     // Layout constants for 0.42" OLED (72x40 visible area)
-    static constexpr uint8_t STATUS_LINE_Y = 24;
-    static constexpr uint8_t POSITION_LINE_Y = 36;
-    static constexpr uint8_t FILTER_NAME_LINE_Y = 52;
+    // Normal rotation (content at bottom of 128x64 buffer)
+    static constexpr uint8_t STATUS_LINE_Y_NORMAL = 24;
+    static constexpr uint8_t POSITION_LINE_Y_NORMAL = 36;
+    static constexpr uint8_t FILTER_NAME_LINE_Y_NORMAL = 52;
+
+    // Rotated 180° (content at top of buffer, but displayed at bottom)
+    static constexpr uint8_t STATUS_LINE_Y_ROTATED = 0;
+    static constexpr uint8_t POSITION_LINE_Y_ROTATED = 12;
+    static constexpr uint8_t FILTER_NAME_LINE_Y_ROTATED = 28;
 
     // Font sizes
     static constexpr uint8_t SMALL_FONT_HEIGHT = 8;
     static constexpr uint8_t LARGE_FONT_HEIGHT = 16;
+
+    // Helper methods for rotation-aware coordinates
+    inline uint8_t getStatusLineY() const {
+        return rotation180 ? STATUS_LINE_Y_ROTATED : STATUS_LINE_Y_NORMAL;
+    }
+    inline uint8_t getPositionLineY() const {
+        return rotation180 ? POSITION_LINE_Y_ROTATED : POSITION_LINE_Y_NORMAL;
+    }
+    inline uint8_t getFilterNameLineY() const {
+        return rotation180 ? FILTER_NAME_LINE_Y_ROTATED : FILTER_NAME_LINE_Y_NORMAL;
+    }
 
 public:
     /**

@@ -71,4 +71,17 @@ public:
      * Perform encoder self-test
      */
     virtual bool performSelfTest() = 0;
+
+    /**
+     * Get current rotation direction
+     * @return 1 = clockwise, -1 = counter-clockwise, 0 = no movement
+     */
+    virtual int8_t getRotationDirection() = 0;
+
+    /**
+     * Get expected direction for target angle
+     * @param targetAngle Target angle in degrees (0-360)
+     * @return 1 = clockwise expected, -1 = counter-clockwise expected
+     */
+    virtual int8_t getExpectedDirection(float targetAngle) = 0;
 };

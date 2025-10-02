@@ -4,16 +4,20 @@
 #include "../display/DisplayManager.h"
 #include "../config/ConfigManager.h"
 #include "../encoders/EncoderInterface.h"
+#include "../core/FilterWheelController.h"
 #include "../config.h"
 
 CommandHandlers::CommandHandlers(MotorDriver* motor, DisplayManager* display,
                                  ConfigManager* config, EncoderInterface* enc,
                                  uint8_t* currentPos, uint8_t* filterCount,
-                                 bool* calibrated, bool* moving)
+                                 bool* calibrated, bool* moving,
+                                 FilterWheelController* ctrl)
     : motorDriver(motor)
     , displayManager(display)
     , configManager(config)
     , encoder(enc)
+    , commandProcessor(nullptr)
+    , controller(ctrl)
     , currentPosition(currentPos)
     , numFilters(filterCount)
     , isCalibrated(calibrated)
@@ -22,6 +26,8 @@ CommandHandlers::CommandHandlers(MotorDriver* motor, DisplayManager* display,
 }
 
 void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
+    // Store reference to processor for HELP command
+    commandProcessor = &processor;
     // Basic position commands
     processor.registerCommand("GP", "Get current position",
         [this](const String& cmd, String& response) { return handleGetPosition(cmd, response); });
@@ -71,6 +77,16 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
     processor.registerCommand("DISPLAY", "Get display information",
         [this](const String& cmd, String& response) { return handleGetDisplayInfo(cmd, response); });
 
+    // Encoder Commands
+    processor.registerCommand("ENCSTATUS", "Get encoder status",
+        [this](const String& cmd, String& response) { return handleGetEncoderStatus(cmd, response); });
+
+    processor.registerCommand("ENCDIR", "Get rotation direction",
+        [this](const String& cmd, String& response) { return handleGetRotationDirection(cmd, response); });
+
+    processor.registerCommand("ENCRAW", "Get raw encoder debug info",
+        [this](const String& cmd, String& response) { return handleGetEncoderRaw(cmd, response); });
+
     // Motor Configuration Commands
     processor.registerCommand("GMC", "Get motor configuration",
         [this](const String& cmd, String& response) { return handleGetMotorConfig(cmd, response); });
@@ -90,21 +106,6 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
     processor.registerCommand("RMC", "Reset motor configuration",
         [this](const String& cmd, String& response) { return handleResetMotorConfig(cmd, response); });
 
-    processor.registerCommand("MDM", "Set direction mode",
-        [this](const String& cmd, String& response) { return handleSetDirectionMode(cmd, response); });
-
-    processor.registerCommand("MRV", "Set reverse direction",
-        [this](const String& cmd, String& response) { return handleSetReverseDirection(cmd, response); });
-
-    processor.registerCommand("GDC", "Get direction configuration",
-        [this](const String& cmd, String& response) { return handleGetDirectionConfig(cmd, response); });
-
-    processor.registerCommand("SPR", "Set steps per revolution",
-        [this](const String& cmd, String& response) { return handleSetStepsPerRevolution(cmd, response); });
-
-    processor.registerCommand("GPR", "Get steps per revolution",
-        [this](const String& cmd, String& response) { return handleGetStepsPerRevolution(cmd, response); });
-
     // Manual Step Commands
     processor.registerCommand("SF", "Step forward",
         [this](const String& cmd, String& response) { return handleStepForward(cmd, response); });
@@ -112,56 +113,21 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
     processor.registerCommand("SB", "Step backward",
         [this](const String& cmd, String& response) { return handleStepBackward(cmd, response); });
 
-    processor.registerCommand("ST", "Step to absolute position",
-        [this](const String& cmd, String& response) { return handleStepToPosition(cmd, response); });
-
-    processor.registerCommand("GST", "Get step position",
-        [this](const String& cmd, String& response) { return handleGetStepPosition(cmd, response); });
-
     processor.registerCommand("ME", "Enable motor",
         [this](const String& cmd, String& response) { return handleMotorEnable(cmd, response); });
 
     processor.registerCommand("MD", "Disable motor",
         [this](const String& cmd, String& response) { return handleMotorDisable(cmd, response); });
 
-    // Calibration Commands
-    processor.registerCommand("REVCAL", "Start revolution calibration",
-        [this](const String& cmd, String& response) { return handleStartRevCalibration(cmd, response); });
+    processor.registerCommand("TESTMOTOR", "Test motor directly",
+        [this](const String& cmd, String& response) { return handleTestMotor(cmd, response); });
 
-    processor.registerCommand("RCP", "Add calibration steps",
-        [this](const String& cmd, String& response) { return handleRevCalAdjustPlus(cmd, response); });
+    // Guided calibration for encoder offset
+    processor.registerCommand("CALSTART", "Start guided calibration",
+        [this](const String& cmd, String& response) { return handleStartGuidedCalibration(cmd, response); });
 
-    processor.registerCommand("RCM", "Subtract calibration steps",
-        [this](const String& cmd, String& response) { return handleRevCalAdjustMinus(cmd, response); });
-
-    processor.registerCommand("RCFIN", "Finish revolution calibration",
-        [this](const String& cmd, String& response) { return handleFinishRevCalibration(cmd, response); });
-
-    // Backlash Calibration Commands
-    processor.registerCommand("BLCAL", "Start backlash calibration",
-        [this](const String& cmd, String& response) { return handleStartBacklashCalibration(cmd, response); });
-
-    processor.registerCommand("BLS", "Backlash step",
-        [this](const String& cmd, String& response) { return handleBacklashStep(cmd, response); });
-
-    processor.registerCommand("BLM", "Backlash mark",
-        [this](const String& cmd, String& response) { return handleBacklashMark(cmd, response); });
-
-    processor.registerCommand("BLFIN", "Finish backlash calibration",
-        [this](const String& cmd, String& response) { return handleFinishBacklashCalibration(cmd, response); });
-
-    // Backlash Configuration Commands
-    processor.registerCommand("BLS", "Set backlash steps",
-        [this](const String& cmd, String& response) { return handleSetBacklashSteps(cmd, response); });
-
-    processor.registerCommand("BLG", "Get backlash configuration",
-        [this](const String& cmd, String& response) { return handleGetBacklashConfig(cmd, response); });
-
-    processor.registerCommand("BLE", "Enable/disable backlash compensation",
-        [this](const String& cmd, String& response) { return handleSetBacklashEnabled(cmd, response); });
-
-    processor.registerCommand("UNI", "Set unidirectional mode",
-        [this](const String& cmd, String& response) { return handleSetUnidirectionalMode(cmd, response); });
+    processor.registerCommand("CALCFM", "Confirm guided calibration",
+        [this](const String& cmd, String& response) { return handleConfirmGuidedCalibration(cmd, response); });
 }
 
 CommandResult CommandHandlers::handleGetPosition(const String& cmd, String& response) {
@@ -183,9 +149,20 @@ CommandResult CommandHandlers::handleMoveToPosition(const String& cmd, String& r
         return CommandResult::ERROR_INVALID_PARAMETER;
     }
 
-    // This would trigger movement in the actual controller
-    response = "M" + String(position);
-    return CommandResult::SUCCESS;
+    // Actually move to the position using the controller
+    if (controller) {
+        bool success = controller->moveToPosition(position);
+        if (success) {
+            response = "M" + String(position);
+            return CommandResult::SUCCESS;
+        } else {
+            response = "ERROR:Movement failed";
+            return CommandResult::ERROR_SYSTEM_BUSY;
+        }
+    } else {
+        response = "ERROR:No controller";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
 }
 
 CommandResult CommandHandlers::handleSetPosition(const String& cmd, String& response) {
@@ -235,25 +212,20 @@ CommandResult CommandHandlers::handleGetDeviceId(const String& cmd, String& resp
 }
 
 CommandResult CommandHandlers::handleGetVersion(const String& cmd, String& response) {
-    response = "VERSION:1.0.0";
+    response = "VERSION:" + String(FIRMWARE_VERSION);
     return CommandResult::SUCCESS;
 }
 
 CommandResult CommandHandlers::handleCalibrateHome(const String& cmd, String& response) {
-    *currentPosition = 1;
-    *isCalibrated = true;
-
-    if (configManager) {
-        configManager->setCalibrated(true);
-        configManager->saveCurrentPosition(1);
+    // Call the actual calibration function in the controller
+    if (controller) {
+        controller->calibrateHome();
+        response = "CALIBRATED";
+        return CommandResult::SUCCESS;
+    } else {
+        response = "ERROR:No controller";
+        return CommandResult::ERROR_SYSTEM_BUSY;
     }
-
-    if (motorDriver) {
-        motorDriver->setCurrentPosition(0);
-    }
-
-    response = "CALIBRATED";
-    return CommandResult::SUCCESS;
 }
 
 CommandResult CommandHandlers::handleGetFilterCount(const String& cmd, String& response) {
@@ -267,7 +239,8 @@ CommandResult CommandHandlers::handleSetFilterCount(const String& cmd, String& r
     }
 
     int count = cmd.substring(2).toInt();
-    if (count < 3 || count > 8) {
+    if (count < MIN_FILTER_COUNT || count > MAX_FILTER_COUNT) {
+        response = "ERROR:Count must be " + String(MIN_FILTER_COUNT) + "-" + String(MAX_FILTER_COUNT);
         return CommandResult::ERROR_INVALID_PARAMETER;
     }
 
@@ -345,7 +318,11 @@ CommandResult CommandHandlers::handleSetFilterName(const String& cmd, String& re
 }
 
 CommandResult CommandHandlers::handleHelp(const String& cmd, String& response) {
-    response = "HELP:Use #COMMAND format. Available: GP,MP[X],SP[X],STATUS,CAL,ID,VER,GF,FC[X],GN[X],SN[X]:Name,ROTATE[0/1],DISPLAY,STOP";
+    if (commandProcessor) {
+        response = commandProcessor->getHelpString();
+    } else {
+        response = "HELP:CommandProcessor not available";
+    }
     return CommandResult::SUCCESS;
 }
 
@@ -485,93 +462,6 @@ CommandResult CommandHandlers::handleResetMotorConfig(const String& cmd, String&
     return CommandResult::SUCCESS;
 }
 
-CommandResult CommandHandlers::handleSetDirectionMode(const String& cmd, String& response) {
-    int mode;
-    if (!parseIntParameter(cmd, "MDM", mode)) {
-        return CommandResult::ERROR_INVALID_FORMAT;
-    }
-
-    if (mode != 0 && mode != 1) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        motorDriver->setDirectionMode(mode == 1);
-        if (configManager) {
-            configManager->saveDirectionMode(mode == 1);
-        }
-    }
-
-    response = "MDM" + String(mode);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleSetReverseDirection(const String& cmd, String& response) {
-    int reverse;
-    if (!parseIntParameter(cmd, "MRV", reverse)) {
-        return CommandResult::ERROR_INVALID_FORMAT;
-    }
-
-    if (reverse != 0 && reverse != 1) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        motorDriver->setReverseDirection(reverse == 1);
-        if (configManager) {
-            configManager->saveReverseDirection(reverse == 1);
-        }
-    }
-
-    response = "MRV" + String(reverse);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleGetDirectionConfig(const String& cmd, String& response) {
-    bool dirMode = false;
-    bool revMode = false;
-
-    if (motorDriver) {
-        dirMode = motorDriver->getDirectionMode();
-        revMode = motorDriver->getReverseDirection();
-    }
-
-    response = "DIRECTION_CONFIG:MODE=" + String(dirMode ? 1 : 0);
-    response += ",REVERSE=" + String(revMode ? 1 : 0);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleSetStepsPerRevolution(const String& cmd, String& response) {
-    int steps;
-    if (!parseIntParameter(cmd, "SPR", steps)) {
-        return CommandResult::ERROR_INVALID_FORMAT;
-    }
-
-    if (steps < 200 || steps > 8192) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        motorDriver->setStepsPerRevolution(steps);
-        if (configManager) {
-            configManager->saveStepsPerRevolution(steps);
-        }
-    }
-
-    response = "SPR" + String(steps);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleGetStepsPerRevolution(const String& cmd, String& response) {
-    int steps = 2048; // Default value
-    if (motorDriver) {
-        steps = motorDriver->getStepsPerRevolution();
-    }
-
-    response = "SPR:" + String(steps);
-    return CommandResult::SUCCESS;
-}
-
 // ========================================
 // MANUAL STEP COMMANDS
 // ========================================
@@ -588,12 +478,18 @@ CommandResult CommandHandlers::handleStepForward(const String& cmd, String& resp
         }
     }
 
-    if (steps < 1 || steps > 1000) {
+    if (steps < MIN_MANUAL_STEPS || steps > MAX_MANUAL_STEPS) {
         return CommandResult::ERROR_INVALID_PARAMETER;
     }
 
     if (motorDriver) {
+        // Enable motor first
+        motorDriver->enableMotor();
         motorDriver->stepForward(steps);
+        // Activate movement flag so motor runs
+        if (isMoving) {
+            *isMoving = true;
+        }
     }
 
     response = "SF" + String(steps);
@@ -612,47 +508,21 @@ CommandResult CommandHandlers::handleStepBackward(const String& cmd, String& res
         }
     }
 
-    if (steps < 1 || steps > 1000) {
+    if (steps < MIN_MANUAL_STEPS || steps > MAX_MANUAL_STEPS) {
         return CommandResult::ERROR_INVALID_PARAMETER;
     }
 
     if (motorDriver) {
+        // Enable motor first
+        motorDriver->enableMotor();
         motorDriver->stepBackward(steps);
+        // Activate movement flag so motor runs
+        if (isMoving) {
+            *isMoving = true;
+        }
     }
 
     response = "SB" + String(steps);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleStepToPosition(const String& cmd, String& response) {
-    if (!canExecuteMovement()) {
-        return CommandResult::ERROR_SYSTEM_BUSY;
-    }
-
-    int stepPos;
-    if (!parseIntParameter(cmd, "ST", stepPos)) {
-        return CommandResult::ERROR_INVALID_FORMAT;
-    }
-
-    if (stepPos < 0 || stepPos > 4096) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        motorDriver->goToStep(stepPos);
-    }
-
-    response = "ST" + String(stepPos);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleGetStepPosition(const String& cmd, String& response) {
-    int stepPos = 0;
-    if (motorDriver) {
-        stepPos = motorDriver->getCurrentStep();
-    }
-
-    response = "STEP:" + String(stepPos);
     return CommandResult::SUCCESS;
 }
 
@@ -674,221 +544,16 @@ CommandResult CommandHandlers::handleMotorDisable(const String& cmd, String& res
     return CommandResult::SUCCESS;
 }
 
-// ========================================
-// CALIBRATION COMMANDS
-// ========================================
+// External function from test_motor.cpp
+extern void testMotorDirect();
 
-CommandResult CommandHandlers::handleStartRevCalibration(const String& cmd, String& response) {
-    if (*isMoving) {
-        return CommandResult::ERROR_SYSTEM_BUSY;
-    }
+CommandResult CommandHandlers::handleTestMotor(const String& cmd, String& response) {
+    response = "TESTMOTOR:Running direct pin test...";
 
-    if (motorDriver) {
-        motorDriver->startRevolutionCalibration();
-    }
+    // Call the test function
+    testMotorDirect();
 
-    response = "REV_CAL_STARTED";
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleRevCalAdjustPlus(const String& cmd, String& response) {
-    int steps = 1; // Default
-    if (cmd.length() > 3) {
-        if (!parseIntParameter(cmd, "RCP", steps)) {
-            return CommandResult::ERROR_INVALID_FORMAT;
-        }
-    }
-
-    if (steps < 1 || steps > 100) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        motorDriver->adjustRevolutionCalibration(steps);
-    }
-
-    response = "RCP" + String(steps);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleRevCalAdjustMinus(const String& cmd, String& response) {
-    int steps = 1; // Default
-    if (cmd.length() > 3) {
-        if (!parseIntParameter(cmd, "RCM", steps)) {
-            return CommandResult::ERROR_INVALID_FORMAT;
-        }
-    }
-
-    if (steps < 1 || steps > 100) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        motorDriver->adjustRevolutionCalibration(-steps);
-    }
-
-    response = "RCM" + String(steps);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleFinishRevCalibration(const String& cmd, String& response) {
-    if (motorDriver) {
-        int totalSteps = motorDriver->finishRevolutionCalibration();
-        if (configManager) {
-            configManager->saveStepsPerRevolution(totalSteps);
-        }
-        response = "REV_CAL_COMPLETE:" + String(totalSteps);
-    } else {
-        response = "REV_CAL_COMPLETE:2048";
-    }
-
-    return CommandResult::SUCCESS;
-}
-
-// ========================================
-// BACKLASH CALIBRATION COMMANDS
-// ========================================
-
-CommandResult CommandHandlers::handleStartBacklashCalibration(const String& cmd, String& response) {
-    if (*isMoving) {
-        return CommandResult::ERROR_SYSTEM_BUSY;
-    }
-
-    if (motorDriver) {
-        motorDriver->startBacklashCalibration();
-    }
-
-    response = "BACKLASH_CAL_STARTED";
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleBacklashStep(const String& cmd, String& response) {
-    int steps = 1; // Default
-    if (cmd.length() > 3) {
-        if (!parseIntParameter(cmd, "BLS", steps)) {
-            return CommandResult::ERROR_INVALID_FORMAT;
-        }
-    }
-
-    if (steps < 1 || steps > 50) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        int totalSteps = motorDriver->backlashTestStep(steps);
-        response = "BLS" + String(steps) + " TOTAL:" + String(totalSteps);
-    } else {
-        response = "BLS" + String(steps) + " TOTAL:0";
-    }
-
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleBacklashMark(const String& cmd, String& response) {
-    if (motorDriver) {
-        bool isForward = motorDriver->markBacklashMovement();
-        int steps = motorDriver->getCurrentBacklashSteps();
-
-        if (isForward) {
-            response = "BLM_FORWARD:" + String(steps);
-        } else {
-            response = "BLM_BACKWARD:" + String(steps);
-        }
-    } else {
-        response = "BLM_FORWARD:0";
-    }
-
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleFinishBacklashCalibration(const String& cmd, String& response) {
-    if (motorDriver) {
-        int backlashSteps = motorDriver->finishBacklashCalibration();
-        if (configManager) {
-            configManager->saveBacklashSteps(backlashSteps);
-        }
-        response = "BACKLASH_CAL_COMPLETE:" + String(backlashSteps);
-    } else {
-        response = "BACKLASH_CAL_COMPLETE:0";
-    }
-
-    return CommandResult::SUCCESS;
-}
-
-// ========================================
-// BACKLASH CONFIGURATION COMMANDS
-// ========================================
-
-CommandResult CommandHandlers::handleSetBacklashSteps(const String& cmd, String& response) {
-    int steps;
-    if (!parseIntParameter(cmd, "BLS", steps)) {
-        return CommandResult::ERROR_INVALID_FORMAT;
-    }
-
-    if (steps < 0 || steps > 100) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        motorDriver->setBacklashSteps(steps);
-        if (configManager) {
-            configManager->saveBacklashSteps(steps);
-        }
-    }
-
-    response = "BLS" + String(steps);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleGetBacklashConfig(const String& cmd, String& response) {
-    int steps = 0;
-    bool enabled = false;
-
-    if (motorDriver) {
-        steps = motorDriver->getBacklashSteps();
-        enabled = motorDriver->isBacklashEnabled();
-    }
-
-    response = "BACKLASH_CONFIG:STEPS=" + String(steps);
-    response += ",ENABLED=" + String(enabled ? "YES" : "NO");
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleSetBacklashEnabled(const String& cmd, String& response) {
-    int enable;
-    if (!parseIntParameter(cmd, "BLE", enable)) {
-        return CommandResult::ERROR_INVALID_FORMAT;
-    }
-
-    if (enable != 0 && enable != 1) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    if (motorDriver) {
-        motorDriver->setBacklashEnabled(enable == 1);
-    }
-
-    response = "BLE" + String(enable);
-    return CommandResult::SUCCESS;
-}
-
-CommandResult CommandHandlers::handleSetUnidirectionalMode(const String& cmd, String& response) {
-    int mode;
-    if (!parseIntParameter(cmd, "UNI", mode)) {
-        return CommandResult::ERROR_INVALID_FORMAT;
-    }
-
-    if (mode != 0 && mode != 1) {
-        return CommandResult::ERROR_INVALID_PARAMETER;
-    }
-
-    // For now, save the mode in ConfigManager - the actual driver implementation
-    // will read this setting during initialization
-    if (configManager) {
-        configManager->saveDirectionMode(mode == 0);  // unidirectional = !bidirectional
-    }
-
-    response = "UNI" + String(mode);
+    response += " Complete. Check LEDs and motor movement.";
     return CommandResult::SUCCESS;
 }
 
@@ -935,5 +600,126 @@ CommandResult CommandHandlers::handleGetDisplayInfo(const String& cmd, String& r
     response += ",Enabled=" + String(displayManager->isEnabled() ? "Yes" : "No");
     response += ",Update=" + String(DISPLAY_UPDATE_INTERVAL) + "ms";
 
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetEncoderStatus(const String& cmd, String& response) {
+    if (!encoder) {
+        response = "ERROR:Encoder not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    if (!encoder->isAvailable()) {
+        response = "ENCSTATUS:Not connected";
+        return CommandResult::SUCCESS;
+    }
+
+    float angle = encoder->getAngle();
+    uint16_t rawValue = encoder->getRawValue();
+    int8_t direction = encoder->getRotationDirection();
+    bool healthy = encoder->isHealthy();
+    float offset = encoder->getAngleOffset();
+
+    // Calculate expected angle for current position
+    float expectedAngle = 0.0f;
+    if (controller) {
+        expectedAngle = controller->positionToAngle(*currentPosition);
+    }
+    float error = angle - expectedAngle;
+    // Normalize error to [-180, 180]
+    while (error > 180.0f) error -= 360.0f;
+    while (error < -180.0f) error += 360.0f;
+
+    response = "ENCSTATUS:";
+    response += "Angle=" + String(angle, 2);
+    response += ",Expected=" + String(expectedAngle, 2);
+    response += ",Error=" + String(error, 2);
+    response += ",Raw=" + String(rawValue);
+    response += ",Offset=" + String(offset, 2);
+    response += ",Dir=";
+    if (direction == 1) {
+        response += "CW";
+    } else if (direction == -1) {
+        response += "CCW";
+    } else {
+        response += "STOP";
+    }
+    response += ",Health=" + String(healthy ? "OK" : "FAULT");
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetRotationDirection(const String& cmd, String& response) {
+    if (!encoder) {
+        response = "ERROR:Encoder not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    if (!encoder->isAvailable()) {
+        response = "ENCDIR:Not connected";
+        return CommandResult::SUCCESS;
+    }
+
+    // Update angle reading to refresh direction
+    encoder->getAngle();
+
+    int8_t direction = encoder->getRotationDirection();
+
+    response = "ENCDIR:";
+    if (direction == 1) {
+        response += "CW (+1)";
+    } else if (direction == -1) {
+        response += "CCW (-1)";
+    } else {
+        response += "STOPPED (0)";
+    }
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetEncoderRaw(const String& cmd, String& response) {
+    if (!encoder || !encoder->isAvailable()) {
+        response = "ERROR:Encoder not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Get raw values
+    uint16_t rawValue = encoder->getRawValue();
+    float rawAngle = rawValue * (360.0f / 4096.0f); // AS5600 12-bit = 4096 counts
+    float currentOffset = encoder->getAngleOffset();
+    float adjustedAngle = encoder->getAngle();
+
+    // Calculate what the angle SHOULD be after offset
+    float calculatedAngle = rawAngle - currentOffset;
+    while (calculatedAngle < 0) calculatedAngle += 360.0f;
+    while (calculatedAngle >= 360.0f) calculatedAngle -= 360.0f;
+
+    response = "ENCRAW:";
+    response += "RawCounts=" + String(rawValue);
+    response += ",RawAngle=" + String(rawAngle, 2);
+    response += ",Offset=" + String(currentOffset, 2);
+    response += ",Calculated=" + String(calculatedAngle, 2);
+    response += ",Actual=" + String(adjustedAngle, 2);
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleStartGuidedCalibration(const String& cmd, String& response) {
+    if (controller) {
+        controller->startGuidedCalibration();
+        response = "CALSTART:OK";
+    } else {
+        response = "ERROR:No controller";
+    }
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleConfirmGuidedCalibration(const String& cmd, String& response) {
+    if (controller) {
+        controller->finishGuidedCalibration();
+        response = "CALCFM:Complete";
+    } else {
+        response = "ERROR:No controller";
+    }
     return CommandResult::SUCCESS;
 }

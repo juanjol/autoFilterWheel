@@ -6,15 +6,6 @@ ULN2003Driver::ULN2003Driver(uint8_t p1, uint8_t p2, uint8_t p3, uint8_t p4)
     , motorEnabled(false)
     , directionReversed(false)
     , pin1(p1), pin2(p2), pin3(p3), pin4(p4)
-    , backlashSteps(0)
-    , backlashEnabled(false)
-    , lastMoveWasForward(true)
-    , unidirectionalMode(true)  // Default to unidirectional for astronomy use
-    , revolutionCalibrationActive(false)
-    , revolutionCalibrationStartPos(0)
-    , backlashCalibrationActive(false)
-    , backlashCalibrationSteps(0)
-    , stepsPerRevolution(STEPS_PER_REVOLUTION)
 {
 }
 
@@ -26,9 +17,10 @@ void ULN2003Driver::init() {
     pinMode(pin4, OUTPUT);
 
     // Initialize stepper with default settings
-    stepper.setSpeed(DEFAULT_SPEED);
     stepper.setMaxSpeed(DEFAULT_MAX_SPEED);
     stepper.setAcceleration(DEFAULT_ACCELERATION);
+    // Note: setSpeed() should be called AFTER setMaxSpeed()
+    stepper.setSpeed(DEFAULT_SPEED);
 
     // Start with motor disabled
     disableMotor();
@@ -47,13 +39,7 @@ void ULN2003Driver::moveTo(long position) {
         position = -position;
     }
 
-    // Use backlash compensation if enabled
-    if (backlashEnabled || unidirectionalMode) {
-        moveWithBacklashCompensation(position);
-    } else {
-        stepper.moveTo(position);
-    }
-
+    stepper.moveTo(position);
     motorEnabled = true;
 }
 
@@ -78,6 +64,8 @@ bool ULN2003Driver::run() {
     if (!motorEnabled) {
         return false;
     }
+
+    // Simple approach: just run the stepper
     return stepper.run();
 }
 
@@ -155,206 +143,47 @@ void ULN2003Driver::forceAllPinsLow() {
     digitalWrite(pin4, LOW);
 }
 
-// ========================================
-// BACKLASH COMPENSATION METHODS
-// ========================================
 
-void ULN2003Driver::setBacklashSteps(int steps) {
-    backlashSteps = abs(steps);  // Always positive
-}
+// Override stepForward to handle manual stepping properly
+void ULN2003Driver::stepForward(long steps) {
+    // Enable motor first
+    motorEnabled = true;
 
-int ULN2003Driver::getBacklashSteps() const {
-    return backlashSteps;
-}
+    // Reset position to 0 for each manual command
+    stepper.setCurrentPosition(0);
 
-void ULN2003Driver::setBacklashEnabled(bool enabled) {
-    backlashEnabled = enabled;
-}
-
-bool ULN2003Driver::isBacklashEnabled() const {
-    return backlashEnabled;
-}
-
-// ========================================
-// STEPS PER REVOLUTION METHODS
-// ========================================
-
-void ULN2003Driver::setStepsPerRevolution(int steps) {
-    if (steps > 0 && steps <= 8192) {
-        stepsPerRevolution = steps;
-    }
-}
-
-int ULN2003Driver::getStepsPerRevolution() const {
-    return stepsPerRevolution;
-}
-
-// ========================================
-// UNIDIRECTIONAL MODE METHODS
-// ========================================
-
-void ULN2003Driver::setUnidirectionalMode(bool enabled) {
-    unidirectionalMode = enabled;
-}
-
-bool ULN2003Driver::isUnidirectionalMode() const {
-    return unidirectionalMode;
-}
-
-// ========================================
-// ENHANCED MOVEMENT WITH BACKLASH COMPENSATION
-// ========================================
-
-void ULN2003Driver::moveWithBacklashCompensation(long targetPosition) {
-    long currentPos = getCurrentPosition();
-    bool movingForward = targetPosition > currentPos;
-
-    // In unidirectional mode, always approach target from the same direction
-    if (unidirectionalMode) {
-        // For unidirectional mode, we only move forward (clockwise)
-        // If target is "behind" us, we go the long way around
-        long directSteps = targetPosition - currentPos;
-        long forwardSteps = directSteps;
-
-        if (directSteps < 0) {
-            // Target is behind us - go forward the long way
-            forwardSteps = stepsPerRevolution + directSteps;
-        }
-
-        // Apply backlash compensation only if enabled and we're changing direction
-        if (backlashEnabled && !lastMoveWasForward && forwardSteps > 0) {
-            // First, move back by backlash amount, then forward to target + backlash
-            stepper.move(-backlashSteps);
-            while (stepper.isRunning()) {
-                stepper.run();
-            }
-            forwardSteps += backlashSteps;
-        }
-
-        if (forwardSteps > 0) {
-            stepper.move(forwardSteps);
-            lastMoveWasForward = true;
-        }
+    // Set target
+    if (directionReversed) {
+        stepper.moveTo(-steps);
     } else {
-        // Bidirectional mode - take shortest path
-        if (backlashEnabled && needsBacklashCompensation(targetPosition)) {
-            // Apply backlash compensation
-            if (!movingForward && lastMoveWasForward) {
-                // Moving backward after forward - add backlash
-                stepper.move(-backlashSteps);
-                while (stepper.isRunning()) {
-                    stepper.run();
-                }
-            }
-        }
+        stepper.moveTo(steps);
+    }
 
-        stepper.moveTo(targetPosition);
-        lastMoveWasForward = movingForward;
+    // Run to completion immediately (blocking)
+    while (stepper.distanceToGo() != 0) {
+        stepper.run();
+        delay(1);  // Small delay to prevent watchdog issues
     }
 }
 
-bool ULN2003Driver::needsBacklashCompensation(long targetPosition) const {
-    if (!backlashEnabled || backlashSteps == 0) {
-        return false;
-    }
+// Override stepBackward to handle manual stepping properly
+void ULN2003Driver::stepBackward(long steps) {
+    // Enable motor first
+    motorEnabled = true;
 
-    long currentPos = getCurrentPosition();
-    bool movingForward = targetPosition > currentPos;
+    // Reset position to 0 for each manual command
+    stepper.setCurrentPosition(0);
 
-    // Need compensation if changing direction from forward to backward
-    return !movingForward && lastMoveWasForward;
-}
-
-// ========================================
-// REVOLUTION CALIBRATION METHODS
-// ========================================
-
-void ULN2003Driver::startRevolutionCalibration() {
-    revolutionCalibrationActive = true;
-    revolutionCalibrationStartPos = getCurrentPosition();
-}
-
-void ULN2003Driver::adjustRevolutionCalibration(int steps) {
-    if (!revolutionCalibrationActive) {
-        return;
-    }
-
-    if (unidirectionalMode && steps < 0) {
-        // In unidirectional mode, negative adjustment means go forward the long way
-        steps = stepsPerRevolution + steps;
-    }
-
-    stepper.move(steps);
-    lastMoveWasForward = steps > 0;
-}
-
-int ULN2003Driver::finishRevolutionCalibration() {
-    if (!revolutionCalibrationActive) {
-        return stepsPerRevolution;  // Default
-    }
-
-    revolutionCalibrationActive = false;
-    long totalSteps = abs(getCurrentPosition() - revolutionCalibrationStartPos);
-
-    // Ensure we have a reasonable value
-    if (totalSteps < 1000 || totalSteps > 8192) {
-        totalSteps = stepsPerRevolution;  // Fallback to current setting
+    // Set target (negative for backward)
+    if (directionReversed) {
+        stepper.moveTo(steps);  // Reversed, so positive is backward
     } else {
-        // Update the stored steps per revolution with the calibrated value
-        stepsPerRevolution = totalSteps;
+        stepper.moveTo(-steps);
     }
 
-    return totalSteps;
-}
-
-// ========================================
-// BACKLASH CALIBRATION METHODS
-// ========================================
-
-void ULN2003Driver::startBacklashCalibration() {
-    backlashCalibrationActive = true;
-    backlashCalibrationSteps = 0;
-}
-
-int ULN2003Driver::backlashTestStep(int steps) {
-    if (!backlashCalibrationActive) {
-        return 0;
+    // Run to completion immediately (blocking)
+    while (stepper.distanceToGo() != 0) {
+        stepper.run();
+        delay(1);  // Small delay to prevent watchdog issues
     }
-
-    // In unidirectional mode, we test backlash by moving forward, then trying to move back
-    if (unidirectionalMode) {
-        // Always move forward for consistency
-        if (steps < 0) {
-            steps = abs(steps);  // Convert to positive
-        }
-    }
-
-    stepper.move(steps);
-    backlashCalibrationSteps += abs(steps);
-    lastMoveWasForward = steps > 0;
-
-    return backlashCalibrationSteps;
-}
-
-bool ULN2003Driver::markBacklashMovement() {
-    // Return the direction of the last movement
-    return lastMoveWasForward;
-}
-
-int ULN2003Driver::getCurrentBacklashSteps() const {
-    return backlashCalibrationSteps;
-}
-
-int ULN2003Driver::finishBacklashCalibration() {
-    if (!backlashCalibrationActive) {
-        return backlashSteps;  // Return current setting
-    }
-
-    backlashCalibrationActive = false;
-
-    // Set the measured backlash as the compensation value
-    backlashSteps = backlashCalibrationSteps;
-    backlashEnabled = backlashSteps > 0;
-
-    return backlashSteps;
 }

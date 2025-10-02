@@ -1,4 +1,5 @@
 #include "AS5600Encoder.h"
+#include "../config.h"
 #include <Arduino.h>
 
 AS5600Encoder::AS5600Encoder(TwoWire* wireInterface)
@@ -7,6 +8,8 @@ AS5600Encoder::AS5600Encoder(TwoWire* wireInterface)
     , available(false)
     , lastRawValue(0)
     , movementDetected(false)
+    , previousAngle(0)
+    , rotationDirection(0)
     , readCount(0)
     , errorCount(0)
 {
@@ -24,6 +27,7 @@ bool AS5600Encoder::init() {
 
     if (available) {
         lastRawValue = getRawValue();
+        previousAngle = lastRawValue;
         resetErrorStats();
     }
 
@@ -41,12 +45,36 @@ float AS5600Encoder::getAngle() {
     }
 
     float angle = rawValue * DEGREES_PER_COUNT;
+
+    // Invert encoder direction if configured
+    #ifdef AS5600_INVERT_DIRECTION
+    #if AS5600_INVERT_DIRECTION
+    angle = 360.0f - angle;
+    #endif
+    #endif
+
     angle = normalizeAngle(angle - angleOffset);
 
-    // Check for movement
-    if (abs((int)rawValue - (int)lastRawValue) > 10) {  // Threshold for movement detection
-        movementDetected = true;
+    // Check for movement and update direction
+    int16_t delta = (int16_t)rawValue - (int16_t)previousAngle;
+
+    // Handle wraparound (360°→0° or 0°→360°)
+    if (delta > 2048) {
+        delta -= 4096;  // Wraparound 360°→0° (going CCW)
+    } else if (delta < -2048) {
+        delta += 4096;  // Wraparound 0°→360° (going CW)
     }
+
+    // Update direction based on delta
+    const int16_t MOVEMENT_THRESHOLD = 5;  // Minimum counts to consider as movement
+    if (abs(delta) > MOVEMENT_THRESHOLD) {
+        movementDetected = true;
+        rotationDirection = (delta > 0) ? 1 : -1;  // 1 = CW, -1 = CCW
+        previousAngle = rawValue;
+    } else {
+        rotationDirection = 0;  // No significant movement
+    }
+
     lastRawValue = rawValue;
 
     return angle;
@@ -225,4 +253,30 @@ float AS5600Encoder::normalizeAngle(float angle) {
         angle -= 360.0f;
     }
     return angle;
+}
+
+int8_t AS5600Encoder::getRotationDirection() {
+    return rotationDirection;
+}
+
+int8_t AS5600Encoder::getExpectedDirection(float targetAngle) {
+    // Get current angle
+    float currentAngle = getAngle();
+    if (currentAngle < 0) {
+        return 0;  // Error reading angle
+    }
+
+    // Calculate the difference
+    float diff = targetAngle - currentAngle;
+
+    // Normalize difference to -180 to +180 range
+    while (diff > 180.0f) diff -= 360.0f;
+    while (diff < -180.0f) diff += 360.0f;
+
+    // Determine expected direction based on shortest path
+    if (abs(diff) < 5.0f) {
+        return 0;  // Already at target
+    }
+
+    return (diff > 0) ? 1 : -1;  // 1 = CW, -1 = CCW
 }

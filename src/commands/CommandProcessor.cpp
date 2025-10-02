@@ -132,6 +132,19 @@ void CommandProcessor::showHelp() {
     Serial.println(numMappings);
 }
 
+String CommandProcessor::getHelpString() {
+    String help = "HELP:Commands(";
+    help += String(numMappings);
+    help += "):";
+
+    for (uint8_t i = 0; i < numMappings; i++) {
+        if (i > 0) help += ",";
+        help += commandMappings[i].prefix;
+    }
+
+    return help;
+}
+
 CommandProcessor::Statistics CommandProcessor::getStatistics() const {
     return stats;
 }

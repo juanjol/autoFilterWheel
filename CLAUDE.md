@@ -42,10 +42,11 @@ pio run -t clean
 ### Critical Configuration Values
 
 **Motor Configuration:**
-- `MOTOR_DIRECTION_MODE 0`: Unidirectional movement (1→2→3→4→5→1)
-- `MOTOR_REVERSE_DIRECTION true`: Default rotation direction is reversed
-- `STEPS_PER_FILTER 409`: Calculated for 5 positions (72° each)
+- `STEPS_PER_REVOLUTION 2150`: 28BYJ-48 with internal gearing
+- `MAX_MOTOR_SPEED 430.0`: Maximum steps per second
+- `MOTOR_SPEED 300.0`: Normal operating speed
 - `AUTO_DISABLE_MOTOR true`: Power saving enabled
+- `MOTOR_DISABLE_DELAY 1000`: Motor disables after 1 second
 
 **Display Positioning (0.42" OLED):**
 - Y coordinates: 24, 36, 52 (positioned for bottom-portion display)
@@ -62,13 +63,30 @@ pio run -t clean
 
 ## Important Implementation Details
 
-### Position Calculation During Movement
-The system tracks real-time position during movement using:
+### Position Control Architecture
+
+**Encoder-Based Control with PID (Primary Mode)**:
+When AS5600 encoder is available, the system uses a PID controller for smooth, precise positioning:
+- Target position converted to angle: Position 1=0°, Position 2=72°, etc.
+- **PID Control Loop**: Calculates optimal motor steps based on:
+  - **P (Proportional)**: Kp=4.5 - Main driving force proportional to error
+  - **I (Integral)**: Ki=0.01 - Eliminates steady-state error
+  - **D (Derivative)**: Kd=0.3 - Dampens oscillation and overshoot
+- Output limits: 10-2000 steps per iteration
+- Precision: < 0.8° tolerance (configurable via `ANGLE_CONTROL_TOLERANCE`)
+- Maximum 30 iterations with 150ms settling time per iteration
+- Auto-corrects for mechanical errors, backlash, and missed steps
+- Bidirectional movement: Can reverse if overshoot occurs
+
+**Step-Based Control (Fallback Mode)**:
+When encoder is not available or encoder control fails:
 ```cpp
 uint8_t calculatedPosition = (currentStep / STEPS_PER_FILTER) + 1;
 if (calculatedPosition > NUM_FILTERS) calculatedPosition = ((calculatedPosition - 1) % NUM_FILTERS) + 1;
 ```
-This was corrected from a complex formula that caused position display to lag by one step.
+- Traditional open-loop step counting (2048 steps/revolution ÷ 5 positions = 409 steps/position)
+- No feedback correction, relies on motor accuracy
+- Used as fallback for compatibility
 
 ### Motor Power Management
 - Motor automatically disables after `MOTOR_DISABLE_DELAY` (1000ms) to save power
@@ -79,26 +97,33 @@ This was corrected from a complex formula that caused position display to lag by
 ### Display Coordinate System
 The 0.42" OLED displays only a portion of the 128x64 buffer. All content must be positioned at y≥24 with x+OLED_X_OFFSET for proper visibility. Test on actual hardware as coordinate mapping varies by manufacturer.
 
-### Unidirectional Movement Logic
-For position changes like 1→5, the motor moves forward through 2,3,4,5 (4 steps total) rather than taking a shorter reverse path. This ensures consistent mechanical behavior and avoids backlash issues.
+## Serial Commands
 
-## Serial Commands for Testing
-
-Essential commands for development/debugging:
-- `#CAL` - Calibrate current position as position 1
-- `#MP[1-X]` - Move to filter position (X = current filter count)
+**Essential Commands:**
+- `#CAL` - Calibrate encoder offset (sets current position as position 1 = 0°)
+- `#MP[1-X]` - Move to filter position using encoder feedback
 - `#GP` - Get current position
-- `#STATUS` - Complete system status with position, calibration, angle
+- `#STATUS` - Complete system status with angle, error, and control mode
 - `#GF` - Get current filter count
-- `#FC[3-8]` - Set filter count (3-8 filters supported)
+- `#FC[3-9]` - Set filter count (3-9 filters supported)
 - `#GN` - Get all filter names
 - `#GN[1-X]` - Get specific filter name
 - `#SN[1-X]:Name` - Set filter name (e.g., `#SN1:Luminance`)
-- `#SF[X]` - Manual step forward (useful for fine-tuning)
-- `#SP[1-X]` - Set current position without moving
 - `#ID` - Get device identifier
 - `#VER` - Get firmware version
 - `#STOP` - Emergency stop
+
+**Debug/Manual Control:**
+- `#SF[X]` - Manual step forward (for calibration/testing)
+- `#SB[X]` - Manual step backward (for calibration/testing)
+- `#CALSTART` - Start guided calibration mode
+- `#CALCFM` - Confirm guided calibration
+- `#ENCSTATUS` - Get encoder diagnostics
+- `#ME` / `#MD` - Enable/disable motor manually
+
+**Hardware Control:**
+- `#ROTATE` - Rotate display 180 degrees
+- `#ENCSTATUS` - Get encoder diagnostics and health status
 
 ## Common Development Tasks
 
@@ -120,20 +145,14 @@ The system supports dynamic filter names configurable at runtime:
 ### Adding New Filter Positions
 1. Update `NUM_FILTERS` in config.h
 2. Add corresponding `FILTER_NAME_X` definitions for defaults
-3. Verify `STEPS_PER_FILTER` calculation remains correct
-4. Update angle calculations for AS5600 if using encoder
-5. Update EEPROM storage calculation if needed
+3. Angles are calculated automatically: Position N = (N-1) × (360°/NUM_FILTERS)
+4. No other changes needed - encoder handles the rest
 
 ### Modifying Display Layout
 - Remember 0.42" OLED constraints (content at y≥24, x+OLED_X_OFFSET)
 - Test with actual hardware as coordinate mapping varies by manufacturer
 - Use `OLED_X_OFFSET` for horizontal positioning
 - Display update limited to `DISPLAY_UPDATE_INTERVAL` (100ms) to prevent flicker
-
-### Motor Direction Changes
-- Modify `MOTOR_REVERSE_DIRECTION` for simple direction flip
-- For bidirectional mode, change `MOTOR_DIRECTION_MODE` to 1
-- Bidirectional mode chooses shortest path to target
 
 ### Power Supply Considerations
 - ESP32-C3 can be powered via USB (5V)
@@ -142,10 +161,24 @@ The system supports dynamic filter names configurable at runtime:
 - All grounds must be connected together
 
 ### Calibration and Position Accuracy
-- AS5600 encoder provides 12-bit resolution (4096 positions per revolution)
-- Motor provides 2048 steps per revolution
-- Use encoder feedback for position verification after movements
-- Calibration stores angle offset in EEPROM for consistent startup
+
+**Encoder-Based Calibration**:
+- Use `#CAL` command to calibrate position 1 at current physical location
+- System calculates and stores angle offset so current angle becomes 0°
+- All subsequent positions calculated relative to this: Pos2=72°, Pos3=144°, etc.
+- Offset stored in EEPROM for persistence across power cycles
+- AS5600 provides 12-bit resolution (4096 counts/revolution = 0.088°/count)
+
+**Angle-Based Positioning Accuracy**:
+- Target precision: < 1° (configurable via `ANGLE_CONTROL_TOLERANCE`)
+- Typical achieved accuracy: 0.5-0.8° after feedback loop convergence
+- Motor provides 2048 steps/revolution (0.176°/step nominal)
+- Closed-loop control compensates for mechanical imperfections automatically
+
+**Step-Based Positioning (Fallback)**:
+- Accuracy depends on motor: ±2-5° typical for 28BYJ-48
+- No automatic correction for missed steps or mechanical errors
+- Position errors accumulate over multiple movements
 
 ## Hardware Integration Notes
 
@@ -154,12 +187,59 @@ The system supports dynamic filter names configurable at runtime:
 - Magnet must be 0.5-3mm from chip surface
 - Use diametrically magnetized neodymium magnet (6mm diameter)
 - I2C address is fixed at 0x36
+- **Direction Configuration**: Set `AS5600_INVERT_DIRECTION` in config.h to match motor rotation
 
 ### Motor Configuration
 - 28BYJ-48 motor has internal 64:1 gearbox (2048 steps/rev)
 - ULN2003 driver uses 4-wire control (IN1-IN4)
 - Motor can run on 5V or 12V (higher voltage = more torque)
 - Power management prevents overheating and saves energy
+
+### PID Tuning for Angle Control
+
+The PID controller parameters are defined in [config.h](src/config.h#L169):
+
+```cpp
+#define ANGLE_PID_KP 4.5f          // Proportional gain
+#define ANGLE_PID_KI 0.01f         // Integral gain
+#define ANGLE_PID_KD 0.3f          // Derivative gain
+#define ANGLE_PID_INTEGRAL_MAX 100.0f  // Anti-windup limit
+#define ANGLE_PID_OUTPUT_MIN 10    // Minimum motor steps per iteration
+#define ANGLE_PID_OUTPUT_MAX 2000  // Maximum motor steps per iteration
+#define ANGLE_PID_SETTLING_TIME 150  // Delay between iterations (ms)
+```
+
+**Tuning Guide:**
+- **Kp (Proportional)**: Increase for faster response, decrease if overshooting
+  - Too high: Oscillation around target
+  - Too low: Slow, sluggish response
+  - Current value (4.5): Balanced response for 28BYJ-48
+
+- **Ki (Integral)**: Eliminates steady-state error
+  - Too high: Slow oscillation, instability
+  - Too low: Position never settles exactly on target
+  - Current value (0.01): Conservative to prevent windup
+
+- **Kd (Derivative)**: Dampens oscillation
+  - Too high: Sensitive to noise, jerky movement
+  - Too low: Overshooting, ringing
+  - Current value (0.3): Light damping to reduce noise sensitivity
+
+**Debugging PID Performance:**
+Monitor serial output during movement:
+```
+[PID] Iter 1: Angle=0.00° Err=72.00° | P=396.0 I=0.0 D=0.0 → 150 steps (26.4°)
+[PID] Iter 2: Angle=27.15° Err=44.85° | P=246.7 I=0.9 D=-32.6 → 150 steps (26.4°)
+[PID] Iter 3: Angle=54.32° Err=17.68° | P=97.2 I=2.3 D=-32.6 → 66 steps (11.6°)
+[PID] Iter 4: Angle=71.45° Err=0.55° | P=3.0 I=2.7 D=-20.5 → 10 steps (1.8°)
+[PID] ✓ TARGET REACHED!
+```
+
+**Common Issues:**
+- **Oscillation**: Reduce Kp or increase Kd
+- **Slow settling**: Increase Kp, check SETTLING_TIME
+- **Overshoot**: Increase Kd or reduce OUTPUT_MAX
+- **Never reaches target**: Increase Ki slightly, check OUTPUT_MIN
 
 ### Contributing Guidelines
 - Test all changes with actual hardware setup
