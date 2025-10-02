@@ -136,7 +136,8 @@ CommandResult CommandHandlers::handleGetPosition(const String& cmd, String& resp
 }
 
 CommandResult CommandHandlers::handleMoveToPosition(const String& cmd, String& response) {
-    if (!canExecuteMovement()) {
+    // Only check if system is busy (moving), allow movement without calibration
+    if (*isMoving) {
         return CommandResult::ERROR_SYSTEM_BUSY;
     }
 

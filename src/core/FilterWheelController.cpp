@@ -47,16 +47,18 @@ bool FilterWheelController::init(MotorDriverType motorType) {
         // Encoder is optional, so don't fail initialization
     }
 
-    if (!initializeCommandSystem()) {
-        return false;
-    }
-
-    // Initialize configuration manager
+    // Initialize configuration manager BEFORE command system
+    // (command handlers need access to configManager)
     configManager = make_unique_compat<ConfigManager>();
     configManager->init();
 
     // Load system configuration
     loadSystemConfiguration();
+
+    // Initialize command system AFTER configManager is ready
+    if (!initializeCommandSystem()) {
+        return false;
+    }
 
     // Show splash screen
     showSplashScreen();
@@ -203,6 +205,14 @@ bool FilterWheelController::moveToPosition(uint8_t position) {
             Serial.println("[moveToPosition] Movement completed");
             #endif
             success = true;
+
+            // Disable motor after step-based movement
+            if (motorDriver) {
+                motorDriver->disableMotor();
+                #if DEBUG_MODE
+                Serial.println("[moveToPosition] Motor disabled (step-based control)");
+                #endif
+            }
         }
     }
 
