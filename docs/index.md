@@ -133,7 +133,7 @@ graph TB
     C --> D[Filter Wheel Assembly]
     A --> E[AS5600 Encoder]
     E --> D
-    A --> F[0.42" OLED Display]
+    A --> F[OLED Display]
     A --> G[USB Serial Interface]
     G --> H[ASCOM Driver]
     H --> I[Astronomy Software]
