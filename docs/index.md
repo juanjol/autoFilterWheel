@@ -140,31 +140,6 @@ graph TB
     I --> J[NINA/PHD2/etc.]
 ```
 
-## 🌟 Why Choose This Controller?
-
-### **Professional Grade**
-Built with astronomy applications in mind, featuring robust error handling, comprehensive calibration, and professional serial protocol implementation.
-
-### **Open Source**
-Complete source code, documentation, and hardware designs available. MIT license allows commercial use and modifications.
-
-### **Extensible**
-Modular design allows easy addition of features like WiFi control, temperature sensors, or additional positioning modes.
-
-### **Community Driven**
-Active development with community contributions, regular updates, and responsive support.
-
-## 📦 What's Included
-
-- **Complete firmware source code** (PlatformIO project)
-- **Comprehensive documentation** (this site!)
-- **ASCOM driver** for Windows integration
-- **3D printable enclosure** designs (STL files)
-- **Wiring diagrams** and assembly instructions
-- **Example configurations** for common setups
-
-
-
 ## 📈 Project Status
 
 ![GitHub Stars](https://img.shields.io/github/stars/juanjol/autoFilterWheel?style=social)
@@ -174,8 +149,6 @@ Active development with community contributions, regular updates, and responsive
 
 - ✅ **Stable Release** - v1.0.0 available
 - 🔄 **Active Development** - Regular updates and improvements
-- 🧪 **Tested** - Extensive field testing by astronomy community
-- 📚 **Well Documented** - Comprehensive guides and references
 
 ---
 
