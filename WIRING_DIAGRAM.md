@@ -18,7 +18,7 @@ ESP32-C3         ULN2003 Driver
 GPIO2     →      IN1
 GPIO3     →      IN2
 GPIO4     →      IN3
-GPIO5     →      IN4
+GPIO10     →      IN4
 5V        →      VCC (5V)
 GND       →      GND
 ```
