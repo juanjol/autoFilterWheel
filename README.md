@@ -27,7 +27,7 @@ This README provides a quick overview. **For comprehensive guides, tutorials, an
 - **ESP32-C3 with integrated OLED** (128x64 pixels, 0.42" visible area)
 - **28BYJ-48 Stepper Motor** (5V version)
 - **ULN2003 Driver Board** for motor control
-- **AS5600 Magnetic Encoder** (optional but recommended)
+- **AS5600 Magnetic Encoder** (**required** for PID-based positioning)
 - **Neodymium Magnet** (6mm diameter, diametrically magnetized)
 - **5V Power Supply** (minimum 1A for motor)
 
@@ -104,13 +104,55 @@ pio run -t upload
 pio device monitor
 ```
 
-### 3. Initial Calibration
+### 3. Calibration
+
+The system requires two levels of calibration for optimal performance:
+
+#### 3.1 Encoder Offset Calibration (Required)
+
+This one-time calibration sets position 1 as the reference (0°):
 
 1. Connect to serial monitor (115200 baud)
-2. Position filter wheel at filter #1
+2. Manually position filter wheel at filter #1 location
 3. Send calibration command: `#CAL`
-4. Test movement: `#MP2` (move to position 2)
-5. Verify position: `#GP` (get current position)
+4. Response: `CALIBRATED` (offset stored in EEPROM)
+
+**Test basic movement:**
+```
+#MP2     → Move to position 2
+#GP      → Verify current position
+#STATUS  → Check system status and angle
+```
+
+#### 3.2 Custom Angle Calibration (Optional, Recommended)
+
+By default, filters are evenly distributed (e.g., 5 positions = 0°, 72°, 144°, 216°, 288°). For better accuracy with non-uniform filter spacing, use custom angle calibration.
+
+**Manual Angle Setting:**
+
+Specify exact angles for each filter position when values are known:
+
+```bash
+#SETANG1:0.0         # Set position 1 to 0°
+#SETANG2:68.5        # Set position 2 to 68.5°
+#SETANG3:142.3       # Set position 3 to 142.3°
+#SETANG4:215.8       # Set position 4 to 215.8°
+#SETANG5:289.0       # Set position 5 to 289.0°
+```
+
+**Verify and manage custom angles:**
+
+```bash
+#GETANG              # Show all configured angles
+#GETANG2             # Show angle for specific position
+#CLEARANG            # Clear custom angles (revert to uniform distribution)
+```
+
+**Why use custom angles?**
+- Compensate for non-uniform filter spacing
+- Account for manufacturing tolerances
+- Support irregular wheel designs
+- Maximize positioning accuracy (<0.8° typical)
 
 ## Configuration
 
@@ -168,15 +210,26 @@ The system supports **dynamic filter names** that can be configured via software
 | `#GN[1-X]` | Get specific filter name | `#GN2` | `N2:Red` |
 | `#SN[1-X]:Name` | Set filter name | `#SN1:Luminance` | `SN1:Luminance` |
 
+### Calibration Commands
+
+| Command | Description | Example | Response |
+|---------|-------------|---------|-----------|
+| `#CAL` | Calibrate encoder offset (set position 1 = 0°) | `#CAL` | `CALIBRATED` |
+| `#SETANG[pos]:[angle]` | Set custom angle for position | `#SETANG1:0.0` | Confirmation |
+| `#GETANG` | Get all custom angles | `#GETANG` | Angle list |
+| `#GETANG[pos]` | Get angle for specific position | `#GETANG2` | `ANG2:72.5` |
+| `#CLEARANG` | Clear custom angles | `#CLEARANG` | `ANGLES_CLEARED` |
+| `#ENCSTATUS` | Get encoder diagnostics | `#ENCSTATUS` | Encoder status |
+
 ### System Commands
 
 | Command | Description | Example | Response |
 |---------|-------------|---------|-----------|
-| `#CAL` | Calibrate home position | `#CAL` | `CALIBRATED` |
 | `#STATUS` | Get system status | `#STATUS` | `STATUS:POS=1,MOVING=NO...` |
 | `#ID` | Get device identifier | `#ID` | `DEVICE_ID:ESP32FW-5POS-V1.0` |
 | `#VER` | Get firmware version | `#VER` | `VERSION:1.0.0` |
 | `#STOP` | Emergency stop | `#STOP` | `STOPPED` |
+| `#ROTATE` | Rotate display 180° | `#ROTATE` | `DISPLAY_ROTATED` |
 
 ### Manual Control
 
@@ -294,7 +347,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
-### Version 2.0.0 (Current)
+### Version 2.0.1 (Current)
+**Bug Fix Release**
+
+- **Critical Fix**: Allow decimal points in SETANG command (angle calibration now works correctly)
+- **Documentation Updates**: Complete removal of wizard calibration references
+- **Code Cleanup**: Removed obsolete wizard calibration handlers and state management
+- **Documentation Improvements**: Updated COMMANDS.md with v2.0 command set and workflows
+
+### Version 2.0.0
 **Major Release - Encoder-Based PID Control System**
 
 - **Complete architectural redesign** for encoder-based closed-loop control

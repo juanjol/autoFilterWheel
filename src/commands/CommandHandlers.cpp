@@ -128,6 +128,16 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
 
     processor.registerCommand("CALCFM", "Confirm guided calibration",
         [this](const String& cmd, String& response) { return handleConfirmGuidedCalibration(cmd, response); });
+
+    // Custom angle calibration commands
+    processor.registerCommand("SETANG", "Set custom angle for position",
+        [this](const String& cmd, String& response) { return handleSetCustomAngle(cmd, response); });
+
+    processor.registerCommand("GETANG", "Get custom angle for position",
+        [this](const String& cmd, String& response) { return handleGetCustomAngle(cmd, response); });
+
+    processor.registerCommand("CLEARANG", "Clear all custom angles",
+        [this](const String& cmd, String& response) { return handleClearCustomAngles(cmd, response); });
 }
 
 CommandResult CommandHandlers::handleGetPosition(const String& cmd, String& response) {
@@ -296,8 +306,12 @@ CommandResult CommandHandlers::handleSetFilterName(const String& cmd, String& re
         return CommandResult::ERROR_INVALID_FORMAT;
     }
 
-    int filterNum;
-    if (!parseIntParameter(cmd, "SN", filterNum)) {
+    // Extract filter number between "SN" and ":"
+    String filterNumStr = cmd.substring(2, colonPos);  // From position 2 (after "SN") to colon
+    int filterNum = filterNumStr.toInt();
+
+    if (filterNum == 0 && filterNumStr != "0") {
+        // toInt() returned 0 but the string wasn't "0", meaning parse failed
         return CommandResult::ERROR_INVALID_FORMAT;
     }
 
@@ -722,5 +736,122 @@ CommandResult CommandHandlers::handleConfirmGuidedCalibration(const String& cmd,
     } else {
         response = "ERROR:No controller";
     }
+    return CommandResult::SUCCESS;
+}
+
+// ========================================
+// CUSTOM ANGLE CALIBRATION HANDLERS
+// ========================================
+
+CommandResult CommandHandlers::handleSetCustomAngle(const String& cmd, String& response) {
+    if (!encoder || !encoder->isAvailable()) {
+        response = "ERROR:Encoder not available";
+        return CommandResult::ERROR_ENCODER_UNAVAILABLE;
+    }
+
+    if (!configManager) {
+        response = "ERROR:Config manager not available";
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    // Parse command: SETANG[pos]:[angle]
+    // Example: SETANG1:0.0, SETANG2:68.5
+    int colonPos = cmd.indexOf(':');
+    if (colonPos == -1) {
+        response = "ERROR:Format is SETANG[pos]:[angle]";
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    // Extract position number from "SETANG[pos]"
+    String posStr = cmd.substring(6, colonPos);  // Skip "SETANG"
+    uint8_t position = posStr.toInt();
+
+    if (position < 1 || position > *numFilters) {
+        response = "ERROR:Invalid position (" + String(position) + "). Must be 1-" + String(*numFilters);
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    // Extract angle from ":[angle]"
+    String angleStr = cmd.substring(colonPos + 1);
+    float angle = angleStr.toFloat();
+
+    if (angle < 0.0f || angle >= 360.0f) {
+        response = "ERROR:Invalid angle (" + String(angle, 2) + "). Must be 0-359.99";
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    // Save custom angle
+    configManager->saveCustomAngle(position, angle);
+
+    response = "SETANG:Position " + String(position) + " set to " + String(angle, 2) + "°";
+    Serial.println("[SETANG] " + response);
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetCustomAngle(const String& cmd, String& response) {
+    if (!configManager) {
+        response = "ERROR:Config manager not available";
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    // Parse command: GETANG[pos] or GETANG (all angles)
+    String posStr = cmd.substring(6);  // Skip "GETANG"
+
+    if (posStr.length() == 0) {
+        // Get all angles
+        if (!configManager->hasCustomAngles()) {
+            response = "GETANG:No custom angles configured (using uniform distribution)";
+            return CommandResult::SUCCESS;
+        }
+
+        response = "GETANG:";
+        for (uint8_t i = 1; i <= *numFilters; i++) {
+            float angle = configManager->loadCustomAngle(i);
+            if (angle >= 0.0f) {
+                response += String(i) + "=" + String(angle, 2) + "°";
+                if (i < *numFilters) response += ",";
+            }
+        }
+
+        return CommandResult::SUCCESS;
+    }
+
+    // Get specific position angle
+    uint8_t position = posStr.toInt();
+
+    if (position < 1 || position > *numFilters) {
+        response = "ERROR:Invalid position (" + String(position) + "). Must be 1-" + String(*numFilters);
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    if (!configManager->hasCustomAngles()) {
+        // Calculate default uniform angle
+        float degreesPerPosition = 360.0f / (*numFilters);
+        float angle = (position - 1) * degreesPerPosition;
+        response = "GETANG" + String(position) + ":" + String(angle, 2) + "° (default)";
+    } else {
+        float angle = configManager->loadCustomAngle(position);
+        if (angle >= 0.0f) {
+            response = "GETANG" + String(position) + ":" + String(angle, 2) + "° (custom)";
+        } else {
+            response = "ERROR:No angle stored for position " + String(position);
+            return CommandResult::ERROR_INVALID_PARAMETER;
+        }
+    }
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleClearCustomAngles(const String& cmd, String& response) {
+    if (!configManager) {
+        response = "ERROR:Config manager not available";
+        return CommandResult::ERROR_INVALID_PARAMETER;
+    }
+
+    configManager->clearCustomAngles();
+    response = "CLEARANG:All custom angles cleared. Using uniform distribution.";
+    Serial.println("[CLEARANG] Custom angles cleared");
+
     return CommandResult::SUCCESS;
 }

@@ -81,6 +81,60 @@ void ConfigManager::clearFilterNames() {
     writeUint32(EEPROM_FILTER_NAMES_FLAG, 0);
 }
 
+// ========================================
+// CUSTOM ANGLE CALIBRATION
+// ========================================
+
+void ConfigManager::saveCustomAngle(uint8_t position, float angle) {
+    if (position < 1 || position > MAX_FILTER_COUNT) {
+        return; // Invalid position
+    }
+
+    // Mark that custom angles are stored (set magic byte)
+    writeUint8(EEPROM_CUSTOM_ANGLES_FLAG, CUSTOM_ANGLES_MAGIC);
+
+    // Calculate address for this position's angle
+    uint16_t address = EEPROM_CUSTOM_ANGLES_START + ((position - 1) * sizeof(float));
+    writeFloat(address, angle);
+
+    EEPROM.commit();
+}
+
+float ConfigManager::loadCustomAngle(uint8_t position) {
+    if (position < 1 || position > MAX_FILTER_COUNT) {
+        return -1.0f; // Invalid position
+    }
+
+    if (!hasCustomAngles()) {
+        return -1.0f; // No custom angles stored
+    }
+
+    uint16_t address = EEPROM_CUSTOM_ANGLES_START + ((position - 1) * sizeof(float));
+    return readFloat(address);
+}
+
+bool ConfigManager::hasCustomAngles() {
+    return readUint8(EEPROM_CUSTOM_ANGLES_FLAG) == CUSTOM_ANGLES_MAGIC;
+}
+
+void ConfigManager::clearCustomAngles() {
+    writeUint8(EEPROM_CUSTOM_ANGLES_FLAG, 0);
+    EEPROM.commit();
+}
+
+bool ConfigManager::loadAllCustomAngles(float* angles) {
+    if (!hasCustomAngles()) {
+        return false;
+    }
+
+    for (uint8_t i = 0; i < MAX_FILTER_COUNT; i++) {
+        uint16_t address = EEPROM_CUSTOM_ANGLES_START + (i * sizeof(float));
+        angles[i] = readFloat(address);
+    }
+
+    return true;
+}
+
 void ConfigManager::saveMotorConfig(uint16_t speed, uint16_t maxSpeed,
                                    uint16_t acceleration, uint16_t disableDelay) {
     writeUint32(EEPROM_MOTOR_CONFIG_FLAG, MOTOR_CONFIG_MAGIC);

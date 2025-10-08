@@ -26,7 +26,7 @@
 #define STEPS_PER_REVOLUTION 2150  // 28BYJ-48 has 2048 steps per revolution (64 * 32)
 
 // Motor speed and acceleration
-#define MAX_MOTOR_SPEED 430.0      // Maximum steps per second
+#define MAX_MOTOR_SPEED 150.0      // Maximum steps per second
 #define MOTOR_ACCELERATION 1000.0  // Steps per second squared (increased for better response)
 #define MOTOR_SPEED 300.0          // Normal operating speed
 
@@ -50,7 +50,7 @@
   #define MOTOR_PIN1 2   // IN1 on ULN2003 -> LED A
   #define MOTOR_PIN2 3   // IN2 on ULN2003 -> LED B
   #define MOTOR_PIN3 4   // IN3 on ULN2003 -> LED C
-  #define MOTOR_PIN4 10  // IN4 on ULN2003 -> LED D
+  #define MOTOR_PIN4 10 //10  // IN4 on ULN2003 -> LED D
 #endif
 
 #ifdef MOTOR_DRIVER_TMC2209
@@ -262,6 +262,11 @@
 #define CMD_GET_ENCODER_STATUS "ENCSTATUS"  // Get encoder status (angle, direction, health)
 #define CMD_GET_ROTATION_DIR "ENCDIR"       // Get current rotation direction
 
+// Custom angle calibration commands
+#define CMD_SET_CUSTOM_ANGLE "SETANG"       // Set custom angle for position (SETANG1:0.0, SETANG2:68.5)
+#define CMD_GET_CUSTOM_ANGLE "GETANG"       // Get custom angle for position (GETANG1, GETANG2, etc.)
+#define CMD_CLEAR_CUSTOM_ANGLES "CLEARANG"  // Clear all custom angles (revert to uniform)
+
 // ============================================
 // SYSTEM CONFIGURATION
 // ============================================
@@ -300,7 +305,7 @@
 #define MIN_MANUAL_STEPS 1          // Minimum steps for manual movement
 
 // Motor power management
-#define MOTOR_DISABLE_DELAY 1000    // Time in ms to keep motor powered after movement (reduced to 1 second)
+#define MOTOR_DISABLE_DELAY 500     // Time in ms to keep motor powered after movement (reduced to prevent heating)
 #define AUTO_DISABLE_MOTOR true     // Automatically disable motor after movement
 #define MOTOR_HOLD_CURRENT false    // Set to true if you want to keep position with reduced current
 
@@ -323,7 +328,7 @@
 // FIRMWARE INFORMATION
 // ============================================
 
-#define FIRMWARE_VERSION "2.0.0"
+#define FIRMWARE_VERSION "2.0.1"
 #define DEVICE_NAME "ESP32-C3 Filter Wheel"
 #define MANUFACTURER "DIY Astronomy"
 #define DEVICE_ID "ESP32FW-PID-V2.0"     // Unique device identifier for ASCOM

@@ -167,16 +167,24 @@ String CommandProcessor::parseCommand(const String& rawCommand) {
 }
 
 CommandHandler* CommandProcessor::findCommandHandler(const String& command) {
+    // Find the longest matching prefix to avoid conflicts like CAL vs CALWIZ
+    CommandHandler* bestMatch = nullptr;
+    size_t bestMatchLength = 0;
+
     for (uint8_t i = 0; i < numMappings; i++) {
         String prefix = String(commandMappings[i].prefix);
 
-        // Exact match or command starts with prefix
+        // Check if command matches this prefix
         if (command == prefix || command.startsWith(prefix)) {
-            return &commandMappings[i].handler;
+            // Keep the longest match
+            if (prefix.length() > bestMatchLength) {
+                bestMatch = &commandMappings[i].handler;
+                bestMatchLength = prefix.length();
+            }
         }
     }
 
-    return nullptr;
+    return bestMatch;
 }
 
 void CommandProcessor::processCommand(const String& command) {
@@ -199,10 +207,10 @@ bool CommandProcessor::isValidCommand(const String& command) {
         return false;
     }
 
-    // Commands should only contain alphanumeric characters, colons, and underscores
+    // Commands should only contain alphanumeric characters, colons, underscores, dots, and minus signs
     for (size_t i = 0; i < command.length(); i++) {
         char c = command.charAt(i);
-        if (!isAlphaNumeric(c) && c != ':' && c != '_') {
+        if (!isAlphaNumeric(c) && c != ':' && c != '_' && c != '.' && c != '-') {
             return false;
         }
     }

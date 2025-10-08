@@ -100,7 +100,7 @@ Connect the NEMA17 bipolar stepper:
 
 Connect I2C devices exactly as in the ULN2003 guide:
 - OLED display on GPIO5 (SDA) and GPIO6 (SCL)
-- AS5600 encoder (optional) on same I2C bus
+- AS5600 encoder (**required**) on same I2C bus
 - **Use 3.3V power only** for both devices
 
 ### Step 7: Advanced TMC2209 Configuration

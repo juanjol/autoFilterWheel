@@ -18,7 +18,7 @@ A professional, open-source astronomy filter wheel controller built on the ESP32
 - Movement progress indication
 
 ### 🎯 **Precision Positioning**
-- **AS5600 magnetic encoder** for position feedback (optional)
+- **AS5600 magnetic encoder** for position feedback (**required**)
 - **Revolution calibration** for exact step counting
 - **Backlash calibration** for mechanical compensation
 - **Multiple positioning modes** (unidirectional/bidirectional)
@@ -69,7 +69,7 @@ The controller supports two configurations - choose based on your needs and expe
 |---------|---------------|
 | **Microcontroller** | ESP32-C3 (160MHz, WiFi, BLE) |
 | **Display** | 0.42" OLED SSD1306 (128x64, I2C) |
-| **Encoder** | AS5600 magnetic (12-bit resolution, optional) |
+| **Encoder** | AS5600 magnetic (12-bit resolution, **required**) |
 | **Filters** | 3-8 positions (configurable) |
 | **Communication** | USB Serial (115200 baud) |
 
