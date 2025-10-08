@@ -26,11 +26,11 @@ pio run -t clean
 
 ### Hardware Configuration (`src/config.h`)
 - **Motor Control**: 28BYJ-48 stepper (2048 steps/revolution) with ULN2003 driver
-- **Position Sensing**: AS5600 I2C magnetic encoder (optional but recommended)
+- **Position Sensing**: AS5600 I2C magnetic encoder (**required** for PID control)
 - **Display**: 0.42" OLED (72x40 visible area) with coordinate offset compensation
 - **Motor Direction**: Configurable unidirectional (default) vs bidirectional movement
 - **Power Management**: Automatic motor disable after movement to save energy
-- **Filter Names**: Customizable per position (up to 10 characters each)
+- **Filter Names**: Customizable per position (up to 15 characters each)
 
 ### Core System (`src/main.cpp`)
 - **Position Tracking**: Real-time position updates during movement with EEPROM persistence
@@ -58,8 +58,10 @@ pio run -t clean
 - `0x04`: AS5600 angle offset (float)
 - `0x08`: Current position (uint8_t, auto-saved)
 - `0x0C`: Filter names flag (0xBB when custom names stored)
-- `0x10`: Reserved for filter position calibration data
-- `0x20+`: Custom filter names (16 bytes each, up to 15 chars + null)
+- `0x10`: Filter count (uint8_t)
+- `0x11`: Custom angles flag (0xCA when custom angles stored)
+- `0x12`: Custom angles array (36 bytes: 9 floats × 4 bytes each)
+- `0x40+`: Custom filter names (16 bytes each, up to 15 chars + null)
 
 ## Important Implementation Details
 
@@ -67,7 +69,9 @@ pio run -t clean
 
 **Encoder-Based Control with PID (Primary Mode)**:
 When AS5600 encoder is available, the system uses a PID controller for smooth, precise positioning:
-- Target position converted to angle: Position 1=0°, Position 2=72°, etc.
+- Target position converted to angle using either:
+  - **Custom angles** (if calibrated): Each position has a specific angle stored in EEPROM
+  - **Uniform distribution** (default): Position 1=0°, Position 2=72°, Position 3=144°, etc.
 - **PID Control Loop**: Calculates optimal motor steps based on:
   - **P (Proportional)**: Kp=4.5 - Main driving force proportional to error
   - **I (Integral)**: Ki=0.01 - Eliminates steady-state error
@@ -113,10 +117,15 @@ The 0.42" OLED displays only a portion of the 128x64 buffer. All content must be
 - `#VER` - Get firmware version
 - `#STOP` - Emergency stop
 
+**Custom Angle Calibration:**
+- `#SETANG[pos]:[angle]` - Manually set custom angle for position (e.g., `#SETANG1:0.0`, `#SETANG2:68.5`)
+- `#GETANG[pos]` - Get custom angle for specific position (or `#GETANG` for all)
+- `#CLEARANG` - Clear all custom angles (revert to uniform distribution)
+
 **Debug/Manual Control:**
 - `#SF[X]` - Manual step forward (for calibration/testing)
 - `#SB[X]` - Manual step backward (for calibration/testing)
-- `#CALSTART` - Start guided calibration mode
+- `#CALSTART` - Start guided calibration mode (for encoder offset)
 - `#CALCFM` - Confirm guided calibration
 - `#ENCSTATUS` - Get encoder diagnostics
 - `#ME` / `#MD` - Enable/disable motor manually
@@ -162,12 +171,37 @@ The system supports dynamic filter names configurable at runtime:
 
 ### Calibration and Position Accuracy
 
-**Encoder-Based Calibration**:
+**Encoder Offset Calibration**:
 - Use `#CAL` command to calibrate position 1 at current physical location
 - System calculates and stores angle offset so current angle becomes 0°
-- All subsequent positions calculated relative to this: Pos2=72°, Pos3=144°, etc.
 - Offset stored in EEPROM for persistence across power cycles
 - AS5600 provides 12-bit resolution (4096 counts/revolution = 0.088°/count)
+
+**Custom Angle Calibration**:
+Manual angle setting allows you to specify exact angles for each filter position:
+
+```
+#SETANG1:0.0             // Set position 1 to 0°
+#SETANG2:68.5            // Set position 2 to 68.5°
+#SETANG3:142.3           // Set position 3 to 142.3°
+// ... etc
+```
+- Direct angle specification
+- Useful when angles are already known or measured
+- Each position can be set independently
+- Use `#SF` and `#SB` commands to fine-tune wheel position before setting angles
+
+**Why Use Custom Angles?**
+- Compensate for non-uniform filter spacing in wheel
+- Account for manufacturing tolerances
+- Support irregular wheel designs
+- Maximize positioning accuracy for specific hardware
+
+**Checking Custom Angles**:
+- `#GETANG` - Show all configured angles
+- `#GETANG2` - Show angle for specific position
+- System automatically uses custom angles when available
+- Falls back to uniform distribution if not calibrated
 
 **Angle-Based Positioning Accuracy**:
 - Target precision: < 1° (configurable via `ANGLE_CONTROL_TOLERANCE`)

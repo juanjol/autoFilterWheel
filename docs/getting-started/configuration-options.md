@@ -43,7 +43,7 @@ The ESP32-C3 Filter Wheel Controller supports two different motor driver configu
 - ULN2003 driver board
 - 28BYJ-48 stepper motor (5V)
 - 0.42" OLED display
-- AS5600 encoder (optional)
+- AS5600 encoder (**required** for PID control)
 - Basic wiring materials
 
 ---

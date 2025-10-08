@@ -153,6 +153,27 @@ public:
     CommandResult handleConfirmGuidedCalibration(const String& cmd, String& response);
 
     // ========================================
+    // CUSTOM ANGLE CALIBRATION COMMANDS
+    // ========================================
+
+    /**
+     * Set custom angle for position - SETANG[pos]:[angle]
+     * Example: SETANG1:0.0, SETANG2:68.5
+     */
+    CommandResult handleSetCustomAngle(const String& cmd, String& response);
+
+    /**
+     * Get custom angle for position - GETANG[pos]
+     * Example: GETANG1, GETANG2, or GETANG (all angles)
+     */
+    CommandResult handleGetCustomAngle(const String& cmd, String& response);
+
+    /**
+     * Clear all custom angles - CLEARANG
+     */
+    CommandResult handleClearCustomAngles(const String& cmd, String& response);
+
+    // ========================================
     // MANUAL CONTROL COMMANDS
     // ========================================
 

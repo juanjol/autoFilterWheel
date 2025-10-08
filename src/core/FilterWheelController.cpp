@@ -400,6 +400,7 @@ void FilterWheelController::calibrateHome() {
             #endif
         }
 
+        #if DEBUG_MODE
         // Verify calibration with multiple readings
         Serial.println("[CALIBRATION] Verifying calibration...");
         delay(100);
@@ -422,15 +423,12 @@ void FilterWheelController::calibrateHome() {
         Serial.println("° (should be close to 0°)");
 
         if (abs(finalAngle) > 2.0f) {
-            #if DEBUG_MODE
             Serial.println("[CALIBRATION] WARNING: Calibration error > 2°");
             Serial.println("[CALIBRATION] This may indicate encoder noise or movement during calibration");
-            #endif
         } else {
-            #if DEBUG_MODE
             Serial.println("[CALIBRATION] ✓ Calibration successful!");
-            #endif
         }
+        #endif
     }
 
     if (displayManager) {
@@ -586,9 +584,35 @@ float FilterWheelController::positionToAngle(uint8_t position) {
         return 0.0f; // Default to 0° for invalid positions
     }
 
+    // Check if custom angles are configured
+    if (configManager && configManager->hasCustomAngles()) {
+        float customAngle = configManager->loadCustomAngle(position);
+        if (customAngle >= 0.0f) {
+            #if DEBUG_MODE
+            Serial.print("[positionToAngle] Using CUSTOM angle for position ");
+            Serial.print(position);
+            Serial.print(": ");
+            Serial.print(customAngle, 2);
+            Serial.println("°");
+            #endif
+            return customAngle;
+        }
+    }
+
+    // Fall back to uniform distribution
     // Position 1 = 0°, Position 2 = 72°, etc.
     float degreesPerPosition = 360.0f / numFilters;
-    return (position - 1) * degreesPerPosition;
+    float calculatedAngle = (position - 1) * degreesPerPosition;
+
+    #if DEBUG_MODE
+    Serial.print("[positionToAngle] Using CALCULATED angle for position ");
+    Serial.print(position);
+    Serial.print(": ");
+    Serial.print(calculatedAngle, 2);
+    Serial.println("°");
+    #endif
+
+    return calculatedAngle;
 }
 
 float FilterWheelController::calculateAngularError(float currentAngle, float targetAngle) {

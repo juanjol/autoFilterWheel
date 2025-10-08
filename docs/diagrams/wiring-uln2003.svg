@@ -86,12 +86,12 @@
     <text x="610" y="283" font-size="9" fill="white" text-anchor="middle">5-pin</text>
   </g>
 
-  <!-- AS5600 Encoder (Optional) -->
+  <!-- AS5600 Encoder (Required) -->
   <g id="as5600">
     <rect x="550" y="420" width="120" height="80" fill="#673ab7" stroke="#512da8" stroke-width="2" rx="5"/>
     <text x="610" y="445" font-family="Arial" font-size="14" font-weight="bold" fill="white" text-anchor="middle">AS5600</text>
     <text x="610" y="462" font-family="Arial" font-size="11" fill="white" text-anchor="middle">Encoder</text>
-    <text x="610" y="478" font-family="Arial" font-size="10" fill="white" text-anchor="middle">(Optional)</text>
+    <text x="610" y="478" font-family="Arial" font-size="10" font-weight="bold" fill="#ffeb3b" text-anchor="middle">★ REQUIRED ★</text>
 
     <!-- I2C Pins -->
     <rect x="540" y="430" width="25" height="15" fill="#9c27b0"/>
@@ -134,14 +134,14 @@
   <!-- ULN2003 to Motor -->
   <line x1="520" y1="295" x2="590" y2="280" stroke="#ff5722" stroke-width="3"/>
 
-  <!-- I2C connections to AS5600 -->
-  <line x1="260" y1="250" x2="400" y2="250" stroke="#9c27b0" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="400" y1="250" x2="400" y2="437" stroke="#9c27b0" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="400" y1="437" x2="540" y2="437" stroke="#9c27b0" stroke-width="2" stroke-dasharray="5,5"/>
+  <!-- I2C connections to AS5600 (solid lines - required) -->
+  <line x1="260" y1="250" x2="400" y2="250" stroke="#9c27b0" stroke-width="2"/>
+  <line x1="400" y1="250" x2="400" y2="437" stroke="#9c27b0" stroke-width="2"/>
+  <line x1="400" y1="437" x2="540" y2="437" stroke="#9c27b0" stroke-width="2"/>
 
-  <line x1="260" y1="280" x2="420" y2="280" stroke="#9c27b0" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="420" y1="280" x2="420" y2="457" stroke="#9c27b0" stroke-width="2" stroke-dasharray="5,5"/>
-  <line x1="420" y1="457" x2="540" y2="457" stroke="#9c27b0" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="260" y1="280" x2="420" y2="280" stroke="#9c27b0" stroke-width="2"/>
+  <line x1="420" y1="280" x2="420" y2="457" stroke="#9c27b0" stroke-width="2"/>
+  <line x1="420" y1="457" x2="540" y2="457" stroke="#9c27b0" stroke-width="2"/>
 
   <!-- Power to 5V supply -->
   <line x1="160" y1="470" x2="160" y2="190" stroke="#ff9800" stroke-width="4"/>
@@ -153,7 +153,7 @@
   <text x="180" y="280" font-size="10" fill="#2196f3">GPIO4 → IN3</text>
   <text x="180" y="300" font-size="10" fill="#2196f3">GPIO10 → IN4</text>
 
-  <text x="430" y="420" font-size="10" fill="#9c27b0">I2C Bus (Optional)</text>
+  <text x="430" y="420" font-size="10" font-weight="bold" fill="#9c27b0">I2C Bus (Required)</text>
 
   <!-- Legend -->
   <g id="legend">
@@ -165,7 +165,7 @@
     <text x="245" y="578" font-size="11">5V Power</text>
     <line x1="320" y1="575" x2="340" y2="575" stroke="#424242" stroke-width="3"/>
     <text x="345" y="578" font-size="11">Ground</text>
-    <line x1="410" y1="575" x2="430" y2="575" stroke="#9c27b0" stroke-width="2" stroke-dasharray="5,5"/>
-    <text x="435" y="578" font-size="11">I2C (Optional)</text>
+    <line x1="410" y1="575" x2="430" y2="575" stroke="#9c27b0" stroke-width="2"/>
+    <text x="435" y="578" font-size="11">I2C (Required for PID Control)</text>
   </g>
 </svg>

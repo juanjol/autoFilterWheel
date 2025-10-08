@@ -19,7 +19,9 @@ private:
     // Filter configuration
     static constexpr uint16_t EEPROM_FILTER_NAMES_FLAG = 0x0C;      // 4 bytes
     static constexpr uint16_t EEPROM_FILTER_COUNT = 0x10;           // 1 byte
-    static constexpr uint16_t EEPROM_FILTER_NAMES_START = 0x20;     // 16 bytes per name
+    static constexpr uint16_t EEPROM_CUSTOM_ANGLES_FLAG = 0x11;     // 1 byte
+    static constexpr uint16_t EEPROM_CUSTOM_ANGLES_START = 0x12;    // 4 bytes per angle (float) x 9 = 36 bytes
+    static constexpr uint16_t EEPROM_FILTER_NAMES_START = 0x40;     // 16 bytes per name (moved to avoid overlap)
 
     // Motor configuration
     static constexpr uint16_t EEPROM_MOTOR_CONFIG_FLAG = 0x110;     // 4 bytes
@@ -35,6 +37,7 @@ private:
     static constexpr uint32_t BACKLASH_MAGIC = 0xDD;
     static constexpr uint32_t MOTOR_CONFIG_MAGIC = 0xEE;
     static constexpr uint32_t DIRECTION_CONFIG_MAGIC = 0xFF;
+    static constexpr uint8_t CUSTOM_ANGLES_MAGIC = 0xCA;  // Custom Angles magic byte
 
     // Configuration structures
     struct MotorConfig {
@@ -125,6 +128,41 @@ public:
      * Clear all filter names (reset to defaults)
      */
     void clearFilterNames();
+
+    // ========================================
+    // CUSTOM ANGLE CALIBRATION
+    // ========================================
+
+    /**
+     * Save custom angle for a filter position
+     * @param position Filter position (1-9)
+     * @param angle Angle in degrees (0-360)
+     */
+    void saveCustomAngle(uint8_t position, float angle);
+
+    /**
+     * Load custom angle for a filter position
+     * @param position Filter position (1-9)
+     * @return Angle in degrees, or -1.0 if not set
+     */
+    float loadCustomAngle(uint8_t position);
+
+    /**
+     * Check if custom angles are configured
+     */
+    bool hasCustomAngles();
+
+    /**
+     * Clear all custom angles (reset to uniform distribution)
+     */
+    void clearCustomAngles();
+
+    /**
+     * Get all custom angles as an array
+     * @param angles Output array (must be at least 9 floats)
+     * @return true if custom angles exist, false otherwise
+     */
+    bool loadAllCustomAngles(float* angles);
 
     // ========================================
     // MOTOR CONFIGURATION
