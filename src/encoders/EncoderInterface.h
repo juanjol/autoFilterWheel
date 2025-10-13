@@ -84,4 +84,16 @@ public:
      * @return 1 = clockwise expected, -1 = counter-clockwise expected
      */
     virtual int8_t getExpectedDirection(float targetAngle) = 0;
+
+    /**
+     * Set encoder direction inversion
+     * @param inverted true to invert (360° - angle), false for normal
+     */
+    virtual void setDirectionInverted(bool inverted) = 0;
+
+    /**
+     * Get encoder direction inversion status
+     * @return true if inverted, false if normal
+     */
+    virtual bool isDirectionInverted() const = 0;
 };

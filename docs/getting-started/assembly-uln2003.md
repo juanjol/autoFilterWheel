@@ -5,10 +5,10 @@ This guide covers assembling the budget-friendly configuration using the ULN2003
 ## Prerequisites
 
 Before starting, ensure you have:
-- ✅ Read the [Configuration Options](configuration-options.md) guide
 - ✅ Gathered all required components
 - ✅ Basic soldering skills
 - ✅ Multimeter for testing
+- ✅ PlatformIO installed for firmware upload
 
 ## Wiring Diagram Reference
 
@@ -225,9 +225,8 @@ Once assembly is complete:
 2. **Calibration** - Perform precision calibration with `#CAL` and `#REVCAL` commands
 3. **ASCOM Integration** - Connect to astronomy software using the serial protocol
 
-## Upgrade Path
+## Additional Resources
 
-This ULN2003 configuration can be easily upgraded to TMC2209 later by:
-1. Updating `config.h` to use TMC2209
-2. Rewiring according to the [TMC2209 guide](assembly-tmc2209.md)
-3. Uploading new firmware - all other components remain the same
+- **[Command Reference](../commands/overview.md)** - Complete serial command documentation
+- **[ASCOM Commands](https://github.com/juanjol/autoFilterWheel/blob/main/ASCOM_COMMANDS.md)** - Full ASCOM integration guide
+- **[GitHub Repository](https://github.com/juanjol/autoFilterWheel)** - Source code and latest updates

@@ -31,6 +31,7 @@ private:
     bool available;
     uint16_t lastRawValue;
     bool movementDetected;
+    bool directionInverted;  // Runtime inversion flag
 
     // Direction tracking
     uint16_t previousAngle;
@@ -115,6 +116,18 @@ public:
      * @return 1 = clockwise expected, -1 = counter-clockwise expected
      */
     int8_t getExpectedDirection(float targetAngle);
+
+    /**
+     * Set encoder direction inversion
+     * @param inverted true to invert (360° - angle), false for normal
+     */
+    void setDirectionInverted(bool inverted);
+
+    /**
+     * Get encoder direction inversion status
+     * @return true if inverted, false if normal
+     */
+    bool isDirectionInverted() const;
 
 private:
     /**

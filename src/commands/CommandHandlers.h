@@ -251,6 +251,30 @@ public:
      */
     CommandResult handleGetEncoderRaw(const String& cmd, String& response);
 
+    // ========================================
+    // DIRECTION INVERSION COMMANDS
+    // ========================================
+
+    /**
+     * Set motor direction inversion - MINV0/MINV1
+     */
+    CommandResult handleSetMotorInversion(const String& cmd, String& response);
+
+    /**
+     * Get motor direction inversion status - GMINV
+     */
+    CommandResult handleGetMotorInversion(const String& cmd, String& response);
+
+    /**
+     * Set encoder direction inversion - ENCINV0/ENCINV1
+     */
+    CommandResult handleSetEncoderInversion(const String& cmd, String& response);
+
+    /**
+     * Get encoder direction inversion status - GENCINV
+     */
+    CommandResult handleGetEncoderInversion(const String& cmd, String& response);
+
 private:
     /**
      * Helper methods for parameter parsing

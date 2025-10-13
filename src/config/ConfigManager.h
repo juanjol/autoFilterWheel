@@ -30,6 +30,11 @@ private:
     static constexpr uint16_t EEPROM_MOTOR_ACCELERATION = 0x118;    // 2 bytes
     static constexpr uint16_t EEPROM_MOTOR_DISABLE_DELAY = 0x11A;   // 2 bytes
 
+    // Direction configuration (motor + encoder)
+    static constexpr uint16_t EEPROM_DIRECTION_CONFIG_FLAG = 0x11C; // 4 bytes
+    static constexpr uint16_t EEPROM_MOTOR_DIRECTION_INVERTED = 0x120; // 1 byte (bool)
+    static constexpr uint16_t EEPROM_ENCODER_DIRECTION_INVERTED = 0x121; // 1 byte (bool)
+
     // Magic bytes for validation
     static constexpr uint32_t CALIBRATION_MAGIC = 0xAA;
     static constexpr uint32_t FILTER_NAMES_MAGIC = 0xBB;
@@ -48,8 +53,8 @@ private:
     };
 
     struct DirectionConfig {
-        uint8_t directionMode;
-        bool reverseDirection;
+        bool motorDirectionInverted;
+        bool encoderDirectionInverted;
     };
 
 public:
@@ -197,6 +202,36 @@ public:
     void saveMotorAcceleration(uint16_t acceleration);
     void saveMotorDisableDelay(uint16_t disableDelay);
     void resetMotorConfiguration();
+
+    // ========================================
+    // DIRECTION CONFIGURATION
+    // ========================================
+
+    /**
+     * Save direction configuration (motor and encoder inversion)
+     */
+    void saveDirectionConfig(bool motorInverted, bool encoderInverted);
+
+    /**
+     * Load direction configuration
+     */
+    DirectionConfig loadDirectionConfig();
+
+    /**
+     * Check if direction configuration exists
+     */
+    bool hasDirectionConfig();
+
+    /**
+     * Clear direction configuration (reset to defaults)
+     */
+    void clearDirectionConfig();
+
+    /**
+     * Individual direction parameter save methods
+     */
+    void saveMotorDirectionInverted(bool inverted);
+    void saveEncoderDirectionInverted(bool inverted);
 
     // ========================================
     // UTILITY METHODS

@@ -15,10 +15,8 @@
         <link rel="canonical" href="https://juanjol.github.io/autoFilterWheel/commands/overview/">
       
       
-        <link rel="prev" href="../../getting-started/assembly-tmc2209/">
+        <link rel="prev" href="../../getting-started/assembly-uln2003/">
       
-      
-        <link rel="next" href="../basic/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -26,7 +24,7 @@
     
     
       
-        <title>Overview - ESP32-C3 Filter Wheel Controller</title>
+        <title>Command Reference - ESP32-C3 Filter Wheel Controller</title>
       
     
     
@@ -78,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#command-reference-overview" class="md-skip">
+        <a href="#command-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -116,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              Command Reference
             
           </span>
         </div>
@@ -253,7 +251,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../getting-started/overview/" class="md-tabs__link">
+        <a href="../../getting-started/hardware/" class="md-tabs__link">
           
   
   
@@ -279,7 +277,27 @@
           
   
   
-  Command Reference
+  Commands
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="https://github.com/juanjol/autoFilterWheel" class="md-tabs__link">
+          
+  
+  
+  Links
 
         </a>
       </li>
@@ -406,29 +424,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/overview/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Overview
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../getting-started/hardware/" class="md-nav__link">
         
   
@@ -452,58 +447,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/configuration-options/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Configuration Options
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../getting-started/assembly-uln2003/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    ULN2003 Assembly
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../getting-started/assembly-tmc2209/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    TMC2209 Assembly
+    Assembly Guide
     
   </span>
   
@@ -554,7 +503,7 @@
   
   
   <span class="md-ellipsis">
-    Command Reference
+    Commands
     
   </span>
   
@@ -565,7 +514,7 @@
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
-            Command Reference
+            Commands
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
             
@@ -590,7 +539,7 @@
   
   
   <span class="md-ellipsis">
-    Overview
+    Command Reference
     
   </span>
   
@@ -603,7 +552,7 @@
   
   
   <span class="md-ellipsis">
-    Overview
+    Command Reference
     
   </span>
   
@@ -634,6 +583,15 @@
   
     <nav class="md-nav" aria-label="🚀 Quick Start">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#connection-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection Settings
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#basic-command-format" class="md-nav__link">
@@ -669,36 +627,81 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic-commands" class="md-nav__link">
+  <a href="#essential-operations" class="md-nav__link">
     <span class="md-ellipsis">
-      🎯 Basic Commands
+      🎯 Essential Operations
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#configuration-commands" class="md-nav__link">
+  <a href="#filter-configuration" class="md-nav__link">
     <span class="md-ellipsis">
-      ⚙️ Configuration Commands
+      📝 Filter Configuration
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#calibration-commands" class="md-nav__link">
+  <a href="#calibration-custom-angles" class="md-nav__link">
     <span class="md-ellipsis">
-      🔧 Calibration Commands
+      🎯 Calibration &amp; Custom Angles
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#advanced-commands" class="md-nav__link">
+  <a href="#motor-configuration" class="md-nav__link">
     <span class="md-ellipsis">
-      🔬 Advanced Commands
+      ⚙️ Motor Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#direction-inversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 Direction Inversion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encoder-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔬 Encoder Diagnostics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      🎮 Manual Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#display-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      📺 Display Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#i-system-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      ℹ️ System Information
     </span>
   </a>
   
@@ -720,9 +723,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#first-time-setup" class="md-nav__link">
+  <a href="#initial-setup" class="md-nav__link">
     <span class="md-ellipsis">
-      First Time Setup
+      Initial Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-angle-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Angle Configuration
     </span>
   </a>
   
@@ -738,9 +750,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#precision-calibration" class="md-nav__link">
+  <a href="#direction-correction" class="md-nav__link">
     <span class="md-ellipsis">
-      Precision Calibration
+      Direction Correction
     </span>
   </a>
   
@@ -752,37 +764,37 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#communication-protocol" class="md-nav__link">
-    <span class="md-ellipsis">
-      📡 Communication Protocol
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="📡 Communication Protocol">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#serial-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Serial Settings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#response-format" class="md-nav__link">
     <span class="md-ellipsis">
-      Response Format
+      📡 Response Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📡 Response Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#success-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Success Response
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#debug-mode" class="md-nav__link">
+  <a href="#error-response" class="md-nav__link">
     <span class="md-ellipsis">
-      Debug Mode
+      Error Response
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Status Response
     </span>
   </a>
   
@@ -794,113 +806,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#common-errors" class="md-nav__link">
     <span class="md-ellipsis">
-      ⚠️ Error Handling
+      ⚠️ Common Errors
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="⚠️ Error Handling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#common-error-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Error Types
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#safety-features" class="md-nav__link">
+  <a href="#performance" class="md-nav__link">
     <span class="md-ellipsis">
-      🛡️ Safety Features
+      📊 Performance
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="🛡️ Safety Features">
+    <nav class="md-nav" aria-label="📊 Performance">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#movement-safety" class="md-nav__link">
+  <a href="#pid-control-performance" class="md-nav__link">
     <span class="md-ellipsis">
-      Movement Safety
+      PID Control Performance
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#data-safety" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data Safety
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#integration-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔗 Integration Examples
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔗 Integration Examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#terminalcommand-line" class="md-nav__link">
-    <span class="md-ellipsis">
-      Terminal/Command Line
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#python-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Python Integration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ascom-driver" class="md-nav__link">
-    <span class="md-ellipsis">
-      ASCOM Driver
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-characteristics" class="md-nav__link">
-    <span class="md-ellipsis">
-      📊 Performance Characteristics
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="📊 Performance Characteristics">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#command-response-times" class="md-nav__link">
@@ -911,17 +842,17 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#movement-specifications" class="md-nav__link">
-    <span class="md-ellipsis">
-      Movement Specifications
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔗 External References
+    </span>
+  </a>
   
 </li>
       
@@ -934,6 +865,58 @@
 
               
             
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Links
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Links
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
               
                 
   
@@ -941,12 +924,58 @@
   
   
     <li class="md-nav__item">
-      <a href="../basic/" class="md-nav__link">
+      <a href="https://github.com/juanjol/autoFilterWheel" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Basic Commands
+    GitHub Repository
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/juanjol/autoFilterWheel/blob/main/ASCOM_COMMANDS.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    ASCOM Commands
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/juanjol/autoFilterWheel/issues" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Issue Tracker
     
   </span>
   
@@ -1001,6 +1030,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#connection-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Connection Settings
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#basic-command-format" class="md-nav__link">
     <span class="md-ellipsis">
       Basic Command Format
@@ -1034,36 +1072,81 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#basic-commands" class="md-nav__link">
+  <a href="#essential-operations" class="md-nav__link">
     <span class="md-ellipsis">
-      🎯 Basic Commands
+      🎯 Essential Operations
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#configuration-commands" class="md-nav__link">
+  <a href="#filter-configuration" class="md-nav__link">
     <span class="md-ellipsis">
-      ⚙️ Configuration Commands
+      📝 Filter Configuration
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#calibration-commands" class="md-nav__link">
+  <a href="#calibration-custom-angles" class="md-nav__link">
     <span class="md-ellipsis">
-      🔧 Calibration Commands
+      🎯 Calibration &amp; Custom Angles
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#advanced-commands" class="md-nav__link">
+  <a href="#motor-configuration" class="md-nav__link">
     <span class="md-ellipsis">
-      🔬 Advanced Commands
+      ⚙️ Motor Configuration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#direction-inversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔄 Direction Inversion
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#encoder-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔬 Encoder Diagnostics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      🎮 Manual Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#display-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      📺 Display Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#i-system-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      ℹ️ System Information
     </span>
   </a>
   
@@ -1085,9 +1168,18 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#first-time-setup" class="md-nav__link">
+  <a href="#initial-setup" class="md-nav__link">
     <span class="md-ellipsis">
-      First Time Setup
+      Initial Setup
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-angle-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Angle Configuration
     </span>
   </a>
   
@@ -1103,9 +1195,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#precision-calibration" class="md-nav__link">
+  <a href="#direction-correction" class="md-nav__link">
     <span class="md-ellipsis">
-      Precision Calibration
+      Direction Correction
     </span>
   </a>
   
@@ -1117,37 +1209,37 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#communication-protocol" class="md-nav__link">
-    <span class="md-ellipsis">
-      📡 Communication Protocol
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="📡 Communication Protocol">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#serial-settings" class="md-nav__link">
-    <span class="md-ellipsis">
-      Serial Settings
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#response-format" class="md-nav__link">
     <span class="md-ellipsis">
-      Response Format
+      📡 Response Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📡 Response Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#success-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Success Response
     </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#debug-mode" class="md-nav__link">
+  <a href="#error-response" class="md-nav__link">
     <span class="md-ellipsis">
-      Debug Mode
+      Error Response
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      Status Response
     </span>
   </a>
   
@@ -1159,113 +1251,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#error-handling" class="md-nav__link">
+  <a href="#common-errors" class="md-nav__link">
     <span class="md-ellipsis">
-      ⚠️ Error Handling
+      ⚠️ Common Errors
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="⚠️ Error Handling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#common-error-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      Common Error Types
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#safety-features" class="md-nav__link">
+  <a href="#performance" class="md-nav__link">
     <span class="md-ellipsis">
-      🛡️ Safety Features
+      📊 Performance
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="🛡️ Safety Features">
+    <nav class="md-nav" aria-label="📊 Performance">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#movement-safety" class="md-nav__link">
+  <a href="#pid-control-performance" class="md-nav__link">
     <span class="md-ellipsis">
-      Movement Safety
+      PID Control Performance
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#data-safety" class="md-nav__link">
-    <span class="md-ellipsis">
-      Data Safety
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#integration-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      🔗 Integration Examples
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="🔗 Integration Examples">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#terminalcommand-line" class="md-nav__link">
-    <span class="md-ellipsis">
-      Terminal/Command Line
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#python-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Python Integration
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ascom-driver" class="md-nav__link">
-    <span class="md-ellipsis">
-      ASCOM Driver
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#performance-characteristics" class="md-nav__link">
-    <span class="md-ellipsis">
-      📊 Performance Characteristics
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="📊 Performance Characteristics">
-      <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#command-response-times" class="md-nav__link">
@@ -1276,17 +1287,17 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#movement-specifications" class="md-nav__link">
-    <span class="md-ellipsis">
-      Movement Specifications
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#external-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      🔗 External References
+    </span>
+  </a>
   
 </li>
       
@@ -1309,31 +1320,85 @@
   
 
 
-<h1 id="command-reference-overview">Command Reference Overview<a class="headerlink" href="#command-reference-overview" title="Permanent link">&para;</a></h1>
-<p>The ESP32-C3 Filter Wheel Controller provides a comprehensive set of serial commands for complete control and configuration. All commands use a simple text-based protocol over USB serial at 115200 baud.</p>
+<h1 id="command-reference">Command Reference<a class="headerlink" href="#command-reference" title="Permanent link">&para;</a></h1>
+<p>The ESP32-C3 Filter Wheel Controller provides <strong>47+ serial commands</strong> for complete control and configuration. All commands use a simple text-based protocol over USB serial at 115200 baud.</p>
 <h2 id="quick-start">🚀 Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<h3 id="connection-settings">Connection Settings<a class="headerlink" href="#connection-settings" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Port: Auto-detect COM port
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Baud Rate: 115200
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Data Bits: 8
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Parity: None
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>Stop Bits: 1
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>Flow Control: None
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Line Ending: LF (\n)
+</code></pre></div>
 <h3 id="basic-command-format">Basic Command Format<a class="headerlink" href="#basic-command-format" title="Permanent link">&para;</a></h3>
-<p>Commands follow a simple pattern:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">#COMMAND[parameters]</span>
-</code></pre></div></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">#COMMAND[parameters]\n</span>
+</code></pre></div>
 <ul>
-<li><strong>Prefix</strong>: <code>#</code> (optional but recommended)</li>
-<li><strong>Command</strong>: Case-insensitive command name</li>
-<li><strong>Parameters</strong>: Command-specific values in brackets or after colon</li>
-<li><strong>Termination</strong>: Newline (<code>\n</code>) or carriage return (<code>\r</code>)</li>
+<li><strong>Prefix</strong>: <code>#</code> (required)</li>
+<li><strong>Command</strong>: Case-sensitive command name</li>
+<li><strong>Parameters</strong>: Command-specific values</li>
+<li><strong>Termination</strong>: Line feed (<code>\n</code>)</li>
 </ul>
 <h3 id="essential-commands">Essential Commands<a class="headerlink" href="#essential-commands" title="Permanent link">&para;</a></h3>
-<p>Get started with these fundamental commands:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1">#GP           # Get current position</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1">#MP3          # Move to position 3</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1">#STATUS       # Get complete system status</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1">#CAL          # Calibrate home position</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1">#STOP         # Emergency stop</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">#GP              # Get current position</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1">#MP3             # Move to position 3</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1">#STATUS          # Get complete system status</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">#CAL             # Calibrate encoder offset</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1">#STOP            # Emergency stop</span>
 </code></pre></div>
 <h2 id="command-categories">📚 Command Categories<a class="headerlink" href="#command-categories" title="Permanent link">&para;</a></h2>
-<p>The controller supports over <strong>50 commands</strong> organized into logical categories:</p>
-<h3 id="basic-commands">🎯 <a href="../basic/">Basic Commands</a><a class="headerlink" href="#basic-commands" title="Permanent link">&para;</a></h3>
-<p><strong>Core movement and status commands</strong></p>
+<h3 id="essential-operations">🎯 Essential Operations<a class="headerlink" href="#essential-operations" title="Permanent link">&para;</a></h3>
+<p>Core movement and status commands</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+<th>Example Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#GP</code></td>
+<td>Get current position</td>
+<td><code>P3</code></td>
+</tr>
+<tr>
+<td><code>#MP[1-9]</code></td>
+<td>Move to position</td>
+<td><code>M3</code></td>
+</tr>
+<tr>
+<td><code>#SP[1-9]</code></td>
+<td>Set current position</td>
+<td><code>SP3</code></td>
+</tr>
+<tr>
+<td><code>#GF</code></td>
+<td>Get filter count</td>
+<td><code>F5</code></td>
+</tr>
+<tr>
+<td><code>#FC[3-9]</code></td>
+<td>Set filter count</td>
+<td><code>FC5</code></td>
+</tr>
+<tr>
+<td><code>#STOP</code></td>
+<td>Emergency stop</td>
+<td><code>STOPPED</code></td>
+</tr>
+<tr>
+<td><code>#STATUS</code></td>
+<td>System status</td>
+<td><code>STATUS:POS=3,MOVING=NO,...</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="filter-configuration">📝 Filter Configuration<a class="headerlink" href="#filter-configuration" title="Permanent link">&para;</a></h3>
+<p>Manage filter names and positions</p>
 <table>
 <thead>
 <tr>
@@ -1344,241 +1409,351 @@
 </thead>
 <tbody>
 <tr>
-<td><code>GP</code></td>
-<td>Get current position</td>
-<td><code>#GP</code> → <code>P3</code></td>
+<td><code>#GN</code></td>
+<td>Get all filter names</td>
+<td><code>NAMES:Luminance,Red,Green,...</code></td>
 </tr>
 <tr>
-<td><code>MP[X]</code></td>
-<td>Move to position</td>
-<td><code>#MP2</code> → <code>M2</code></td>
+<td><code>#GN[1-9]</code></td>
+<td>Get specific filter name</td>
+<td><code>N2:Red</code></td>
 </tr>
 <tr>
-<td><code>SP[X]</code></td>
-<td>Set position</td>
-<td><code>#SP1</code> → <code>S1</code></td>
-</tr>
-<tr>
-<td><code>STATUS</code></td>
-<td>System status</td>
-<td><code>#STATUS</code> → <code>STATUS:POS=3,MOVING=NO...</code></td>
+<td><code>#SN[1-9]:Name</code></td>
+<td>Set filter name</td>
+<td><code>#SN1:Luminance</code></td>
 </tr>
 </tbody>
 </table>
-<p><a class="md-button" href="../basic/">View All Basic Commands →</a></p>
-<h3 id="configuration-commands">⚙️ Configuration Commands<a class="headerlink" href="#configuration-commands" title="Permanent link">&para;</a></h3>
-<p><strong>System setup and parameter adjustment</strong></p>
+<h3 id="calibration-custom-angles">🎯 Calibration &amp; Custom Angles<a class="headerlink" href="#calibration-custom-angles" title="Permanent link">&para;</a></h3>
+<p>Configure encoder and position angles</p>
 <table>
 <thead>
 <tr>
-<th>Category</th>
-<th>Commands</th>
-<th>Examples</th>
+<th>Command</th>
+<th>Description</th>
+<th>Example</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Filter Setup</strong></td>
-<td><code>FC</code>, <code>GF</code>, <code>SN</code>, <code>GN</code></td>
-<td><code>#FC5</code>, <code>#SN1:Luminance</code></td>
+<td><code>#CAL</code></td>
+<td>Calibrate encoder offset</td>
+<td><code>CALIBRATED</code></td>
 </tr>
 <tr>
-<td><strong>Motor Config</strong></td>
-<td><code>MS</code>, <code>MXS</code>, <code>MA</code>, <code>MDD</code></td>
-<td><code>#MS1000</code>, <code>#MA800</code></td>
+<td><code>#SETANG[1-9]:[angle]</code></td>
+<td>Set custom angle</td>
+<td><code>#SETANG1:0.0</code></td>
 </tr>
 <tr>
-<td><strong>Direction</strong></td>
-<td><code>MDM</code>, <code>MRV</code>, <code>GDC</code></td>
-<td><code>#MDM1</code>, <code>#MRV0</code></td>
+<td><code>#GETANG</code></td>
+<td>Get all custom angles</td>
+<td><code>ANGLES:0.0,68.5,142.3,...</code></td>
+</tr>
+<tr>
+<td><code>#GETANG[1-9]</code></td>
+<td>Get specific angle</td>
+<td><code>ANG2:68.5</code></td>
+</tr>
+<tr>
+<td><code>#CLEARANG</code></td>
+<td>Clear custom angles</td>
+<td><code>CLEARANG:OK</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="calibration-commands">🔧 Calibration Commands<a class="headerlink" href="#calibration-commands" title="Permanent link">&para;</a></h3>
-<p><strong>Precision calibration and tuning</strong></p>
+<h3 id="motor-configuration">⚙️ Motor Configuration<a class="headerlink" href="#motor-configuration" title="Permanent link">&para;</a></h3>
+<p>Adjust motor speed, acceleration, and behavior</p>
 <table>
 <thead>
 <tr>
-<th>Type</th>
-<th>Commands</th>
-<th>Purpose</th>
+<th>Command</th>
+<th>Description</th>
+<th>Range</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Revolution</strong></td>
-<td><code>REVCAL</code>, <code>RCP</code>, <code>RCM</code>, <code>RCFIN</code></td>
-<td>Calibrate steps per revolution</td>
+<td><code>#GMC</code></td>
+<td>Get motor configuration</td>
+<td>-</td>
 </tr>
 <tr>
-<td><strong>Backlash</strong></td>
-<td><code>BLCAL</code>, <code>BLS</code>, <code>BLM</code>, <code>BLFIN</code></td>
-<td>Compensate mechanical play</td>
+<td><code>#MS[value]</code></td>
+<td>Set motor speed</td>
+<td>50-3000 steps/s</td>
 </tr>
 <tr>
-<td><strong>Position</strong></td>
-<td><code>CAL</code></td>
-<td>Set home reference</td>
+<td><code>#MXS[value]</code></td>
+<td>Set max motor speed</td>
+<td>100-5000 steps/s</td>
+</tr>
+<tr>
+<td><code>#MA[value]</code></td>
+<td>Set motor acceleration</td>
+<td>50-2000 steps/s²</td>
+</tr>
+<tr>
+<td><code>#MDD[value]</code></td>
+<td>Set motor disable delay</td>
+<td>500-10000 ms</td>
+</tr>
+<tr>
+<td><code>#RMC</code></td>
+<td>Reset motor config</td>
+<td>-</td>
 </tr>
 </tbody>
 </table>
-<h3 id="advanced-commands">🔬 Advanced Commands<a class="headerlink" href="#advanced-commands" title="Permanent link">&para;</a></h3>
-<p><strong>Manual control and diagnostics</strong></p>
+<h3 id="direction-inversion">🔄 Direction Inversion<a class="headerlink" href="#direction-inversion" title="Permanent link">&para;</a></h3>
+<p>Configure motor and encoder direction</p>
 <table>
 <thead>
 <tr>
-<th>Function</th>
-<th>Commands</th>
-<th>Use Cases</th>
+<th>Command</th>
+<th>Description</th>
+<th>Response</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Manual Steps</strong></td>
-<td><code>SF</code>, <code>SB</code>, <code>ST</code>, <code>GST</code></td>
-<td>Fine positioning, testing</td>
+<td><code>#MINV0</code></td>
+<td>Motor direction normal</td>
+<td><code>MINV:Normal</code></td>
 </tr>
 <tr>
-<td><strong>Motor Power</strong></td>
-<td><code>ME</code>, <code>MD</code></td>
-<td>Manual power control</td>
+<td><code>#MINV1</code></td>
+<td>Motor direction inverted</td>
+<td><code>MINV:Inverted</code></td>
 </tr>
 <tr>
-<td><strong>System Info</strong></td>
-<td><code>ID</code>, <code>VER</code></td>
-<td>Device identification</td>
+<td><code>#GMINV</code></td>
+<td>Get motor inversion</td>
+<td><code>GMINV:0 (Normal)</code></td>
+</tr>
+<tr>
+<td><code>#ENCINV0</code></td>
+<td>Encoder direction normal</td>
+<td><code>ENCINV:Normal</code></td>
+</tr>
+<tr>
+<td><code>#ENCINV1</code></td>
+<td>Encoder direction inverted</td>
+<td><code>ENCINV:Inverted</code></td>
+</tr>
+<tr>
+<td><code>#GENCINV</code></td>
+<td>Get encoder inversion</td>
+<td><code>GENCINV:0 (Normal)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="encoder-diagnostics">🔬 Encoder Diagnostics<a class="headerlink" href="#encoder-diagnostics" title="Permanent link">&para;</a></h3>
+<p>Monitor and debug encoder</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#ENCSTATUS</code></td>
+<td>Complete encoder status</td>
+</tr>
+<tr>
+<td><code>#ENCDIR</code></td>
+<td>Rotation direction</td>
+</tr>
+<tr>
+<td><code>#ENCRAW</code></td>
+<td>Raw encoder data</td>
+</tr>
+</tbody>
+</table>
+<h3 id="manual-control">🎮 Manual Control<a class="headerlink" href="#manual-control" title="Permanent link">&para;</a></h3>
+<p>Direct motor control for testing</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#SF[steps]</code></td>
+<td>Step forward</td>
+</tr>
+<tr>
+<td><code>#SB[steps]</code></td>
+<td>Step backward</td>
+</tr>
+<tr>
+<td><code>#ME</code></td>
+<td>Enable motor</td>
+</tr>
+<tr>
+<td><code>#MD</code></td>
+<td>Disable motor</td>
+</tr>
+<tr>
+<td><code>#TESTMOTOR</code></td>
+<td>Test motor sequence</td>
+</tr>
+</tbody>
+</table>
+<h3 id="display-control">📺 Display Control<a class="headerlink" href="#display-control" title="Permanent link">&para;</a></h3>
+<p>Manage OLED display</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#ROTATE</code></td>
+<td>Toggle display rotation</td>
+</tr>
+<tr>
+<td><code>#DISPLAY</code></td>
+<td>Get display info</td>
+</tr>
+</tbody>
+</table>
+<h3 id="i-system-information">ℹ️ System Information<a class="headerlink" href="#i-system-information" title="Permanent link">&para;</a></h3>
+<p>Device identification and help</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#ID</code></td>
+<td>Get device ID</td>
+<td><code>ESP32FW-PID-V2.0</code></td>
+</tr>
+<tr>
+<td><code>#VER</code></td>
+<td>Get firmware version</td>
+<td><code>2.0.0</code></td>
+</tr>
+<tr>
+<td><code>#HELP</code></td>
+<td>Show command list</td>
+<td>Multi-line help</td>
 </tr>
 </tbody>
 </table>
 <h2 id="common-workflows">🔄 Common Workflows<a class="headerlink" href="#common-workflows" title="Permanent link">&para;</a></h2>
-<h3 id="first-time-setup">First Time Setup<a class="headerlink" href="#first-time-setup" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">#CAL              # Set home position</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1">#FC5              # Configure 5 filters</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1">#SN1:Luminance    # Set filter names</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">#SN2:Red</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1">#SN3:Green</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1">#SN4:Blue</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1">#SN5:H-Alpha</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1">#STATUS           # Verify configuration</span>
+<h3 id="initial-setup">Initial Setup<a class="headerlink" href="#initial-setup" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">#CAL              # Calibrate encoder (position 1 = 0°)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1">#FC5              # Configure 5 filters</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1">#SN1:Luminance    # Set filter names</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">#SN2:Red</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1">#SN3:Green</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1">#SN4:Blue</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1">#SN5:H-Alpha</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="c1">#STATUS           # Verify configuration</span>
 </code></pre></div>
+<h3 id="custom-angle-configuration">Custom Angle Configuration<a class="headerlink" href="#custom-angle-configuration" title="Permanent link">&para;</a></h3>
+<p>For non-uniform filter spacing:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">#SETANG1:0.0      # Position 1 at 0°</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1">#SETANG2:68.5     # Position 2 at 68.5°</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">#SETANG3:142.3    # Position 3 at 142.3°</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1">#SETANG4:210.0    # Position 4 at 210.0°</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1">#SETANG5:285.0    # Position 5 at 285.0°</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1">#GETANG           # Verify angles</span>
+</code></pre></div></p>
 <h3 id="motor-tuning">Motor Tuning<a class="headerlink" href="#motor-tuning" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1">#GMC              # Get current motor config</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="c1">#MS800            # Set motor speed</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1">#MA600            # Set acceleration</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1">#MXS2000          # Set max speed</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1">#MDD2000          # Set disable delay</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1">#RMC              # Reset to defaults if needed</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1">#GMC              # Get current motor config</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c1">#MS400            # Set motor speed</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1">#MA200            # Set acceleration</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1">#MDD1000          # Set disable delay</span>
 </code></pre></div>
-<h3 id="precision-calibration">Precision Calibration<a class="headerlink" href="#precision-calibration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1">#REVCAL           # Start revolution calibration</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1">#RCP10            # Add 10 steps if needed</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1">#RCFIN            # Finish and save</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1">#BLCAL            # Start backlash calibration</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1">#BLS5             # Test with 5-step increments</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1">#BLM              # Mark movement detected</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="c1">#BLFIN            # Complete calibration</span>
+<h3 id="direction-correction">Direction Correction<a class="headerlink" href="#direction-correction" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">#GMINV            # Check motor direction</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1">#MINV1            # Invert if needed</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1">#GENCINV          # Check encoder direction</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1">#ENCINV1          # Invert if needed</span>
 </code></pre></div>
-<h2 id="communication-protocol">📡 Communication Protocol<a class="headerlink" href="#communication-protocol" title="Permanent link">&para;</a></h2>
-<h3 id="serial-settings">Serial Settings<a class="headerlink" href="#serial-settings" title="Permanent link">&para;</a></h3>
+<h2 id="response-format">📡 Response Format<a class="headerlink" href="#response-format" title="Permanent link">&para;</a></h2>
+<h3 id="success-response">Success Response<a class="headerlink" href="#success-response" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Command: #MP3
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Response: M3
+</code></pre></div>
+<h3 id="error-response">Error Response<a class="headerlink" href="#error-response" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Command: #MP10
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>Response: ERROR:Invalid position
+</code></pre></div>
+<h3 id="status-response">Status Response<a class="headerlink" href="#status-response" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Command: #STATUS
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Response: STATUS:POS=3,MOVING=NO,CAL=YES,ERROR=0,ANGLE=144.50,TARGET_ANGLE=144.00,ANGLE_ERROR=0.50,CONTROL=ENCODER
+</code></pre></div>
+<h2 id="common-errors">⚠️ Common Errors<a class="headerlink" href="#common-errors" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Meaning</th>
+<th>Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ERROR:Invalid command</code></td>
+<td>Command not recognized</td>
+<td>Check command spelling</td>
+</tr>
+<tr>
+<td><code>ERROR:Invalid position</code></td>
+<td>Position out of range</td>
+<td>Use position 1-N (N=filter count)</td>
+</tr>
+<tr>
+<td><code>ERROR:Invalid parameter</code></td>
+<td>Parameter out of range</td>
+<td>Check value ranges</td>
+</tr>
+<tr>
+<td><code>ERROR:System busy</code></td>
+<td>Motor moving</td>
+<td>Wait for movement to complete</td>
+</tr>
+<tr>
+<td><code>ERROR:Encoder not available</code></td>
+<td>Encoder required but not detected</td>
+<td>Check AS5600 connection</td>
+</tr>
+</tbody>
+</table>
+<h2 id="performance">📊 Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h2>
+<h3 id="pid-control-performance">PID Control Performance<a class="headerlink" href="#pid-control-performance" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Baud Rate</strong>: 115200</li>
-<li><strong>Data Bits</strong>: 8</li>
-<li><strong>Parity</strong>: None</li>
-<li><strong>Stop Bits</strong>: 1</li>
-<li><strong>Flow Control</strong>: None</li>
+<li><strong>Positioning Accuracy</strong>: &lt;0.8° (configurable via <code>ANGLE_CONTROL_TOLERANCE</code>)</li>
+<li><strong>Control Loop</strong>: Maximum 30 iterations</li>
+<li><strong>Settling Time</strong>: 150ms per iteration</li>
+<li><strong>Self-Correction</strong>: Automatic error compensation</li>
 </ul>
-<h3 id="response-format">Response Format<a class="headerlink" href="#response-format" title="Permanent link">&para;</a></h3>
-<p>All commands provide immediate responses:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Success Response</label><label for="__tabbed_1_2">Error Response</label><label for="__tabbed_1_3">Status Response</label></div>
-<div class="tabbed-content">
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Command:<span class="w"> </span><span class="c1">#MP3</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Response:<span class="w"> </span>M3
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Command:<span class="w"> </span><span class="c1">#MP9</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>Response:<span class="w"> </span>ERROR:INVALID_POSITION
-</code></pre></div>
-</div>
-<div class="tabbed-block">
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Command:<span class="w"> </span><span class="c1">#STATUS</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>Response:<span class="w"> </span>STATUS:POS<span class="o">=</span><span class="m">3</span>,MOVING<span class="o">=</span>NO,CAL<span class="o">=</span>YES,ANGLE<span class="o">=</span><span class="m">180</span>.5,ERROR<span class="o">=</span><span class="m">0</span>
-</code></pre></div>
-</div>
-</div>
-</div>
-<h3 id="debug-mode">Debug Mode<a class="headerlink" href="#debug-mode" title="Permanent link">&para;</a></h3>
-<p>When <code>DEBUG_MODE</code> is enabled in firmware, additional diagnostic information is provided:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Command:<span class="w"> </span><span class="c1">#MP3</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>Response:<span class="w"> </span>M3
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>Debug:<span class="w">   </span>Moving<span class="w"> </span>from<span class="w"> </span><span class="c1">#1 (Luminance) to #3 (Green) - 818 steps = 2.00 positions, UNIDIRECTIONAL</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>Debug:<span class="w">   </span>Position<span class="w"> </span>reached:<span class="w"> </span><span class="m">3</span>
-</code></pre></div>
-<h2 id="error-handling">⚠️ Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
-<p>The controller provides comprehensive error reporting:</p>
-<h3 id="common-error-types">Common Error Types<a class="headerlink" href="#common-error-types" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>ERROR:UNKNOWN_COMMAND</code> - Invalid command syntax</li>
-<li><code>ERROR:INVALID_POSITION</code> - Position out of range</li>
-<li><code>ERROR:INVALID_FORMAT</code> - Wrong parameter format</li>
-<li><code>ERROR:MOTOR_TIMEOUT</code> - Movement took too long</li>
-</ul>
-<h2 id="safety-features">🛡️ Safety Features<a class="headerlink" href="#safety-features" title="Permanent link">&para;</a></h2>
-<h3 id="movement-safety">Movement Safety<a class="headerlink" href="#movement-safety" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Position validation</strong> prevents invalid moves</li>
-<li><strong>Timeout protection</strong> stops runaway movements</li>
-<li><strong>Emergency stop</strong> command immediately halts motion</li>
-<li><strong>Power management</strong> prevents motor overheating</li>
-</ul>
-<h3 id="data-safety">Data Safety<a class="headerlink" href="#data-safety" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>EEPROM storage</strong> preserves settings through power cycles</li>
-<li><strong>Validation checks</strong> prevent invalid configurations</li>
-<li><strong>Graceful error recovery</strong> maintains system stability</li>
-</ul>
-<h2 id="integration-examples">🔗 Integration Examples<a class="headerlink" href="#integration-examples" title="Permanent link">&para;</a></h2>
-<h3 id="terminalcommand-line">Terminal/Command Line<a class="headerlink" href="#terminalcommand-line" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Windows</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">echo</span><span class="w"> </span><span class="c1">#GP &gt; COM3</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>mode<span class="w"> </span>COM3<span class="w"> </span><span class="nv">BAUD</span><span class="o">=</span><span class="m">115200</span><span class="w"> </span><span class="nv">PARITY</span><span class="o">=</span>n<span class="w"> </span><span class="nv">DATA</span><span class="o">=</span><span class="m">8</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="c1"># Linux/Mac</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;#GP&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>/dev/ttyUSB0
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>stty<span class="w"> </span>-F<span class="w"> </span>/dev/ttyUSB0<span class="w"> </span><span class="m">115200</span>
-</code></pre></div>
-<h3 id="python-integration">Python Integration<a class="headerlink" href="#python-integration" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">serial</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">ser</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">Serial</span><span class="p">(</span><span class="s1">&#39;COM3&#39;</span><span class="p">,</span> <span class="mi">115200</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">ser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;#GP</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">response</span> <span class="o">=</span> <span class="n">ser</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Current position: </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="ascom-driver">ASCOM Driver<a class="headerlink" href="#ascom-driver" title="Permanent link">&para;</a></h3>
-<p>The commands are wrapped by the ASCOM driver for seamless integration with astronomy software like NINA, PHD2, and others.</p>
-<h2 id="performance-characteristics">📊 Performance Characteristics<a class="headerlink" href="#performance-characteristics" title="Permanent link">&para;</a></h2>
 <h3 id="command-response-times">Command Response Times<a class="headerlink" href="#command-response-times" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Basic commands</strong>: &lt; 1ms</li>
-<li><strong>Movement commands</strong>: Immediate acknowledgment</li>
-<li><strong>Status queries</strong>: &lt; 5ms</li>
+<li><strong>Basic queries</strong>: &lt; 1ms</li>
+<li><strong>Movement commands</strong>: Blocking (waits for completion)</li>
 <li><strong>Configuration changes</strong>: &lt; 10ms (includes EEPROM write)</li>
 </ul>
-<h3 id="movement-specifications">Movement Specifications<a class="headerlink" href="#movement-specifications" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Position accuracy</strong>: ±0.1 degrees with encoder</li>
-<li><strong>Repeatability</strong>: ±0.05 degrees</li>
-<li><strong>Movement speed</strong>: 50-3000 steps/second (configurable)</li>
-<li><strong>Acceleration</strong>: 50-2000 steps/second² (configurable)</li>
-</ul>
+<h2 id="external-references">🔗 External References<a class="headerlink" href="#external-references" title="Permanent link">&para;</a></h2>
+<p><strong>Complete Command Documentation</strong>: <a href="https://github.com/juanjol/autoFilterWheel/blob/main/ASCOM_COMMANDS.md">ASCOM_COMMANDS.md</a></p>
+<p><strong>Developer Guide</strong>: <a href="https://github.com/juanjol/autoFilterWheel/blob/main/CLAUDE.md">CLAUDE.md</a></p>
 <hr />
-<p><strong>Ready to explore specific commands?</strong> Choose a category:</p>
-<ul>
-<li><a href="../basic/"><strong>Basic Commands →</strong></a> - Start here for essential operations</li>
-</ul>
+<p><em>For detailed command specifications, parameter ranges, and ASCOM integration examples, see <a href="https://github.com/juanjol/autoFilterWheel/blob/main/ASCOM_COMMANDS.md">ASCOM_COMMANDS.md</a>.</em></p>
 
 
 

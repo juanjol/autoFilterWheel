@@ -138,6 +138,25 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
 
     processor.registerCommand("CLEARANG", "Clear all custom angles",
         [this](const String& cmd, String& response) { return handleClearCustomAngles(cmd, response); });
+
+    // Direction inversion commands
+    processor.registerCommand("MINV0", "Set motor direction normal",
+        [this](const String& cmd, String& response) { return handleSetMotorInversion(cmd, response); });
+
+    processor.registerCommand("MINV1", "Set motor direction inverted",
+        [this](const String& cmd, String& response) { return handleSetMotorInversion(cmd, response); });
+
+    processor.registerCommand("GMINV", "Get motor direction inversion status",
+        [this](const String& cmd, String& response) { return handleGetMotorInversion(cmd, response); });
+
+    processor.registerCommand("ENCINV0", "Set encoder direction normal",
+        [this](const String& cmd, String& response) { return handleSetEncoderInversion(cmd, response); });
+
+    processor.registerCommand("ENCINV1", "Set encoder direction inverted",
+        [this](const String& cmd, String& response) { return handleSetEncoderInversion(cmd, response); });
+
+    processor.registerCommand("GENCINV", "Get encoder direction inversion status",
+        [this](const String& cmd, String& response) { return handleGetEncoderInversion(cmd, response); });
 }
 
 CommandResult CommandHandlers::handleGetPosition(const String& cmd, String& response) {
@@ -375,8 +394,14 @@ CommandResult CommandHandlers::handleGetMotorConfig(const String& cmd, String& r
         response += ",ACCEL=" + String(motorDriver->getAcceleration());
         response += ",DISABLE_DELAY=" + String(motorDriver->getDisableDelay());
         response += ",STEPS_PER_REV=" + String(motorDriver->getStepsPerRevolution());
+        response += ",MOTOR_INV=" + String(motorDriver->isDirectionReversed() ? "1" : "0");
+
+        // Add encoder inversion status if encoder is available
+        if (encoder && encoder->isAvailable()) {
+            response += ",ENC_INV=" + String(encoder->isDirectionInverted() ? "1" : "0");
+        }
     } else {
-        response = "MOTOR_CONFIG:SPEED=1000,MAX_SPEED=2000,ACCEL=500,DISABLE_DELAY=1000,STEPS_PER_REV=2048";
+        response = "MOTOR_CONFIG:SPEED=1000,MAX_SPEED=2000,ACCEL=500,DISABLE_DELAY=1000,STEPS_PER_REV=2048,MOTOR_INV=0,ENC_INV=0";
     }
     return CommandResult::SUCCESS;
 }
@@ -852,6 +877,102 @@ CommandResult CommandHandlers::handleClearCustomAngles(const String& cmd, String
     configManager->clearCustomAngles();
     response = "CLEARANG:All custom angles cleared. Using uniform distribution.";
     Serial.println("[CLEARANG] Custom angles cleared");
+
+    return CommandResult::SUCCESS;
+}
+
+// ========================================
+// DIRECTION INVERSION HANDLERS
+// ========================================
+
+CommandResult CommandHandlers::handleSetMotorInversion(const String& cmd, String& response) {
+    if (!motorDriver) {
+        response = "ERROR:Motor driver not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    if (!configManager) {
+        response = "ERROR:Config manager not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Parse command: MINV0 = normal, MINV1 = inverted
+    bool inverted;
+    if (cmd == "MINV0") {
+        inverted = false;
+    } else if (cmd == "MINV1") {
+        inverted = true;
+    } else {
+        response = "ERROR:Use MINV0 (normal) or MINV1 (inverted)";
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    // Apply to motor driver
+    motorDriver->setDirectionReversed(inverted);
+
+    // Save to EEPROM
+    configManager->saveMotorDirectionInverted(inverted);
+
+    response = "MINV:" + String(inverted ? "Inverted" : "Normal");
+    Serial.println("[MINV] Motor direction set to " + String(inverted ? "inverted" : "normal"));
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetMotorInversion(const String& cmd, String& response) {
+    if (!motorDriver) {
+        response = "ERROR:Motor driver not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    bool inverted = motorDriver->isDirectionReversed();
+    response = "GMINV:" + String(inverted ? "1 (Inverted)" : "0 (Normal)");
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetEncoderInversion(const String& cmd, String& response) {
+    if (!encoder || !encoder->isAvailable()) {
+        response = "ERROR:Encoder not available";
+        return CommandResult::ERROR_ENCODER_UNAVAILABLE;
+    }
+
+    if (!configManager) {
+        response = "ERROR:Config manager not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Parse command: ENCINV0 = normal, ENCINV1 = inverted
+    bool inverted;
+    if (cmd == "ENCINV0") {
+        inverted = false;
+    } else if (cmd == "ENCINV1") {
+        inverted = true;
+    } else {
+        response = "ERROR:Use ENCINV0 (normal) or ENCINV1 (inverted)";
+        return CommandResult::ERROR_INVALID_FORMAT;
+    }
+
+    // Apply to encoder
+    encoder->setDirectionInverted(inverted);
+
+    // Save to EEPROM
+    configManager->saveEncoderDirectionInverted(inverted);
+
+    response = "ENCINV:" + String(inverted ? "Inverted" : "Normal");
+    Serial.println("[ENCINV] Encoder direction set to " + String(inverted ? "inverted" : "normal"));
+
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleGetEncoderInversion(const String& cmd, String& response) {
+    if (!encoder || !encoder->isAvailable()) {
+        response = "ERROR:Encoder not available";
+        return CommandResult::ERROR_ENCODER_UNAVAILABLE;
+    }
+
+    bool inverted = encoder->isDirectionInverted();
+    response = "GENCINV:" + String(inverted ? "1 (Inverted)" : "0 (Normal)");
 
     return CommandResult::SUCCESS;
 }

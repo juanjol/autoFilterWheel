@@ -8,6 +8,7 @@ AS5600Encoder::AS5600Encoder(TwoWire* wireInterface)
     , available(false)
     , lastRawValue(0)
     , movementDetected(false)
+    , directionInverted(false)
     , previousAngle(0)
     , rotationDirection(0)
     , readCount(0)
@@ -46,12 +47,17 @@ float AS5600Encoder::getAngle() {
 
     float angle = rawValue * DEGREES_PER_COUNT;
 
-    // Invert encoder direction if configured
+    // Invert encoder direction if configured (compile-time)
     #ifdef AS5600_INVERT_DIRECTION
     #if AS5600_INVERT_DIRECTION
     angle = 360.0f - angle;
     #endif
     #endif
+
+    // Invert encoder direction if configured (runtime)
+    if (directionInverted) {
+        angle = 360.0f - angle;
+    }
 
     angle = normalizeAngle(angle - angleOffset);
 
@@ -279,4 +285,12 @@ int8_t AS5600Encoder::getExpectedDirection(float targetAngle) {
     }
 
     return (diff > 0) ? 1 : -1;  // 1 = CW, -1 = CCW
+}
+
+void AS5600Encoder::setDirectionInverted(bool inverted) {
+    directionInverted = inverted;
+}
+
+bool AS5600Encoder::isDirectionInverted() const {
+    return directionInverted;
 }

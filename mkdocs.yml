@@ -68,14 +68,14 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Getting Started:
-    - Overview: getting-started/overview.md
     - Hardware Requirements: getting-started/hardware.md
-    - Configuration Options: getting-started/configuration-options.md
-    - ULN2003 Assembly: getting-started/assembly-uln2003.md
-    - TMC2209 Assembly: getting-started/assembly-tmc2209.md
-  - Command Reference:
-    - Overview: commands/overview.md
-    - Basic Commands: commands/basic.md
+    - Assembly Guide: getting-started/assembly-uln2003.md
+  - Commands:
+    - Command Reference: commands/overview.md
+  - Links:
+    - GitHub Repository: https://github.com/juanjol/autoFilterWheel
+    - ASCOM Commands: https://github.com/juanjol/autoFilterWheel/blob/main/ASCOM_COMMANDS.md
+    - Issue Tracker: https://github.com/juanjol/autoFilterWheel/issues
 
 extra:
   social:

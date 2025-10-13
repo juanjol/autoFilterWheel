@@ -524,12 +524,40 @@ void FilterWheelController::loadSystemConfiguration() {
         motorDriver->setSpeed(motorConfig.speed);
         motorDriver->setMaxSpeed(motorConfig.maxSpeed);
         motorDriver->setAcceleration(motorConfig.acceleration);
+        motorDriver->setDisableDelay(motorConfig.disableDelay);
+        Serial.print("[CONFIG] Motor config loaded - Speed:");
+        Serial.print(motorConfig.speed);
+        Serial.print(" MaxSpeed:");
+        Serial.print(motorConfig.maxSpeed);
+        Serial.print(" Accel:");
+        Serial.print(motorConfig.acceleration);
+        Serial.print(" DisableDelay:");
+        Serial.println(motorConfig.disableDelay);
     }
 
     // Load encoder configuration
     if (encoder && encoder->isAvailable() && configManager->isCalibrated()) {
         float angleOffset = configManager->loadAngleOffset();
         encoder->setAngleOffset(angleOffset);
+    }
+
+    // Load direction configuration (motor and encoder inversion)
+    if (configManager->hasDirectionConfig()) {
+        auto directionConfig = configManager->loadDirectionConfig();
+
+        // Apply motor direction inversion
+        if (motorDriver) {
+            motorDriver->setDirectionReversed(directionConfig.motorDirectionInverted);
+            Serial.print("[CONFIG] Motor direction: ");
+            Serial.println(directionConfig.motorDirectionInverted ? "Inverted" : "Normal");
+        }
+
+        // Apply encoder direction inversion
+        if (encoder && encoder->isAvailable()) {
+            encoder->setDirectionInverted(directionConfig.encoderDirectionInverted);
+            Serial.print("[CONFIG] Encoder direction: ");
+            Serial.println(directionConfig.encoderDirectionInverted ? "Inverted" : "Normal");
+        }
     }
 }
 

@@ -330,3 +330,48 @@ void ConfigManager::saveMotorDisableDelay(uint16_t disableDelay) {
 void ConfigManager::resetMotorConfiguration() {
     clearMotorConfig();
 }
+
+// ========================================
+// DIRECTION CONFIGURATION
+// ========================================
+
+void ConfigManager::saveDirectionConfig(bool motorInverted, bool encoderInverted) {
+    writeUint32(EEPROM_DIRECTION_CONFIG_FLAG, DIRECTION_CONFIG_MAGIC);
+    writeUint8(EEPROM_MOTOR_DIRECTION_INVERTED, motorInverted ? 1 : 0);
+    writeUint8(EEPROM_ENCODER_DIRECTION_INVERTED, encoderInverted ? 1 : 0);
+}
+
+ConfigManager::DirectionConfig ConfigManager::loadDirectionConfig() {
+    DirectionConfig config;
+
+    if (hasDirectionConfig()) {
+        config.motorDirectionInverted = readUint8(EEPROM_MOTOR_DIRECTION_INVERTED) != 0;
+        config.encoderDirectionInverted = readUint8(EEPROM_ENCODER_DIRECTION_INVERTED) != 0;
+    } else {
+        // Defaults - no inversion
+        config.motorDirectionInverted = false;
+        config.encoderDirectionInverted = false;
+    }
+
+    return config;
+}
+
+bool ConfigManager::hasDirectionConfig() {
+    return readUint32(EEPROM_DIRECTION_CONFIG_FLAG) == DIRECTION_CONFIG_MAGIC;
+}
+
+void ConfigManager::clearDirectionConfig() {
+    writeUint32(EEPROM_DIRECTION_CONFIG_FLAG, 0);
+}
+
+void ConfigManager::saveMotorDirectionInverted(bool inverted) {
+    DirectionConfig config = loadDirectionConfig();
+    config.motorDirectionInverted = inverted;
+    saveDirectionConfig(config.motorDirectionInverted, config.encoderDirectionInverted);
+}
+
+void ConfigManager::saveEncoderDirectionInverted(bool inverted) {
+    DirectionConfig config = loadDirectionConfig();
+    config.encoderDirectionInverted = inverted;
+    saveDirectionConfig(config.motorDirectionInverted, config.encoderDirectionInverted);
+}
