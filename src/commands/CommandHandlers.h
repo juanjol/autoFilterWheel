@@ -173,6 +173,13 @@ public:
      */
     CommandResult handleClearCustomAngles(const String& cmd, String& response);
 
+    /**
+     * Measure full revolution - MEASREV
+     * Automatically moves motor one full 360° rotation using encoder feedback
+     * and reports total steps needed for STEPS_PER_REVOLUTION
+     */
+    CommandResult handleMeasureRevolution(const String& cmd, String& response);
+
     // ========================================
     // MANUAL CONTROL COMMANDS
     // ========================================
@@ -230,11 +237,40 @@ public:
      * Rotate display - ROTATE[0/1]
      */
     CommandResult handleRotateDisplay(const String& cmd, String& response);
+    /**
+     * Set display mode - DISPMODE[0/1]
+     */
+    CommandResult handleSetDisplayMode(const String& cmd, String& response);
 
     /**
      * Get display info - DISPLAY
      */
     CommandResult handleGetDisplayInfo(const String& cmd, String& response);
+
+    /**
+     * Set display brightness - BRIGHT[0-255]
+     */
+    CommandResult handleSetBrightness(const String& cmd, String& response);
+
+    /**
+     * Turn display ON - DISPON
+     */
+    CommandResult handleDisplayOn(const String& cmd, String& response);
+
+    /**
+     * Turn display OFF - DISPOFF
+     */
+    CommandResult handleDisplayOff(const String& cmd, String& response);
+
+    /**
+     * Set display power mode - DISPPOWER[0-2]
+     */
+    CommandResult handleDisplayPowerMode(const String& cmd, String& response);
+
+    /**
+     * Set display auto-off timeout - DISPTIMEOUT[0-65535]
+     */
+    CommandResult handleDisplayTimeout(const String& cmd, String& response);
 
     /**
      * Get encoder status - ENCSTATUS
@@ -275,6 +311,16 @@ public:
      */
     CommandResult handleGetEncoderInversion(const String& cmd, String& response);
 
+    // ========================================
+    // CONFIGURATION RETRIEVAL COMMANDS
+    // ========================================
+
+    /**
+     * Get complete system configuration - GETCONFIG
+     * Returns all configuration in a single multi-line response
+     */
+    CommandResult handleGetConfig(const String& cmd, String& response);
+
 private:
     /**
      * Helper methods for parameter parsing
@@ -288,4 +334,10 @@ private:
      */
     bool canExecuteMovement();
     void updateSystemState();
+
+    /**
+     * Calculate angular error with wraparound handling
+     * Returns error in range [-180, +180]
+     */
+    float calculateAngularError(float current, float target);
 };

@@ -159,10 +159,13 @@ void ULN2003Driver::stepForward(long steps) {
         stepper.moveTo(steps);
     }
 
-    // Run to completion immediately (blocking)
+    // Run to completion with minimal delays for responsiveness
     while (stepper.distanceToGo() != 0) {
-        stepper.run();
-        delay(1);  // Small delay to prevent watchdog issues
+        // Run multiple steps before yielding for better performance
+        for (int i = 0; i < 50 && stepper.distanceToGo() != 0; i++) {
+            stepper.run();
+        }
+        yield();  // Allow ESP32 to process other tasks (including serial)
     }
 }
 
@@ -181,9 +184,12 @@ void ULN2003Driver::stepBackward(long steps) {
         stepper.moveTo(-steps);
     }
 
-    // Run to completion immediately (blocking)
+    // Run to completion with minimal delays for responsiveness
     while (stepper.distanceToGo() != 0) {
-        stepper.run();
-        delay(1);  // Small delay to prevent watchdog issues
+        // Run multiple steps before yielding for better performance
+        for (int i = 0; i < 50 && stepper.distanceToGo() != 0; i++) {
+            stepper.run();
+        }
+        yield();  // Allow ESP32 to process other tasks (including serial)
     }
 }

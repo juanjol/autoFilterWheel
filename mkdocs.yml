@@ -1,16 +1,14 @@
 site_name: ESP32-C3 Filter Wheel Controller
 site_description: Open-source astronomy filter wheel controller with ASCOM compatibility
-site_author: ESP32 Filter Wheel Project
+site_author: Juan José López
 site_url: https://juanjol.github.io/autoFilterWheel/
 
 repo_name: autoFilterWheel
 repo_url: https://github.com/juanjol/autoFilterWheel
-edit_uri: edit/main/docs/
 
 theme:
   name: material
   palette:
-    # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       primary: deep purple
@@ -18,7 +16,6 @@ theme:
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-    # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: deep purple
@@ -29,38 +26,27 @@ theme:
   features:
     - navigation.tabs
     - navigation.sections
-    - navigation.expand
     - navigation.top
     - search.highlight
-    - search.share
     - content.code.copy
-    - content.code.annotate
   icon:
     repo: fontawesome/brands/github
-    edit: material/pencil
-    view: material/eye
 
 plugins:
   - search
-  - git-revision-date-localized
 
 markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
-  - attr_list
-  - md_in_html
   - tables
   - toc:
       permalink: true
@@ -70,16 +56,6 @@ nav:
   - Getting Started:
     - Hardware Requirements: getting-started/hardware.md
     - Assembly Guide: getting-started/assembly-uln2003.md
-  - Commands:
-    - Command Reference: commands/overview.md
-  - Links:
-    - GitHub Repository: https://github.com/juanjol/autoFilterWheel
-    - ASCOM Commands: https://github.com/juanjol/autoFilterWheel/blob/main/ASCOM_COMMANDS.md
-    - Issue Tracker: https://github.com/juanjol/autoFilterWheel/issues
-
-extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/yourusername/auto-filter-wheel
-  version:
-    provider: mike
+  - Reference:
+    - Commands: https://github.com/juanjol/autoFilterWheel/blob/main/COMMANDS.md
+    - ASCOM Protocol: https://github.com/juanjol/autoFilterWheel/blob/main/ASCOM_PROTOCOL.md

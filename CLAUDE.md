@@ -122,6 +122,13 @@ The 0.42" OLED displays only a portion of the 128x64 buffer. All content must be
 - `#GETANG[pos]` - Get custom angle for specific position (or `#GETANG` for all)
 - `#CLEARANG` - Clear all custom angles (revert to uniform distribution)
 
+**Revolution Measurement:**
+- `#MEASREV` - Automatically measure steps for full 360° revolution using encoder feedback
+  - Uses PID control to complete one full rotation
+  - Reports exact step count for `STEPS_PER_REVOLUTION` configuration
+  - Essential for calibrating motor when mechanical configuration changes (e.g., motor moved to wheel edge)
+  - Example output: `MEASREV:SUCCESS Steps=42500 Rotation=360.00° Update STEPS_PER_REVOLUTION to 42500`
+
 **Debug/Manual Control:**
 - `#SF[X]` - Manual step forward (for calibration/testing)
 - `#SB[X]` - Manual step backward (for calibration/testing)
@@ -130,8 +137,16 @@ The 0.42" OLED displays only a portion of the 128x64 buffer. All content must be
 - `#ENCSTATUS` - Get encoder diagnostics
 - `#ME` / `#MD` - Enable/disable motor manually
 
+**Display Control:**
+- `#DISPON` - Turn display on manually
+- `#DISPOFF` - Turn display off manually
+- `#DISPPOWER[0-2]` - Set power mode (0=auto with timeout, 1=always on, 2=always off)
+- `#BRIGHT[0-255]` - Set display brightness (0=minimum/off, 255=maximum)
+- `#DISPMODE[0-1]` - Set display mode (0=minimal large number, 1=detailed 3-line)
+- `#ROTATE[0-1]` - Rotate display (0=normal, 1=180°)
+- `#DISPLAY` - Get display configuration info
+
 **Hardware Control:**
-- `#ROTATE` - Rotate display 180 degrees
 - `#ENCSTATUS` - Get encoder diagnostics and health status
 
 ## Common Development Tasks
@@ -170,6 +185,27 @@ The system supports dynamic filter names configurable at runtime:
 - All grounds must be connected together
 
 ### Calibration and Position Accuracy
+
+**Measuring Steps Per Revolution**:
+When mechanical configuration changes (e.g., motor moved from center to edge of wheel), you need to recalibrate `STEPS_PER_REVOLUTION`:
+
+1. **Run measurement command**: Send `#MEASREV` via serial
+2. **Automatic measurement**: System uses PID control with encoder feedback to:
+   - Move motor forward in controlled steps
+   - Track total rotation angle from encoder
+   - Continue until exactly 360° is completed
+   - Report precise step count
+3. **Update configuration**: Copy the reported step count to `config.h`:
+   ```cpp
+   #define STEPS_PER_REVOLUTION 42500  // Value from MEASREV command
+   ```
+4. **Rebuild and upload**: Recompile firmware with new value
+
+**Why This Is Needed**:
+- Motor at wheel center: ~2048 steps/revolution (direct drive)
+- Motor at wheel edge: ~40000+ steps/revolution (gear ratio from belt/pulley)
+- Encoder provides ground truth for actual wheel rotation
+- PID ensures accurate 360° completion regardless of mechanical errors
 
 **Encoder Offset Calibration**:
 - Use `#CAL` command to calibrate position 1 at current physical location
@@ -215,6 +251,27 @@ Manual angle setting allows you to specify exact angles for each filter position
 - Position errors accumulate over multiple movements
 
 ## Hardware Integration Notes
+
+### Auto-Homing Configuration
+
+The system performs auto-homing on startup to establish position. You can configure the behavior in `config.h`:
+
+```cpp
+#define AUTO_HOMING_ON_STARTUP true  // Enable/disable auto-homing
+#define AUTO_HOMING_GO_TO_POSITION_1 false  // If true, always moves to position 1; if false, stays at current valid position
+```
+
+**Behavior:**
+- **AUTO_HOMING_GO_TO_POSITION_1 = false** (default):
+  - Reads encoder to detect current position
+  - If already at a valid position (within 0.8°), stays there (no movement)
+  - If not at valid position, moves to nearest position
+  - Fastest startup, no unnecessary movement
+
+- **AUTO_HOMING_GO_TO_POSITION_1 = true**:
+  - Always moves to position 1 on startup
+  - Useful for consistent initialization
+  - Ensures known starting position every time
 
 ### AS5600 Encoder Setup
 - Requires 3.3V supply (NOT 5V)

@@ -62,17 +62,25 @@ bool FilterWheelController::init(MotorDriverType motorType) {
 
     // Show splash screen
     showSplashScreen();
+    delay(2500);  // Let splash screen display for a moment
 
-    // After splash screen, show initial state (always READY)
-    if (displayManager) {
-        delay(1500);  // Let splash screen display for a moment
-        displayManager->showFilterWheelState(
-            "READY",
-            currentPosition,
-            numFilters,
-            getFilterName(currentPosition).c_str(),
-            false
-        );
+    // Perform auto-homing if encoder is available
+    #ifdef AUTO_HOMING_ON_STARTUP
+    if (AUTO_HOMING_ON_STARTUP && encoder && encoder->isAvailable()) {
+        performAutoHoming();
+    } else
+    #endif
+    {
+        // No auto-homing, just show ready state
+        if (displayManager) {
+            displayManager->showFilterWheelState(
+                "READY",
+                currentPosition,
+                numFilters,
+                getFilterName(currentPosition).c_str(),
+                false
+            );
+        }
     }
 
     return true;
@@ -127,10 +135,9 @@ bool FilterWheelController::moveToPosition(uint8_t position) {
     targetPosition = position;
     bool success = false;
 
-    // Show moving state
+    // Show transition screen (FROM → TO)
     if (displayManager) {
-        displayManager->showFilterWheelState("MOVING", currentPosition, numFilters,
-                                            getFilterName(currentPosition).c_str(), true);
+        displayManager->showTransition(currentPosition, targetPosition);
     }
 
     // ENCODER-BASED CONTROL: Use angle feedback if encoder is available
@@ -698,8 +705,8 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
     bool success = false;
     int iteration = 0;
 
-    // Constants for steps conversion
-    const int stepsPerRevolution = 2048; // 28BYJ-48
+    // Constants for steps conversion (use actual configured value)
+    const int stepsPerRevolution = STEPS_PER_REVOLUTION;
     const float stepsPerDegree = stepsPerRevolution / 360.0f;
 
     while (iteration < ANGLE_CONTROL_MAX_ITERATIONS && !success) {
@@ -717,8 +724,12 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
 
         // Check if we've reached target
         if (abs(error) <= tolerance) {
-            // Wait for motor to settle completely before confirming
-            delay(200);
+            // Wait for motor to settle completely before confirming (with serial processing)
+            unsigned long settleStart = millis();
+            while (millis() - settleStart < 50) {
+                handleSerial();
+                delay(1);
+            }
 
             // Re-read angle to verify final position
             float finalAngle = encoder->getAngle();
@@ -818,8 +829,13 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
         // Update previous error for derivative calculation
         previousError = error;
 
-        // Settling time for mechanical stabilization
-        delay(ANGLE_PID_SETTLING_TIME);
+        // Settling time for mechanical stabilization (with serial processing)
+        unsigned long startTime = millis();
+        while (millis() - startTime < ANGLE_PID_SETTLING_TIME) {
+            // Process serial commands during settling time
+            handleSerial();
+            delay(1);  // Small delay to prevent CPU overuse
+        }
 
         iteration++;
     }
@@ -1098,4 +1114,152 @@ bool FilterWheelController::needsCalibrationCheck() const {
 
 bool FilterWheelController::isInCalibrationMode() const {
     return inCalibrationMode;
+}
+
+bool FilterWheelController::performAutoHoming() {
+    Serial.println("========================================");
+    Serial.println("[AUTO-HOMING] Starting auto-homing sequence");
+    Serial.println("========================================");
+
+    // Verify encoder is available
+    if (!encoder || !encoder->isAvailable()) {
+        Serial.println("[AUTO-HOMING] ERROR: Encoder not available, skipping auto-homing");
+        return false;
+    }
+
+    // Verify motor driver
+    if (!motorDriver) {
+        Serial.println("[AUTO-HOMING] ERROR: Motor driver not available");
+        return false;
+    }
+
+    // Step 1: Read current encoder angle (no movement needed)
+    float currentAngle = encoder->getAngle();
+    if (currentAngle < 0) {
+        Serial.println("[AUTO-HOMING] ERROR: Failed to read encoder angle");
+        return false;
+    }
+
+    Serial.print("[AUTO-HOMING] Step 1: Current encoder angle: ");
+    Serial.print(currentAngle, 2);
+    Serial.println("°");
+
+    // Step 2: Find nearest filter position
+    uint8_t nearestPosition = 1;
+    float minError = 360.0f;
+
+    for (uint8_t pos = 1; pos <= numFilters; pos++) {
+        float targetAngle = positionToAngle(pos);
+        float error = abs(calculateAngularError(currentAngle, targetAngle));
+
+        Serial.print("[AUTO-HOMING]   Position ");
+        Serial.print(pos);
+        Serial.print(" (");
+        Serial.print(targetAngle, 2);
+        Serial.print("°) - Error: ");
+        Serial.print(error, 2);
+        Serial.println("°");
+
+        if (error < minError) {
+            minError = error;
+            nearestPosition = pos;
+        }
+    }
+
+    Serial.print("[AUTO-HOMING] Step 2: Nearest position is ");
+    Serial.print(nearestPosition);
+    Serial.print(" (error: ");
+    Serial.print(minError, 2);
+    Serial.println("°)");
+
+    // Step 3: Decide target position based on configuration
+    uint8_t targetPosition = nearestPosition;
+
+    #if AUTO_HOMING_GO_TO_POSITION_1
+        // Force move to position 1 on startup
+        targetPosition = 1;
+        Serial.println("[AUTO-HOMING] Configuration: Always move to position 1 on startup");
+    #else
+        // Stay at current position if within tolerance
+        if (minError <= ANGLE_CONTROL_TOLERANCE) {
+            // Already at a valid position, just set it without moving
+            currentPosition = nearestPosition;
+            configManager->saveCurrentPosition(currentPosition);
+
+            Serial.println("[AUTO-HOMING] ✓ Already at valid position, no movement needed!");
+            Serial.print("[AUTO-HOMING] Position set to ");
+            Serial.print(currentPosition);
+            Serial.print(" (");
+            Serial.print(getFilterName(currentPosition));
+            Serial.println(")");
+            Serial.println("========================================");
+
+            if (displayManager) {
+                displayManager->showFilterWheelState(
+                    "READY",
+                    currentPosition,
+                    numFilters,
+                    getFilterName(currentPosition).c_str(),
+                    false
+                );
+            }
+
+            return true;
+        }
+    #endif
+
+    // Step 4: Move to target position
+    Serial.print("[AUTO-HOMING] Step 3: Moving to position ");
+    Serial.print(targetPosition);
+
+    #if AUTO_HOMING_GO_TO_POSITION_1
+        Serial.println(" (configured to always go to position 1)");
+    #else
+        Serial.print(" (needs correction of ");
+        Serial.print(minError, 2);
+        Serial.println("°)");
+    #endif
+
+    if (displayManager) {
+        displayManager->showFilterWheelState(
+            "HOMING",
+            targetPosition,
+            numFilters,
+            getFilterName(targetPosition).c_str(),
+            true
+        );
+    }
+
+    // Use encoder feedback to move precisely to target position
+    float targetAngle = positionToAngle(targetPosition);
+    bool success = moveToAngleWithFeedback(targetAngle, ANGLE_CONTROL_TOLERANCE);
+
+    if (success) {
+        currentPosition = targetPosition;
+        configManager->saveCurrentPosition(currentPosition);
+
+        Serial.println("[AUTO-HOMING] ✓ Auto-homing completed successfully!");
+        Serial.print("[AUTO-HOMING] Filter wheel is now at position ");
+        Serial.print(currentPosition);
+        Serial.print(" (");
+        Serial.print(getFilterName(currentPosition));
+        Serial.println(")");
+        Serial.println("========================================");
+
+        if (displayManager) {
+            displayManager->showFilterWheelState(
+                "READY",
+                currentPosition,
+                numFilters,
+                getFilterName(currentPosition).c_str(),
+                false
+            );
+        }
+
+        return true;
+    } else {
+        Serial.println("[AUTO-HOMING] ✗ Failed to reach target position");
+        Serial.println("========================================");
+        return false;
+    }
 }

@@ -23,8 +23,18 @@ private:
 
     // Display state
     bool displayEnabled;
+    bool displayOn;         // Physical display on/off state
     bool needsUpdate;
     bool rotation180;       // True if display is rotated 180 degrees
+    uint8_t displayMode;    // 0=minimal (large number), 1=detailed (full info)
+    uint8_t brightness;     // Display brightness/contrast (0-255)
+    uint8_t powerMode;      // Power mode: 0=auto, 1=always on, 2=always off
+    uint16_t autoOffTimeout; // Auto-off timeout in seconds (0=never)
+    unsigned long lastActivityTime; // Last time display had activity
+    unsigned long displayOffTime;   // Time when display should turn off
+    int16_t scrollOffset;           // Current horizontal scroll offset for text
+    unsigned long lastScrollTime;   // Last time scroll was updated
+    uint16_t scrollDelay;           // Delay between scroll steps (ms)
 
     // Layout constants for 0.42" OLED (72x40 visible area)
     // Normal rotation (content at bottom of 128x64 buffer)
@@ -179,6 +189,61 @@ public:
     bool isRotated180() const { return rotation180; }
 
     /**
+     * Set display mode
+     * @param mode 0=minimal (large number), 1=detailed (full info)
+     */
+    void setDisplayMode(uint8_t mode);
+
+    /**
+     * Get current display mode
+     * @return Current display mode
+     */
+    uint8_t getDisplayMode() const { return displayMode; }
+
+    /**
+     * Set display brightness/contrast
+     * @param brightness Brightness level (0-255, default 255)
+     */
+    void setBrightness(uint8_t brightness);
+
+    /**
+     * Get current brightness level
+     * @return Current brightness (0-255)
+     */
+    uint8_t getBrightness() const { return brightness; }
+
+    /**
+     * Turn display physically on/off
+     */
+    void turnOn();
+    void turnOff();
+    bool isDisplayOn() const { return displayOn; }
+
+    /**
+     * Set display power mode
+     * @param mode 0=auto, 1=always on, 2=always off
+     */
+    void setPowerMode(uint8_t mode);
+    uint8_t getPowerMode() const { return powerMode; }
+
+    /**
+     * Set auto-off timeout
+     * @param seconds Seconds before auto-off (0=never)
+     */
+    void setAutoOffTimeout(uint16_t seconds);
+    uint16_t getAutoOffTimeout() const { return autoOffTimeout; }
+
+    /**
+     * Reset activity timer (call when user interacts)
+     */
+    void resetActivityTimer();
+
+    /**
+     * Show transition screen during movement (e.g., "1 → 3")
+     */
+    void showTransition(uint8_t fromPosition, uint8_t toPosition);
+
+    /**
      * Save display configuration to EEPROM
      */
     void saveDisplayConfig();
@@ -199,6 +264,10 @@ private:
      * Internal update method
      */
     void performUpdate();
+    /**
+     * Show minimal display mode (large number + filter name)
+     */
+    void showFilterWheelStateMinimal(uint8_t position, uint8_t totalFilters, const char* filterName, bool moving);
 
     /**
      * Center text horizontally

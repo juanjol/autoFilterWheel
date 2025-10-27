@@ -275,6 +275,11 @@ public:
      * Convert filter position to target angle (PUBLIC for diagnostics)
      */
     float positionToAngle(uint8_t position);
+    /**
+     * Perform auto-homing at startup
+     * Moves motor slightly, reads encoder, finds nearest position
+     */
+    bool performAutoHoming();
 
 private:
     /**

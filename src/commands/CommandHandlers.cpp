@@ -73,9 +73,26 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
     // Display Commands
     processor.registerCommand("ROTATE", "Rotate display 180 degrees",
         [this](const String& cmd, String& response) { return handleRotateDisplay(cmd, response); });
+    processor.registerCommand("DISPMODE", "Set display mode (0=minimal, 1=detailed)",
+        [this](const String& cmd, String& response) { return handleSetDisplayMode(cmd, response); });
 
     processor.registerCommand("DISPLAY", "Get display information",
         [this](const String& cmd, String& response) { return handleGetDisplayInfo(cmd, response); });
+
+    processor.registerCommand("BRIGHT", "Set display brightness (0-255)",
+        [this](const String& cmd, String& response) { return handleSetBrightness(cmd, response); });
+
+    processor.registerCommand("DISPON", "Turn display on",
+        [this](const String& cmd, String& response) { return handleDisplayOn(cmd, response); });
+
+    processor.registerCommand("DISPOFF", "Turn display off",
+        [this](const String& cmd, String& response) { return handleDisplayOff(cmd, response); });
+
+    processor.registerCommand("DISPPOWER", "Set display power mode (0=auto, 1=always on, 2=always off)",
+        [this](const String& cmd, String& response) { return handleDisplayPowerMode(cmd, response); });
+
+    processor.registerCommand("DISPTIMEOUT", "Set display auto-off timeout (0-65535 seconds, 0=never)",
+        [this](const String& cmd, String& response) { return handleDisplayTimeout(cmd, response); });
 
     // Encoder Commands
     processor.registerCommand("ENCSTATUS", "Get encoder status",
@@ -139,6 +156,9 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
     processor.registerCommand("CLEARANG", "Clear all custom angles",
         [this](const String& cmd, String& response) { return handleClearCustomAngles(cmd, response); });
 
+    processor.registerCommand("MEASREV", "Measure full 360° revolution",
+        [this](const String& cmd, String& response) { return handleMeasureRevolution(cmd, response); });
+
     // Direction inversion commands
     processor.registerCommand("MINV0", "Set motor direction normal",
         [this](const String& cmd, String& response) { return handleSetMotorInversion(cmd, response); });
@@ -157,6 +177,10 @@ void CommandHandlers::registerAllCommands(CommandProcessor& processor) {
 
     processor.registerCommand("GENCINV", "Get encoder direction inversion status",
         [this](const String& cmd, String& response) { return handleGetEncoderInversion(cmd, response); });
+
+    // Configuration retrieval command
+    processor.registerCommand("GETCONFIG", "Get complete system configuration",
+        [this](const String& cmd, String& response) { return handleGetConfig(cmd, response); });
 }
 
 CommandResult CommandHandlers::handleGetPosition(const String& cmd, String& response) {
@@ -628,6 +652,34 @@ CommandResult CommandHandlers::handleRotateDisplay(const String& cmd, String& re
     }
 }
 
+CommandResult CommandHandlers::handleSetDisplayMode(const String& cmd, String& response) {
+    if (!displayManager) {
+        response = "ERROR:Display not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Parse mode parameter: DISPMODE0 = minimal, DISPMODE1 = detailed
+    if (cmd.length() > 8) {
+        int mode = cmd.substring(8).toInt();
+
+        if (mode < 0 || mode > 1) {
+            response = "ERROR:Invalid mode (0=minimal, 1=detailed)";
+            return CommandResult::ERROR_INVALID_PARAMETER;
+        }
+
+        displayManager->setDisplayMode(mode);
+        response = "DISPMODE" + String(mode) + ":" + (mode == 0 ? "Minimal" : "Detailed");
+        return CommandResult::SUCCESS;
+    } else {
+        // Toggle mode if no parameter provided
+        uint8_t currentMode = displayManager->getDisplayMode();
+        uint8_t newMode = (currentMode == 0) ? 1 : 0;
+        displayManager->setDisplayMode(newMode);
+        response = "DISPMODE" + String(newMode) + ":" + (newMode == 0 ? "Minimal" : "Detailed");
+        return CommandResult::SUCCESS;
+    }
+}
+
 CommandResult CommandHandlers::handleGetDisplayInfo(const String& cmd, String& response) {
     if (!displayManager) {
         response = "ERROR:Display not available";
@@ -639,8 +691,118 @@ CommandResult CommandHandlers::handleGetDisplayInfo(const String& cmd, String& r
     response += ",Rotation=" + String(displayManager->isRotated180() ? "180°" : "Normal");
     response += ",Enabled=" + String(displayManager->isEnabled() ? "Yes" : "No");
     response += ",Update=" + String(DISPLAY_UPDATE_INTERVAL) + "ms";
+    response += ",Brightness=" + String(displayManager->getBrightness());
 
     return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleSetBrightness(const String& cmd, String& response) {
+    if (!displayManager) {
+        response = "ERROR:Display not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Parse brightness parameter: BRIGHT0-BRIGHT255
+    if (cmd.length() > 6) {
+        int brightness = cmd.substring(6).toInt();
+
+        if (brightness < 0 || brightness > 255) {
+            response = "ERROR:Invalid brightness (0-255)";
+            return CommandResult::ERROR_INVALID_PARAMETER;
+        }
+
+        displayManager->setBrightness(brightness);
+        response = "BRIGHT:" + String(brightness);
+        return CommandResult::SUCCESS;
+    } else {
+        // Return current brightness if no parameter provided
+        response = "BRIGHT:" + String(displayManager->getBrightness());
+        return CommandResult::SUCCESS;
+    }
+}
+
+CommandResult CommandHandlers::handleDisplayOn(const String& cmd, String& response) {
+    if (!displayManager) {
+        response = "ERROR:Display not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    displayManager->turnOn();
+    response = "DISPON:OK";
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleDisplayOff(const String& cmd, String& response) {
+    if (!displayManager) {
+        response = "ERROR:Display not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    displayManager->turnOff();
+    response = "DISPOFF:OK";
+    return CommandResult::SUCCESS;
+}
+
+CommandResult CommandHandlers::handleDisplayPowerMode(const String& cmd, String& response) {
+    if (!displayManager) {
+        response = "ERROR:Display not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Parse power mode parameter: DISPPOWER0-DISPPOWER2
+    if (cmd.length() > 9) {
+        int mode = cmd.substring(9).toInt();
+
+        if (mode < 0 || mode > 2) {
+            response = "ERROR:Invalid power mode (0=auto, 1=always on, 2=always off)";
+            return CommandResult::ERROR_INVALID_PARAMETER;
+        }
+
+        displayManager->setPowerMode(mode);
+        const char* modeStr[] = {"Auto", "AlwaysOn", "AlwaysOff"};
+        response = "DISPPOWER:" + String(mode) + ":" + String(modeStr[mode]);
+        return CommandResult::SUCCESS;
+    } else {
+        // Return current power mode if no parameter provided
+        uint8_t currentMode = displayManager->getPowerMode();
+        const char* modeStr[] = {"Auto", "AlwaysOn", "AlwaysOff"};
+        response = "DISPPOWER:" + String(currentMode) + ":" + String(modeStr[currentMode]);
+        return CommandResult::SUCCESS;
+    }
+}
+
+CommandResult CommandHandlers::handleDisplayTimeout(const String& cmd, String& response) {
+    if (!displayManager) {
+        response = "ERROR:Display not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Parse timeout parameter: DISPTIMEOUT0-DISPTIMEOUT65535
+    if (cmd.length() > 11) {
+        int timeout = cmd.substring(11).toInt();
+
+        if (timeout < 0 || timeout > 65535) {
+            response = "ERROR:Invalid timeout (0-65535 seconds)";
+            return CommandResult::ERROR_INVALID_PARAMETER;
+        }
+
+        displayManager->setAutoOffTimeout(timeout);
+        if (timeout == 0) {
+            response = "DISPTIMEOUT:" + String(timeout) + ":Never";
+        } else {
+            response = "DISPTIMEOUT:" + String(timeout) + ":Seconds";
+        }
+        return CommandResult::SUCCESS;
+    } else {
+        // Return current timeout if no parameter provided
+        uint16_t currentTimeout = displayManager->getAutoOffTimeout();
+        if (currentTimeout == 0) {
+            response = "DISPTIMEOUT:" + String(currentTimeout) + ":Never";
+        } else {
+            response = "DISPTIMEOUT:" + String(currentTimeout) + ":Seconds";
+        }
+        return CommandResult::SUCCESS;
+    }
 }
 
 CommandResult CommandHandlers::handleGetEncoderStatus(const String& cmd, String& response) {
@@ -809,7 +971,9 @@ CommandResult CommandHandlers::handleSetCustomAngle(const String& cmd, String& r
     configManager->saveCustomAngle(position, angle);
 
     response = "SETANG:Position " + String(position) + " set to " + String(angle, 2) + "°";
+    #if DEBUG_MODE
     Serial.println("[SETANG] " + response);
+    #endif
 
     return CommandResult::SUCCESS;
 }
@@ -876,10 +1040,222 @@ CommandResult CommandHandlers::handleClearCustomAngles(const String& cmd, String
 
     configManager->clearCustomAngles();
     response = "CLEARANG:All custom angles cleared. Using uniform distribution.";
+    #if DEBUG_MODE
     Serial.println("[CLEARANG] Custom angles cleared");
+    #endif
 
     return CommandResult::SUCCESS;
 }
+CommandResult CommandHandlers::handleMeasureRevolution(const String& cmd, String& response) {
+    // Verify encoder is available
+    if (!encoder || !encoder->isAvailable()) {
+        response = "ERROR:Encoder not available. Cannot measure revolution.";
+        return CommandResult::ERROR_ENCODER_UNAVAILABLE;
+    }
+
+    // Verify motor driver is available
+    if (!motorDriver) {
+        response = "ERROR:Motor driver not available";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    // Check if system is busy
+    if (*isMoving) {
+        response = "ERROR:System busy";
+        return CommandResult::ERROR_SYSTEM_BUSY;
+    }
+
+    #if DEBUG_MODE
+    Serial.println("========================================");
+    Serial.println("[MEASREV] Starting full revolution measurement");
+    Serial.println("[MEASREV] This will move the motor one complete 360° rotation");
+    Serial.println("========================================");
+    #endif
+
+    // Read initial angle
+    float startAngle = encoder->getAngle();
+    if (startAngle < 0) {
+        response = "ERROR:Failed to read encoder";
+        return CommandResult::ERROR_ENCODER_UNAVAILABLE;
+    }
+
+    #if DEBUG_MODE
+    Serial.print("[MEASREV] Starting angle: ");
+    Serial.print(startAngle, 2);
+    Serial.println("°");
+    #endif
+
+    // Calculate target angle (one full revolution from start)
+    float targetAngle = startAngle;  // We want to return to the same angle (360° = 0° mod 360)
+
+    // Enable motor
+    motorDriver->enableMotor();
+    *isMoving = true;
+
+    // Reset motor step counter to 0
+    long initialPosition = motorDriver->getCurrentPosition();
+    #if DEBUG_MODE
+    Serial.print("[MEASREV] Initial motor position: ");
+    Serial.println(initialPosition);
+    #endif
+
+    // PID Controller variables
+    float integralSum = 0.0f;
+    float previousError = 0.0f;
+    int iteration = 0;
+    long totalSteps = 0;
+    const float tolerance = ANGLE_CONTROL_TOLERANCE;
+
+    // Track total rotation to ensure we complete at least 360°
+    float totalRotation = 0.0f;
+    float lastAngle = startAngle;
+    bool fullRotationCompleted = false;
+
+    while (iteration < ANGLE_CONTROL_MAX_ITERATIONS && !fullRotationCompleted) {
+        // Read current angle
+        float currentAngle = encoder->getAngle();
+        if (currentAngle < 0) {
+            *isMoving = false;
+            response = "ERROR:Encoder read failed during movement";
+            return CommandResult::ERROR_ENCODER_UNAVAILABLE;
+        }
+
+        // Track total rotation (handle wraparound)
+        float angleDelta = currentAngle - lastAngle;
+        if (angleDelta < -180.0f) angleDelta += 360.0f;  // Crossed 0° going forward
+        if (angleDelta > 180.0f) angleDelta -= 360.0f;   // Crossed 0° going backward
+        totalRotation += angleDelta;
+        lastAngle = currentAngle;
+
+        // Check if we've completed at least 360° and are back at start position
+        if (totalRotation >= 350.0f) {  // 350° to account for tolerance
+            float errorToStart = calculateAngularError(currentAngle, targetAngle);
+            if (abs(errorToStart) <= tolerance) {
+                delay(200);  // Let motor settle
+                float finalAngle = encoder->getAngle();
+                float finalError = calculateAngularError(finalAngle, targetAngle);
+
+                if (abs(finalError) <= tolerance) {
+                    fullRotationCompleted = true;
+                    break;
+                }
+            }
+        }
+
+        // Calculate error for PID (we want to keep moving forward)
+        float error;
+        if (totalRotation < 350.0f) {
+            // Still need to complete the rotation - move forward
+            error = 360.0f - totalRotation;  // Remaining degrees to travel
+        } else {
+            // Close to completion - fine-tune to start position
+            error = calculateAngularError(currentAngle, targetAngle);
+        }
+
+        // PID CALCULATION
+        float proportional = ANGLE_PID_KP * error;
+
+        integralSum += error;
+        if (integralSum > ANGLE_PID_INTEGRAL_MAX) integralSum = ANGLE_PID_INTEGRAL_MAX;
+        if (integralSum < -ANGLE_PID_INTEGRAL_MAX) integralSum = -ANGLE_PID_INTEGRAL_MAX;
+        float integral = ANGLE_PID_KI * integralSum;
+
+        float derivative = ANGLE_PID_KD * (error - previousError);
+        float pidOutput = proportional + integral + derivative;
+
+        int stepsNeeded = (int)pidOutput;
+
+        // Apply output limits
+        if (abs(stepsNeeded) > ANGLE_PID_OUTPUT_MAX) {
+            stepsNeeded = (stepsNeeded > 0) ? ANGLE_PID_OUTPUT_MAX : -ANGLE_PID_OUTPUT_MAX;
+        }
+        if (abs(stepsNeeded) < ANGLE_PID_OUTPUT_MIN && abs(error) > tolerance) {
+            stepsNeeded = (stepsNeeded > 0) ? ANGLE_PID_OUTPUT_MIN : -ANGLE_PID_OUTPUT_MIN;
+        }
+
+        // Log iteration
+        #if DEBUG_MODE
+        Serial.print("[MEASREV] Iter ");
+        Serial.print(iteration + 1);
+        Serial.print(": Angle=");
+        Serial.print(currentAngle, 2);
+        Serial.print("° Rotated=");
+        Serial.print(totalRotation, 2);
+        Serial.print("° Steps=");
+        Serial.print(stepsNeeded);
+        Serial.print(" TotalSteps=");
+        Serial.println(totalSteps);
+        #endif
+
+        // Execute movement
+        if (stepsNeeded != 0) {
+            if (stepsNeeded > 0) {
+                motorDriver->stepForward(stepsNeeded);
+            } else {
+                motorDriver->stepBackward(abs(stepsNeeded));
+            }
+            totalSteps += stepsNeeded;
+        }
+
+        previousError = error;
+        iteration++;
+        delay(ANGLE_PID_SETTLING_TIME);
+    }
+
+    // Calculate actual steps taken
+    long finalPosition = motorDriver->getCurrentPosition();
+    long measuredSteps = abs(finalPosition - initialPosition);
+
+    *isMoving = false;
+
+    #if DEBUG_MODE
+    Serial.println("========================================");
+    if (fullRotationCompleted) {
+        Serial.println("[MEASREV] ✓ Full revolution completed successfully!");
+        Serial.print("[MEASREV] Total steps measured: ");
+        Serial.println(measuredSteps);
+        Serial.print("[MEASREV] Total rotation: ");
+        Serial.print(totalRotation, 2);
+        Serial.println("°");
+        Serial.print("[MEASREV] Final angle: ");
+        Serial.print(encoder->getAngle(), 2);
+        Serial.println("°");
+        Serial.println("[MEASREV] ");
+        Serial.println("[MEASREV] Update your config.h with:");
+        Serial.print("[MEASREV] #define STEPS_PER_REVOLUTION ");
+        Serial.println(measuredSteps);
+        Serial.println("========================================");
+    } else {
+        Serial.println("[MEASREV] ✗ Failed to complete revolution");
+        Serial.print("[MEASREV] Completed ");
+        Serial.print(totalRotation, 2);
+        Serial.println("° of rotation");
+        Serial.println("========================================");
+    }
+    #endif
+
+    if (fullRotationCompleted) {
+        response = "MEASREV:SUCCESS Steps=" + String(measuredSteps) +
+                   " Rotation=" + String(totalRotation, 2) + "° " +
+                   "Update STEPS_PER_REVOLUTION to " + String(measuredSteps);
+    } else {
+        response = "MEASREV:INCOMPLETE Steps=" + String(measuredSteps) +
+                   " Rotation=" + String(totalRotation, 2) + "°";
+    }
+
+    return fullRotationCompleted ? CommandResult::SUCCESS : CommandResult::ERROR_MOTOR_TIMEOUT;
+}
+
+float CommandHandlers::calculateAngularError(float current, float target) {
+    float error = target - current;
+
+    // Normalize to [-180, +180] range
+    while (error > 180.0f) error -= 360.0f;
+    while (error < -180.0f) error += 360.0f;
+
+    return error;
+}
+
 
 // ========================================
 // DIRECTION INVERSION HANDLERS
@@ -914,7 +1290,9 @@ CommandResult CommandHandlers::handleSetMotorInversion(const String& cmd, String
     configManager->saveMotorDirectionInverted(inverted);
 
     response = "MINV:" + String(inverted ? "Inverted" : "Normal");
+    #if DEBUG_MODE
     Serial.println("[MINV] Motor direction set to " + String(inverted ? "inverted" : "normal"));
+    #endif
 
     return CommandResult::SUCCESS;
 }
@@ -960,7 +1338,9 @@ CommandResult CommandHandlers::handleSetEncoderInversion(const String& cmd, Stri
     configManager->saveEncoderDirectionInverted(inverted);
 
     response = "ENCINV:" + String(inverted ? "Inverted" : "Normal");
+    #if DEBUG_MODE
     Serial.println("[ENCINV] Encoder direction set to " + String(inverted ? "inverted" : "normal"));
+    #endif
 
     return CommandResult::SUCCESS;
 }
@@ -973,6 +1353,103 @@ CommandResult CommandHandlers::handleGetEncoderInversion(const String& cmd, Stri
 
     bool inverted = encoder->isDirectionInverted();
     response = "GENCINV:" + String(inverted ? "1 (Inverted)" : "0 (Normal)");
+
+    return CommandResult::SUCCESS;
+}
+
+// ========================================
+// CONFIGURATION RETRIEVAL COMMAND
+// ========================================
+
+CommandResult CommandHandlers::handleGetConfig(const String& cmd, String& response) {
+    // Build multi-line configuration response
+    response = "";
+
+    // ========================================
+    // SECTION 1: FILTER CONFIGURATION
+    // ========================================
+    response += "FILTER_COUNT:" + String(*numFilters) + "\n";
+
+    for (uint8_t i = 1; i <= *numFilters; i++) {
+        String filterName;
+        if (configManager) {
+            filterName = configManager->loadFilterName(i);
+        } else {
+            filterName = "Filter" + String(i);
+        }
+        response += "FILTER_NAME:" + String(i) + ":" + filterName + "\n";
+    }
+
+    // ========================================
+    // SECTION 2: MOTOR CONFIGURATION
+    // ========================================
+    if (motorDriver) {
+        response += "MOTOR_SPEED:" + String((int)motorDriver->getCurrentSpeed()) + "\n";
+        response += "MOTOR_MAX_SPEED:" + String((int)motorDriver->getMaxSpeed()) + "\n";
+        response += "MOTOR_ACCEL:" + String((int)motorDriver->getAcceleration()) + "\n";
+        response += "MOTOR_DISABLE_DELAY:" + String(motorDriver->getDisableDelay()) + "\n";
+        response += "MOTOR_STEPS_PER_REV:" + String(motorDriver->getStepsPerRevolution()) + "\n";
+        response += "MOTOR_INV:" + String(motorDriver->isDirectionReversed() ? "1" : "0") + "\n";
+    } else {
+        // Default values if motor driver not available
+        response += "MOTOR_SPEED:1000\n";
+        response += "MOTOR_MAX_SPEED:2000\n";
+        response += "MOTOR_ACCEL:500\n";
+        response += "MOTOR_DISABLE_DELAY:1000\n";
+        response += "MOTOR_STEPS_PER_REV:2048\n";
+        response += "MOTOR_INV:0\n";
+    }
+
+    // Encoder inversion
+    if (encoder && encoder->isAvailable()) {
+        response += "ENC_INV:" + String(encoder->isDirectionInverted() ? "1" : "0") + "\n";
+    } else {
+        response += "ENC_INV:0\n";
+    }
+
+    // ========================================
+    // SECTION 3: DISPLAY CONFIGURATION
+    // ========================================
+    response += "DISPLAY_SIZE:128x64\n";
+
+    if (displayManager) {
+        response += "DISPLAY_ROTATION:" + String(displayManager->isRotated180() ? "1" : "0") + "\n";
+        response += "DISPLAY_ENABLED:" + String(displayManager->isEnabled() ? "1" : "0") + "\n";
+        response += "DISPLAY_BRIGHTNESS:" + String(displayManager->getBrightness()) + "\n";
+        response += "DISPLAY_MODE:" + String(displayManager->getDisplayMode()) + "\n";
+        response += "DISPLAY_POWER_MODE:" + String(displayManager->getPowerMode()) + "\n";
+        response += "DISPLAY_TIMEOUT:" + String(displayManager->getAutoOffTimeout()) + "\n";
+    } else {
+        // Default values if display manager not available
+        response += "DISPLAY_ROTATION:0\n";
+        response += "DISPLAY_ENABLED:1\n";
+        response += "DISPLAY_BRIGHTNESS:255\n";
+        response += "DISPLAY_MODE:1\n";
+        response += "DISPLAY_POWER_MODE:0\n";
+        response += "DISPLAY_TIMEOUT:30\n";
+    }
+
+    // ========================================
+    // SECTION 4: SYSTEM STATUS
+    // ========================================
+    response += "STATUS_POSITION:" + String(*currentPosition) + "\n";
+    response += "STATUS_MOVING:" + String(*isMoving ? "1" : "0") + "\n";
+    response += "STATUS_CALIBRATED:" + String(*isCalibrated ? "1" : "0") + "\n";
+
+    // Get current angle from encoder if available
+    if (encoder && encoder->isAvailable()) {
+        float currentAngle = encoder->getAngle();
+        char angleStr[8];
+        dtostrf(currentAngle, 5, 2, angleStr);  // Format: XXX.XX
+        response += "STATUS_ANGLE:" + String(angleStr) + "\n";
+    } else {
+        response += "STATUS_ANGLE:0.00\n";
+    }
+
+    // ========================================
+    // SECTION 5: TERMINATOR
+    // ========================================
+    response += "CONFIG_END";
 
     return CommandResult::SUCCESS;
 }

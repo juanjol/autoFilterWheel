@@ -156,11 +156,22 @@ void CommandProcessor::resetStatistics() {
 String CommandProcessor::parseCommand(const String& rawCommand) {
     String cleaned = rawCommand;
     cleaned.trim();
-    cleaned.toUpperCase();
 
     // Remove # prefix if present
     if (cleaned.startsWith("#")) {
         cleaned = cleaned.substring(1);
+    }
+
+    // For commands with data after ':', only uppercase the command part
+    // This preserves the case of filter names and other data
+    int colonPos = cleaned.indexOf(':');
+    if (colonPos != -1) {
+        String cmdPart = cleaned.substring(0, colonPos);
+        String dataPart = cleaned.substring(colonPos);
+        cmdPart.toUpperCase();
+        cleaned = cmdPart + dataPart;
+    } else {
+        cleaned.toUpperCase();
     }
 
     return cleaned;

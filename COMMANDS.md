@@ -33,10 +33,49 @@ Commands are sent via serial communication at 115200 baud rate:
 | Command | Description | Parameters | Example | Response | Notes |
 |---------|-------------|------------|---------|----------|-------|
 | `STATUS` | Get system status | None | `#STATUS` | `STATUS:POS=3,MOVING=NO,CAL=YES,ANGLE=180.5,ERROR=0.2` | Complete system state with encoder angle |
+| `GETCONFIG` | Get complete configuration | None | `#GETCONFIG` | Multi-line response (see below) | Returns all system configuration in one command |
 | `ID` | Get device identifier | None | `#ID` | `DEVICE_ID:ESP32FW-PID-V2.0` | Device identification |
 | `VER` | Get firmware version | None | `#VER` | `VERSION:2.0.1` | Current firmware version |
 | `CAL` | Calibrate encoder offset | None | `#CAL` | `CALIBRATED` | Sets current angle as position 1 (0°) |
 | `STOP` | Emergency stop | None | `#STOP` | `STOPPED` | Immediately stops all movement |
+
+### GETCONFIG Response Format
+
+The `GETCONFIG` command returns all system configuration and status in a single multi-line response:
+
+```
+FILTER_COUNT:5
+FILTER_NAME:1:Luminance
+FILTER_NAME:2:Red
+FILTER_NAME:3:Green
+FILTER_NAME:4:Blue
+FILTER_NAME:5:H-Alpha
+MOTOR_SPEED:4000
+MOTOR_MAX_SPEED:5000
+MOTOR_ACCEL:100000
+MOTOR_DISABLE_DELAY:1000
+MOTOR_STEPS_PER_REV:35500
+MOTOR_INV:0
+ENC_INV:0
+DISPLAY_SIZE:128x64
+DISPLAY_ROTATION:0
+DISPLAY_ENABLED:1
+DISPLAY_BRIGHTNESS:128
+DISPLAY_MODE:0
+DISPLAY_POWER_MODE:0
+DISPLAY_TIMEOUT:30
+STATUS_POSITION:1
+STATUS_MOVING:0
+STATUS_CALIBRATED:1
+STATUS_ANGLE:0.00
+CONFIG_END
+```
+
+**Benefits:**
+- Single command replaces ~15 individual GET commands
+- Reduces communication overhead from ~6-10 seconds to ~1-2 seconds
+- Ideal for driver initialization and periodic status updates
+- All values guaranteed to be from the same point in time (atomic snapshot)
 
 ## Manual Stepping Commands
 
@@ -85,8 +124,14 @@ Commands are sent via serial communication at 115200 baud rate:
 
 | Command | Description | Parameters | Example | Response | Notes |
 |---------|-------------|------------|---------|----------|-------|
-| `ROTATE` | Rotate display 180° | None | `#ROTATE` | `DISPLAY_ROTATED` | Toggle display orientation |
-| `DISPLAY` | Get display info | None | `#DISPLAY` | `DISPLAY:ROTATION=0,STATUS=OK` | Display configuration |
+| `DISPLAY` | Get display info | None | `#DISPLAY` | `DISPLAY:Size=128x64,Rotation=Normal,Brightness=255` | Display configuration and status |
+| `ROTATE[X]` | Rotate display 180° | X = 0 (normal) or 1 (180°), or none to toggle | `#ROTATE1` | `ROTATE1` | Rotates display orientation, persists to EEPROM |
+| `DISPMODE[X]` | Set display mode | X = 0 (minimal) or 1 (detailed) | `#DISPMODE0` | `DISPMODE0:Minimal` | Minimal shows large number, detailed shows full info |
+| `BRIGHT[X]` | Set display brightness | X = 0-255 | `#BRIGHT128` | `BRIGHT:128` | 0=off, 255=max brightness, persists to EEPROM |
+| `DISPON` | Turn display on | None | `#DISPON` | `DISPON:OK` | Manually turn display on |
+| `DISPOFF` | Turn display off | None | `#DISPOFF` | `DISPOFF:OK` | Manually turn display off |
+| `DISPPOWER[X]` | Set display power mode | X = 0 (auto), 1 (always on), 2 (always off) | `#DISPPOWER0` | `DISPPOWER:0:Auto` | Auto mode uses timeout setting |
+| `DISPTIMEOUT[X]` | Set auto-off timeout | X = Seconds (0-65535), 0=never | `#DISPTIMEOUT60` | `DISPTIMEOUT:60:Seconds` | Only applies when power mode is Auto |
 
 ## Command Workflows
 
@@ -97,6 +142,10 @@ Commands are sent via serial communication at 115200 baud rate:
 4. `#GN` - Verify all filter names
 5. Position wheel at filter #1 manually
 6. `#CAL` - Calibrate encoder offset (sets current position as 0°)
+
+**Auto-Homing Behavior:**
+- By default (`AUTO_HOMING_GO_TO_POSITION_1 = false`), the system will detect current position on startup and only move if needed
+- If you want the wheel to always return to position 1 on power-up, set `AUTO_HOMING_GO_TO_POSITION_1 = true` in config.h
 
 ### Basic Movement
 1. `#MP3` - Move to filter position 3 using PID control
@@ -130,6 +179,53 @@ Commands are sent via serial communication at 115200 baud rate:
 2. `#ANGLE` - Get current absolute angle
 3. `#ENCRAW` - Get raw encoder data for troubleshooting
 
+### Display Power Management
+
+There are two ways to control display power:
+
+**Method 1: Power Mode (DISPPOWER)**
+- `#DISPPOWER0` - Auto mode: Display auto-off after timeout (default)
+- `#DISPPOWER1` - Always on: Display never turns off automatically
+- `#DISPPOWER2` - Always off: Display always off (manual control only)
+
+**Method 2: Timeout Setting (DISPTIMEOUT)** - Only applies in Auto mode
+- `#DISPTIMEOUT30` - Auto-off after 30 seconds (default)
+- `#DISPTIMEOUT60` - Auto-off after 1 minute
+- `#DISPTIMEOUT300` - Auto-off after 5 minutes
+- `#DISPTIMEOUT0` - Never auto-off (similar to AlwaysOn, but still in Auto mode)
+
+**Important Notes:**
+- `DISPTIMEOUT` only affects behavior when `DISPPOWER=0` (Auto mode)
+- To keep display always on: Use `#DISPPOWER1` OR use `#DISPPOWER0` + `#DISPTIMEOUT0`
+- The difference: `DISPPOWER1` ignores all timeout settings; `DISPTIMEOUT0` keeps display on but can be changed later without switching modes
+
+**Typical Usage:**
+
+*Auto with 1-minute timeout:*
+```
+#DISPPOWER0      // Set to Auto mode
+#DISPTIMEOUT60   // Auto-off after 60 seconds
+```
+
+*Always on (two equivalent ways):*
+```
+#DISPPOWER1      // Method 1: Power mode always-on
+  OR
+#DISPPOWER0 + #DISPTIMEOUT0  // Method 2: Auto mode with no timeout
+```
+
+*Always off:*
+```
+#DISPPOWER2      // Display always off
+#DISPON          // Manually turn on temporarily
+```
+
+**Brightness Control:**
+1. `#BRIGHT255` - Maximum brightness
+2. `#BRIGHT128` - Medium brightness (50%)
+3. `#BRIGHT64` - Low brightness (25%)
+4. `#BRIGHT0` - Minimum (effectively off)
+
 ## Error Responses
 
 | Error | Description | Cause |
@@ -156,12 +252,15 @@ Commands are sent via serial communication at 115200 baud rate:
 | Filter Count | 3 | 9 | 5 | filters |
 | Filter Position | 1 | 9 | - | position |
 | Custom Angle | 0.0 | 359.99 | - | degrees |
-| Motor Speed | 50 | 430 | 300 | steps/sec |
-| Max Motor Speed | 100 | 430 | 430 | steps/sec |
-| Motor Acceleration | 50 | 2000 | 1000 | steps/sec² |
-| Motor Disable Delay | 500 | 10000 | 1000 | milliseconds |
-| Manual Steps | 1 | 1000 | - | steps |
+| Motor Speed | 50 | 5000 | 4000 | steps/sec |
+| Max Motor Speed | 100 | 5000 | 5000 | steps/sec |
+| Motor Acceleration | 50 | 100000 | 100000 | steps/sec² |
+| Motor Disable Delay | 500 | 10000 | 500 | milliseconds |
+| Manual Steps | 1 | 4096 | - | steps |
 | Filter Name Length | 1 | 15 | - | characters |
+| Display Brightness | 0 | 255 | 255 | level |
+| Display Power Mode | 0 | 2 | 0 | mode |
+| Display Auto-Off Timeout | 0 | 65535 | 30 | seconds |
 
 ## EEPROM Storage
 
@@ -172,8 +271,8 @@ All configuration parameters are automatically saved to EEPROM and persist acros
 - **Filter count** (0x10): Number of configured filters (uint8_t)
 - **Custom angles** (0x11-0x36): Custom angle array for positions 1-9 (9 floats)
 - **Filter names** (0x40+): Custom filter names (16 bytes each, up to 15 chars + null)
-- **Motor configuration**: Speed, acceleration, disable delay
-- **Display settings**: Rotation state
+- **Motor configuration** (0x114+): Speed, max speed, acceleration, disable delay
+- **Display settings** (0x144+): Rotation, mode, brightness, power mode, auto-off timeout
 
 ## Debug Mode
 
@@ -190,11 +289,13 @@ When `DEBUG_MODE` is enabled in firmware, additional diagnostic information is s
 This firmware uses a closed-loop PID controller for precision positioning:
 
 - **Target Accuracy**: < 0.8° (configurable via `ANGLE_CONTROL_TOLERANCE`)
-- **Control Loop**: Maximum 30 iterations with 150ms settling time per iteration
-- **PID Parameters**: Kp=4.5, Ki=0.01, Kd=0.3 (tuned for 28BYJ-48 motor)
-- **Output Range**: 10-2000 steps per iteration for optimal response
-- **Anti-Windup**: Integral limit of 100.0 prevents accumulation
+- **Control Loop**: Maximum 30 iterations with 20ms settling time per iteration (fast response)
+- **PID Parameters**: Kp=76.0, Ki=0.17, Kd=5.0 (scaled for STEPS_PER_REVOLUTION=34600)
+- **Output Range**: 100-15000 steps per iteration for optimal response
+- **Anti-Windup**: Integral limit of 1700.0 prevents accumulation
 - **Bidirectional**: Automatically chooses shortest path and can reverse if needed
+- **Non-Blocking**: Serial commands can be processed during movement
+- **Real-Time Display**: Shows current angle during movement every 2 iterations
 
 ## ASCOM Integration
 
@@ -224,11 +325,35 @@ This command set is designed for ASCOM driver integration:
 
 This command reference is for firmware version **2.0.1** (PID-based encoder control).
 
+**New in v2.0.1:**
+- **Display Power Management**: Auto-off with configurable timeout, always-on, or always-off modes
+- **Display Brightness Control**: 0-255 levels with EEPROM persistence
+- **Transition Screen**: Shows "FROM → TO" during filter changes
+- **Non-Blocking Movements**: Serial commands responsive during movement
+- **Instant Acceleration**: 100,000 steps/s² for rapid response
+- **Optimized PID**: Corrected step calculations for accurate first movement
+
 **Breaking changes from v1.x:**
 - Removed step-based calibration commands (REVCAL, BLCAL, etc.)
 - Removed direction mode configuration (encoder determines optimal path)
 - Added custom angle calibration system
 - Changed DEVICE_ID format to ESP32FW-PID-V2.0
 - Extended filter count support to 3-9 (was 3-8)
+
+**Configuration Options (config.h):**
+```cpp
+// Display Power Management
+#define DISPLAY_POWER_MODE DISPLAY_POWER_MODE_AUTO  // 0=auto, 1=always on, 2=always off
+#define DISPLAY_AUTO_OFF_TIMEOUT 30     // Seconds (0=never, if mode is AUTO)
+
+// Motor Performance
+#define MOTOR_ACCELERATION 100000.0     // Instant acceleration (100,000 steps/s²)
+#define MOTOR_SPEED 4000.0              // Operating speed (4000 steps/s)
+#define MAX_MOTOR_SPEED 5000.0          // Maximum speed (5000 steps/s)
+
+// Auto-Homing Behavior
+#define AUTO_HOMING_ON_STARTUP true     // Enable auto-homing on startup
+#define AUTO_HOMING_GO_TO_POSITION_1 false  // If true, always moves to position 1; if false, stays at current position if valid
+```
 
 For complete documentation, visit: https://juanjol.github.io/autoFilterWheel/

@@ -13,6 +13,10 @@ FilterWheelController controller;
 // ============================================
 
 void setup() {
+    // Turn off built-in LED (active low)
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, HIGH);
+
     // Initialize serial for debugging and commands
     Serial.begin(115200);
     Serial.println();

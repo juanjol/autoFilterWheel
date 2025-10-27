@@ -23,12 +23,12 @@
 // "ND1", "ND2", "ND3", "ND4", "Moon"  - Neutral density + Moon
 
 // Motor configuration for 28BYJ-48
-#define STEPS_PER_REVOLUTION 2150  // 28BYJ-48 has 2048 steps per revolution (64 * 32)
+#define STEPS_PER_REVOLUTION 34600  // 28BYJ-48 has 2048 steps per revolution (64 * 32)
 
 // Motor speed and acceleration
-#define MAX_MOTOR_SPEED 150.0      // Maximum steps per second
-#define MOTOR_ACCELERATION 1000.0  // Steps per second squared (increased for better response)
-#define MOTOR_SPEED 300.0          // Normal operating speed
+#define MAX_MOTOR_SPEED 5000.0      // Maximum steps per second (realistic for 28BYJ-48)
+#define MOTOR_ACCELERATION 100000.0 // Steps per second squared (instant acceleration)
+#define MOTOR_SPEED 4000.0          // Normal operating speed (fast but achievable)
 
 // ============================================
 // MOTOR DRIVER CONFIGURATION
@@ -158,7 +158,7 @@
 
 #define AS5600_ADDRESS 0x36        // I2C address of AS5600
 #define AS5600_RAW_ANGLE_REGISTER 0x0C  // Register for raw angle
-#define AS5600_INVERT_DIRECTION true   // Invert encoder reading direction (360° - angle)
+#define AS5600_INVERT_DIRECTION false  // Invert encoder reading direction (360° - angle)
 
 // Angle calibration and control
 #define ANGLE_TOLERANCE 5.0        // Degrees tolerance for position detection (verification only)
@@ -167,13 +167,15 @@
 #define ANGLE_CONTROL_MAX_ITERATIONS 30  // Maximum control loop iterations
 
 // PID Controller Parameters for Angle Control
-#define ANGLE_PID_KP 4.5f          // Proportional gain
-#define ANGLE_PID_KI 0.01f         // Integral gain
-#define ANGLE_PID_KD 0.3f          // Derivative gain
-#define ANGLE_PID_INTEGRAL_MAX 100.0f  // Maximum integral accumulation (anti-windup)
-#define ANGLE_PID_OUTPUT_MIN 10    // Minimum motor steps per iteration
-#define ANGLE_PID_OUTPUT_MAX 2000   // Maximum motor steps per iteration
-#define ANGLE_PID_SETTLING_TIME 150  // Delay in ms after each movement
+// Note: These values are scaled for STEPS_PER_REVOLUTION = 34600
+// Ratio: 34600/2048 = 16.9x more steps per degree than original design
+#define ANGLE_PID_KP 76.0f         // Proportional gain (4.5 × 16.9 = 76)
+#define ANGLE_PID_KI 0.17f         // Integral gain (0.01 × 16.9 = 0.17)
+#define ANGLE_PID_KD 5.0f          // Derivative gain (0.3 × 16.9 = 5.0)
+#define ANGLE_PID_INTEGRAL_MAX 1700.0f  // Maximum integral accumulation (100 × 16.9)
+#define ANGLE_PID_OUTPUT_MIN 100   // Minimum motor steps per iteration (increased for larger movements)
+#define ANGLE_PID_OUTPUT_MAX 15000  // Maximum motor steps per iteration (realistic for fast movement)
+#define ANGLE_PID_SETTLING_TIME 20   // Delay in ms after each movement (aggressive for faster response)
 
 // Position angles for each filter (degrees)
 // These will be automatically calculated based on NUM_FILTERS
@@ -204,6 +206,21 @@
 // Display rotation (set to true to rotate display 180 degrees)
 #define OLED_ROTATION_180 false    // Default: normal orientation
 // Note: Rotation can be changed at runtime via serial command #ROTATE
+
+// Display power management
+#define DISPLAY_POWER_MODE_AUTO 0       // Auto: turns off after timeout
+#define DISPLAY_POWER_MODE_ALWAYS_ON 1  // Always on
+#define DISPLAY_POWER_MODE_ALWAYS_OFF 2 // Always off
+
+#define DISPLAY_POWER_MODE DISPLAY_POWER_MODE_AUTO  // Default power mode
+#define DISPLAY_AUTO_OFF_TIMEOUT 30     // Seconds before auto-off (0 = never, only if mode is AUTO)
+// Note: Display will wake up on any movement or serial activity
+
+// Display mode: 0 = Minimal (large number + filter name), 1 = Detailed (status + position + name)
+#define DISPLAY_MODE_MINIMAL 0     // Vertical display with large position number
+#define DISPLAY_MODE_DETAILED 1    // Horizontal display with full info
+#define DEFAULT_DISPLAY_MODE DISPLAY_MODE_MINIMAL  // Default mode
+// Note: Display mode can be changed at runtime via serial command #DISPMODE
 
 // ============================================
 // SERIAL COMMUNICATION
@@ -257,6 +274,11 @@
 // Display commands
 #define CMD_ROTATE_DISPLAY "ROTATE"     // Rotate display 180 degrees (ROTATE0, ROTATE1)
 #define CMD_GET_DISPLAY_INFO "DISPLAY"  // Get display configuration info
+#define CMD_SET_DISPLAY_MODE "DISPMODE" // Set display mode (DISPMODE0=minimal, DISPMODE1=detailed)
+#define CMD_SET_BRIGHTNESS "BRIGHT"     // Set display brightness (BRIGHT0-BRIGHT255)
+#define CMD_DISPLAY_ON "DISPON"         // Turn display on
+#define CMD_DISPLAY_OFF "DISPOFF"       // Turn display off
+#define CMD_DISPLAY_POWER_MODE "DISPPOWER" // Set display power mode (DISPPOWER0=auto, DISPPOWER1=always on, DISPPOWER2=always off)
 
 // Encoder debugging commands
 #define CMD_GET_ENCODER_STATUS "ENCSTATUS"  // Get encoder status (angle, direction, health)
@@ -266,6 +288,7 @@
 #define CMD_SET_CUSTOM_ANGLE "SETANG"       // Set custom angle for position (SETANG1:0.0, SETANG2:68.5)
 #define CMD_GET_CUSTOM_ANGLE "GETANG"       // Get custom angle for position (GETANG1, GETANG2, etc.)
 #define CMD_CLEAR_CUSTOM_ANGLES "CLEARANG"  // Clear all custom angles (revert to uniform)
+#define CMD_MEASURE_REVOLUTION "MEASREV"    // Measure steps for full 360° revolution using encoder
 
 // ============================================
 // SYSTEM CONFIGURATION
@@ -292,6 +315,10 @@
 #define EEPROM_TMC_HOLD_MULT 0x140      // TMC2209 hold current multiplier (float)
 #define EEPROM_DISPLAY_CONFIG_FLAG 0x144  // Display config flag (0xAA when saved)
 #define EEPROM_DISPLAY_ROTATION 0x148     // Display rotation (uint8_t: 0=normal, 1=180°)
+#define EEPROM_DISPLAY_MODE 0x14C         // Display mode (uint8_t: 0=minimal, 1=detailed)
+#define EEPROM_DISPLAY_BRIGHTNESS 0x150   // Display brightness (uint8_t: 0-255)
+#define EEPROM_DISPLAY_POWER_MODE 0x154   // Display power mode (uint8_t: 0=auto, 1=always on, 2=always off)
+#define EEPROM_DISPLAY_TIMEOUT 0x158      // Display auto-off timeout in seconds (uint16_t)
 #define MAX_FILTER_NAME_LENGTH 15    // Maximum characters per filter name (+ 1 for null terminator)
 #define MIN_FILTER_COUNT 3           // Minimum number of filters
 #define MAX_FILTER_COUNT 9           // Maximum number of filters (3-9 supported)
@@ -308,6 +335,10 @@
 #define MOTOR_DISABLE_DELAY 500     // Time in ms to keep motor powered after movement (reduced to prevent heating)
 #define AUTO_DISABLE_MOTOR true     // Automatically disable motor after movement
 #define MOTOR_HOLD_CURRENT false    // Set to true if you want to keep position with reduced current
+
+// Auto-homing on startup
+#define AUTO_HOMING_ON_STARTUP true // Automatically find and move to nearest position on power-up
+#define AUTO_HOMING_GO_TO_POSITION_1 false // If true, always moves to position 1 on startup; if false, stays at current position if valid
 
 // Debug mode (set to 1 to enable debug output)
 #define DEBUG_MODE 0
@@ -328,9 +359,9 @@
 // FIRMWARE INFORMATION
 // ============================================
 
-#define FIRMWARE_VERSION "2.0.1"
+#define FIRMWARE_VERSION "3.0.0"
 #define DEVICE_NAME "ESP32-C3 Filter Wheel"
 #define MANUFACTURER "DIY Astronomy"
-#define DEVICE_ID "ESP32FW-PID-V2.0"     // Unique device identifier for ASCOM
+#define DEVICE_ID "ESP32FW-PID-V3.0"     // Unique device identifier for ASCOM
 
 #endif // CONFIG_H
