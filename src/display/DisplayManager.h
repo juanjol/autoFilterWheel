@@ -47,6 +47,22 @@ private:
     static constexpr uint8_t POSITION_LINE_Y_ROTATED = 12;
     static constexpr uint8_t FILTER_NAME_LINE_Y_ROTATED = 28;
 
+    // ====================================================================
+    // CALIBRACIÓN PANTALLA 0.42" OLED - AJUSTAR ESTOS VALORES
+    // ====================================================================
+    // Si ves áreas negras o contenido cortado en modo vertical (minimal),
+    // ajusta estos valores y recompila:
+    //   - X_OFFSET: mueve contenido horizontalmente (0-20)
+    //   - Y_OFFSET: mueve contenido verticalmente (20-40)
+    //   - WIDTH/HEIGHT: tamaño del área visible
+    // ====================================================================
+    static constexpr uint8_t VERTICAL_X_OFFSET_NORMAL = 0;    // Ajustar si hay espacio negro a izq/der
+    static constexpr uint8_t VERTICAL_X_OFFSET_ROTATED = 26;   // Mismo valor para 180°
+    static constexpr uint8_t VERTICAL_Y_OFFSET_NORMAL = 28;   // Ajustar si hay espacio negro arriba/abajo
+    static constexpr uint8_t VERTICAL_Y_OFFSET_ROTATED = 28;  // Mismo valor para 180°
+    static constexpr uint8_t VERTICAL_VISIBLE_WIDTH = 40;     // Ancho visible físico
+    static constexpr uint8_t VERTICAL_VISIBLE_HEIGHT = 72;    // Alto visible físico
+
     // Font sizes
     static constexpr uint8_t SMALL_FONT_HEIGHT = 8;
     static constexpr uint8_t LARGE_FONT_HEIGHT = 16;

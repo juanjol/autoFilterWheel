@@ -204,15 +204,14 @@ void DisplayManager::showFilterWheelStateMinimal(uint8_t position, uint8_t total
     display->setRotation(rotation180 ? 1 : 3);
 
     // After rotation(3): dimensions are 64px wide x 128px tall
-    // For 0.42" OLED: visible area is approximately 56px wide x 72px tall
-    // Rotation(1) and rotation(3) have different visible areas on 0.42" OLED
+    // For 0.42" OLED: visible area is approximately 40px wide x 72px tall
+    // Using defined constants for consistent visible area across rotations
 
-    // Offsets for 0.42" OLED visible area (in vertical orientation)
-    const uint8_t visibleX = 0;   // Start from left edge
-    // Y offset needs experimentation - trying same value for both rotations
-    const uint8_t visibleY = 28;  // Same Y offset for both rotations
-    const uint8_t visibleWidth = 56;   // Maximum usable width
-    const uint8_t visibleHeight = 72;  // Visible height
+    // Get visible area from constants
+    const uint8_t visibleX = rotation180 ? VERTICAL_X_OFFSET_ROTATED : VERTICAL_X_OFFSET_NORMAL;
+    const uint8_t visibleY = rotation180 ? VERTICAL_Y_OFFSET_ROTATED : VERTICAL_Y_OFFSET_NORMAL;
+    const uint8_t visibleWidth = VERTICAL_VISIBLE_WIDTH;
+    const uint8_t visibleHeight = VERTICAL_VISIBLE_HEIGHT;
 
     // Draw large position number
     display->setTextSize(5);  // Very large text for position number
@@ -657,12 +656,11 @@ void DisplayManager::showTransition(uint8_t fromPosition, uint8_t toPosition) {
     // Set vertical orientation (90° rotation)
     display->setRotation(rotation180 ? 1 : 3);
 
-    // Offsets for 0.42" OLED visible area (in vertical orientation)
-    const uint8_t visibleX = 0;
-    // Using same Y offset for both rotations
-    const uint8_t visibleY = 28;
-    const uint8_t visibleWidth = 56;
-    const uint8_t visibleHeight = 72;
+    // Get visible area from constants for consistency
+    const uint8_t visibleX = rotation180 ? VERTICAL_X_OFFSET_ROTATED : VERTICAL_X_OFFSET_NORMAL;
+    const uint8_t visibleY = rotation180 ? VERTICAL_Y_OFFSET_ROTATED : VERTICAL_Y_OFFSET_NORMAL;
+    const uint8_t visibleWidth = VERTICAL_VISIBLE_WIDTH;
+    const uint8_t visibleHeight = VERTICAL_VISIBLE_HEIGHT;
 
     // Show "FROM → TO" with smaller text to fit everything
     display->setTextSize(3);  // Medium text for numbers (18px wide x 24px tall)

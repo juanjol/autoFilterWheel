@@ -193,10 +193,14 @@
 #define SCREEN_WIDTH 128    // OLED display buffer width in pixels
 #define SCREEN_HEIGHT 64    // OLED display buffer height in pixels
 // Actual visible area for 0.42" OLED
-#define OLED_WIDTH 72       // Actual visible width
-#define OLED_HEIGHT 40      // Actual visible height
-#define OLED_X_OFFSET 30    // X offset for centering
+#define OLED_WIDTH 72       // Actual visible width (horizontal mode)
+#define OLED_HEIGHT 40      // Actual visible height (horizontal mode)
+#define OLED_X_OFFSET 30    // X offset for centering (horizontal mode)
 #define OLED_Y_OFFSET 0     // Y offset - start from top (0.42" OLED shows top portion)
+
+// Note: For vertical mode calibration, adjust values in DisplayManager.h
+// Look for "CALIBRACIÓN PANTALLA 0.42" section
+
 #define OLED_RESET -1       // Reset pin (not used for I2C)
 #define OLED_ADDRESS 0x3C   // I2C address for OLED (0x3C or 0x3D)
 
@@ -359,7 +363,7 @@
 // FIRMWARE INFORMATION
 // ============================================
 
-#define FIRMWARE_VERSION "3.0.0"
+#define FIRMWARE_VERSION "3.0.1"
 #define DEVICE_NAME "ESP32-C3 Filter Wheel"
 #define MANUFACTURER "DIY Astronomy"
 #define DEVICE_ID "ESP32FW-PID-V3.0"     // Unique device identifier for ASCOM
