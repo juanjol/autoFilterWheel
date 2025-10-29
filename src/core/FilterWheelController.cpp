@@ -675,21 +675,21 @@ int8_t FilterWheelController::determineRotationDirection(float currentAngle, flo
 bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tolerance) {
     if (!encoder || !encoder->isAvailable()) {
         #if DEBUG_MODE
-        Serial.println("[PID] ERROR: Encoder not available");
+        Serial.println("[MOVE] ERROR: Encoder not available");
         #endif
         return false;
     }
 
     if (!motorDriver) {
         #if DEBUG_MODE
-        Serial.println("[PID] ERROR: Motor driver not initialized");
+        Serial.println("[MOVE] ERROR: Motor driver not initialized");
         #endif
         return false;
     }
 
     #if DEBUG_MODE
     Serial.println("========================================");
-    Serial.print("[PID] Starting PID control to ");
+    Serial.print("[MOVE] Starting PREDICTIVE control to ");
     Serial.print(targetAngle, 2);
     Serial.print("° (tolerance: ");
     Serial.print(tolerance, 2);
@@ -699,185 +699,194 @@ bool FilterWheelController::moveToAngleWithFeedback(float targetAngle, float tol
 
     motorDriver->enableMotor();
 
-    // PID Controller variables
-    float integralSum = 0.0f;
-    float previousError = 0.0f;
-    bool success = false;
-    int iteration = 0;
-
-    // Constants for steps conversion (use actual configured value)
+    // Constants for steps conversion
     const int stepsPerRevolution = STEPS_PER_REVOLUTION;
     const float stepsPerDegree = stepsPerRevolution / 360.0f;
 
-    while (iteration < ANGLE_CONTROL_MAX_ITERATIONS && !success) {
-        // Read current angle from encoder
-        float currentAngle = encoder->getAngle();
-        if (currentAngle < 0) {
-            #if DEBUG_MODE
-            Serial.println("[PID] ERROR: Failed to read encoder angle");
-            #endif
-            return false;
-        }
+    // ============================================
+    // PHASE 1: SINGLE CALCULATED MOVEMENT
+    // ============================================
 
-        // Calculate error (with wraparound handling)
+    // Read initial position
+    float startAngle = encoder->getAngle();
+    if (startAngle < 0) {
+        #if DEBUG_MODE
+        Serial.println("[MOVE] ERROR: Failed to read encoder angle");
+        #endif
+        motorDriver->disableMotor();
+        return false;
+    }
+
+    // Calculate angular error
+    float initialError = calculateAngularError(startAngle, targetAngle);
+
+    #if DEBUG_MODE
+    Serial.print("[MOVE] Start: ");
+    Serial.print(startAngle, 2);
+    Serial.print("° → Target: ");
+    Serial.print(targetAngle, 2);
+    Serial.print("° | Angular error: ");
+    Serial.print(initialError, 2);
+    Serial.println("°");
+    #endif
+
+    // Check if already at target
+    if (abs(initialError) <= tolerance) {
+        #if DEBUG_MODE
+        Serial.println("[MOVE] ✓ Already at target!");
+        #endif
+        motorDriver->disableMotor();
+        return true;
+    }
+
+    // Calculate EXACT steps needed with compensation factor
+    // Compensation factor accounts for motor inertia and mechanical losses
+    int totalStepsNeeded = (int)(abs(initialError) * stepsPerDegree * PREDICTIVE_COMPENSATION_FACTOR);
+    bool moveForward = (initialError > 0);
+
+    #if DEBUG_MODE
+    Serial.print("[MOVE] Executing SINGLE movement: ");
+    Serial.print(totalStepsNeeded);
+    Serial.print(" steps (");
+    Serial.print(totalStepsNeeded / stepsPerDegree, 2);
+    Serial.print("°) ");
+    Serial.println(moveForward ? "FORWARD" : "BACKWARD");
+    #endif
+
+    // Execute the SINGLE main movement
+    if (moveForward) {
+        motorDriver->stepForward(totalStepsNeeded);
+    } else {
+        motorDriver->stepBackward(totalStepsNeeded);
+    }
+
+    // Allow motor to settle after movement
+    delay(100);
+
+    // ============================================
+    // PHASE 2: FINE PID CORRECTION (if needed)
+    // ============================================
+
+    float currentAngle = encoder->getAngle();
+    float finalError = calculateAngularError(currentAngle, targetAngle);
+
+    #if DEBUG_MODE
+    Serial.println("----------------------------------------");
+    Serial.print("[MOVE] PHASE 1 Complete: Angle=");
+    Serial.print(currentAngle, 2);
+    Serial.print("° Error=");
+    Serial.print(finalError, 2);
+    Serial.println("°");
+    #endif
+
+    if (abs(finalError) <= tolerance) {
+        #if DEBUG_MODE
+        Serial.println("[MOVE] ✓ Target reached! No PID correction needed");
+        Serial.println("========================================");
+        #endif
+
+        motorDriver->disableMotor();
+        return true;
+    }
+
+    // Need fine correction with PID
+    #if DEBUG_MODE
+    Serial.println("[MOVE] PHASE 2: Fine PID correction needed");
+    #endif
+
+    bool success = false;
+    int pidIterations = 0;
+    float integralSum = 0.0f;
+    float previousError = finalError;
+    const int MAX_PID_ITERATIONS = PREDICTIVE_MAX_PID_ITERATIONS; // Reduced iterations for fine tuning only
+
+    while (pidIterations < MAX_PID_ITERATIONS && !success) {
+        currentAngle = encoder->getAngle();
         float error = calculateAngularError(currentAngle, targetAngle);
 
-        // Check if we've reached target
+        // Check if reached target
         if (abs(error) <= tolerance) {
-            // Wait for motor to settle completely before confirming (with serial processing)
-            unsigned long settleStart = millis();
-            while (millis() - settleStart < 50) {
-                handleSerial();
-                delay(1);
-            }
+            delay(50); // Settle
+            float verifyAngle = encoder->getAngle();
+            float verifyError = calculateAngularError(verifyAngle, targetAngle);
 
-            // Re-read angle to verify final position
-            float finalAngle = encoder->getAngle();
-            float finalError = calculateAngularError(finalAngle, targetAngle);
-
-            #if DEBUG_MODE
-            Serial.println("[PID] ✓ TARGET REACHED!");
-            Serial.print("[PID] Final angle: ");
-            Serial.print(finalAngle, 2);
-            Serial.print("° (target: ");
-            Serial.print(targetAngle, 2);
-            Serial.print("°), Final error: ");
-            Serial.print(finalError, 2);
-            Serial.println("°");
-            #endif
-
-            // If error is still within tolerance after settling, accept it
-            if (abs(finalError) <= tolerance) {
+            if (abs(verifyError) <= tolerance) {
                 success = true;
                 break;
-            } else {
-                #if DEBUG_MODE
-                Serial.println("[PID] Warning: Position drifted after settling, continuing...");
-                #endif
-                // Continue PID loop to correct
             }
         }
 
-        // ============================================
-        // PID CALCULATION
-        // ============================================
-
-        // Proportional term: directly proportional to error
+        // PID calculation for fine correction
         float proportional = ANGLE_PID_KP * error;
 
-        // Integral term: accumulates error over time (anti-windup protection)
         integralSum += error;
         if (integralSum > ANGLE_PID_INTEGRAL_MAX) integralSum = ANGLE_PID_INTEGRAL_MAX;
         if (integralSum < -ANGLE_PID_INTEGRAL_MAX) integralSum = -ANGLE_PID_INTEGRAL_MAX;
         float integral = ANGLE_PID_KI * integralSum;
 
-        // Derivative term: rate of change of error (dampens oscillation)
         float derivative = ANGLE_PID_KD * (error - previousError);
 
-        // PID output (in steps)
         float pidOutput = proportional + integral + derivative;
-
-        // Convert to integer steps
         int stepsNeeded = (int)pidOutput;
 
-        // Apply output limits (prevent too large/small movements)
-        if (abs(stepsNeeded) > ANGLE_PID_OUTPUT_MAX) {
-            stepsNeeded = (stepsNeeded > 0) ? ANGLE_PID_OUTPUT_MAX : -ANGLE_PID_OUTPUT_MAX;
+        // Limit steps for fine correction
+        const int MAX_FINE_STEPS = 1000;
+        const int MIN_FINE_STEPS = 50;
+
+        if (abs(stepsNeeded) > MAX_FINE_STEPS) {
+            stepsNeeded = (stepsNeeded > 0) ? MAX_FINE_STEPS : -MAX_FINE_STEPS;
         }
-        if (abs(stepsNeeded) < ANGLE_PID_OUTPUT_MIN && abs(error) > tolerance) {
-            stepsNeeded = (stepsNeeded > 0) ? ANGLE_PID_OUTPUT_MIN : -ANGLE_PID_OUTPUT_MIN;
+        if (abs(stepsNeeded) < MIN_FINE_STEPS && abs(error) > tolerance) {
+            stepsNeeded = (stepsNeeded > 0) ? MIN_FINE_STEPS : -MIN_FINE_STEPS;
         }
 
-        // Overshoot prevention: reduce steps when very close to target
-        // This compensates for motor inertia and mechanical lag
-        if (abs(error) < 5.0f) {
-            // When error < 5°, use 70% of calculated steps to prevent overshoot
-            stepsNeeded = (int)(stepsNeeded * 0.7f);
-            if (abs(stepsNeeded) < ANGLE_PID_OUTPUT_MIN && abs(stepsNeeded) > 0) {
-                stepsNeeded = (stepsNeeded > 0) ? ANGLE_PID_OUTPUT_MIN : -ANGLE_PID_OUTPUT_MIN;
-            }
-        }
-
-        // Log PID values
         #if DEBUG_MODE
-        Serial.print("[PID] Iter ");
-        Serial.print(iteration + 1);
-        Serial.print(": Angle=");
-        Serial.print(currentAngle, 2);
-        Serial.print("° Err=");
+        Serial.print("[PID] Fine-tune ");
+        Serial.print(pidIterations + 1);
+        Serial.print(": Err=");
         Serial.print(error, 2);
-        Serial.print("° | P=");
-        Serial.print(proportional, 1);
-        Serial.print(" I=");
-        Serial.print(integral, 1);
-        Serial.print(" D=");
-        Serial.print(derivative, 1);
-        Serial.print(" → ");
+        Serial.print("° → ");
         Serial.print(stepsNeeded);
-        Serial.print(" steps (");
-        Serial.print(abs(stepsNeeded) / stepsPerDegree, 1);
-        Serial.println("°)");
+        Serial.println(" steps");
         #endif
 
-        // Execute movement
+        // Execute fine correction
         if (stepsNeeded > 0) {
             motorDriver->stepForward(abs(stepsNeeded));
         } else if (stepsNeeded < 0) {
             motorDriver->stepBackward(abs(stepsNeeded));
         }
 
-        // Update previous error for derivative calculation
         previousError = error;
-
-        // Settling time for mechanical stabilization (with serial processing)
-        unsigned long startTime = millis();
-        while (millis() - startTime < ANGLE_PID_SETTLING_TIME) {
-            // Process serial commands during settling time
-            handleSerial();
-            delay(1);  // Small delay to prevent CPU overuse
-        }
-
-        iteration++;
-    }
-
-    if (!success) {
-        #if DEBUG_MODE
-        Serial.println("[PID] ✗ FAILED to reach target");
-        Serial.print("[PID] Final error: ");
-        Serial.print(previousError, 2);
-        Serial.print("° after ");
-        Serial.print(iteration);
-        Serial.println(" iterations");
-        #endif
-
-        // Disable motor even on failure
-        if (motorDriver) {
-            motorDriver->disableMotor();
-            #if DEBUG_MODE
-            Serial.println("[PID] Motor disabled (failed positioning)");
-            #endif
-        }
-
-        setError(1); // Positioning error
-        return false;
+        delay(ANGLE_PID_SETTLING_TIME);
+        handleSerial();
+        pidIterations++;
     }
 
     #if DEBUG_MODE
-    Serial.print("[PID] Success in ");
-    Serial.print(iteration);
-    Serial.println(" iterations");
+    if (success) {
+        Serial.print("[MOVE] ✓ SUCCESS after ");
+        Serial.print(pidIterations);
+        Serial.println(" PID corrections");
+    } else {
+        Serial.print("[MOVE] ✗ FAILED after ");
+        Serial.print(pidIterations);
+        Serial.print(" PID corrections. Final error: ");
+        Serial.print(previousError, 2);
+        Serial.println("°");
+    }
+    Serial.println("========================================");
     #endif
 
-    // Disable motor after successful positioning
-    if (motorDriver) {
-        delay(MOTOR_DISABLE_DELAY); // Wait before disabling (from config.h)
-        motorDriver->disableMotor();
-        #if DEBUG_MODE
-        Serial.println("[PID] Motor disabled (positioning complete)");
-        #endif
+    // Disable motor
+    delay(MOTOR_DISABLE_DELAY);
+    motorDriver->disableMotor();
+
+    if (!success) {
+        setError(1);
     }
 
-    return true;
+    return success;
 }
 
 void FilterWheelController::updateDisplay() {

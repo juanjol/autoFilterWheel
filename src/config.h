@@ -166,7 +166,18 @@
 #define AS5600_OFFSET 0.0          // Offset angle in degrees (set during calibration)
 #define ANGLE_CONTROL_MAX_ITERATIONS 30  // Maximum control loop iterations
 
-// PID Controller Parameters for Angle Control
+// ============================================
+// PREDICTIVE MOVEMENT CONTROL
+// ============================================
+// Two-phase movement system for faster, more accurate positioning:
+// PHASE 1: Single calculated movement based on encoder reading (ONE movement only)
+// PHASE 2: Fine PID correction (only if needed, rarely used)
+
+// Predictive movement parameters
+#define PREDICTIVE_COMPENSATION_FACTOR 0.92f  // Undershoot factor to avoid overshoot (0.90-0.95 recommended)
+#define PREDICTIVE_MAX_PID_ITERATIONS 10      // Maximum PID iterations for fine correction (reduced from 30)
+
+// PID Controller Parameters for Fine Correction Only
 // Note: These values are scaled for STEPS_PER_REVOLUTION = 34600
 // Ratio: 34600/2048 = 16.9x more steps per degree than original design
 #define ANGLE_PID_KP 76.0f         // Proportional gain (4.5 × 16.9 = 76)
